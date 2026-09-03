@@ -30,3 +30,6 @@ Thumbs.db
 .env*
 .npmrc
 tsconfig.tsbuildinfo
+.cc-delivery/
+.cc-tail
+.claude

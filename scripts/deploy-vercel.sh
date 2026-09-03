@@ -6,7 +6,7 @@
 #   1. Vercel 账号（https://vercel.com/signup）
 #   2. Cloudflare 账号 + 域名 acecrush.dev（DNS 托管在 CF）
 #   3. 本机装 vercel CLI：npm i -g vercel
-#   4. vercel login（浏览器授权）
+#   4. vercel login（浏览器授权）— 脚本会自动检测登录态，未登录时自动触发
 #   5. 在 website/ 目录跑一次 `vercel link`（创建项目链接，存到 .vercel/project.json）
 #
 # 流程：
@@ -50,7 +50,7 @@ DRY_RUN="${DRY_RUN:-0}"
 VERCEL_IP="76.76.21.21"
 
 if [ "$SKIP_DNS" -eq 0 ]; then
-  echo "==> [1/3] update Cloudflare DNS -> Vercel"
+  echo "==> [1/4] update Cloudflare DNS -> Vercel"
 
   ZONE_ID=$(curl -fsS \
     -H "Authorization: Bearer $CF_API_KEY" \
@@ -86,10 +86,19 @@ if [ "$SKIP_DNS" -eq 0 ]; then
   update_record CNAME "www.$CF_ZONE" "cname.vercel-dns.com"
 fi
 
-echo "==> [2/3] build"
+echo "==> [2/4] vercel login check"
+VERCEL_USER="$(npx vercel whoami 2>/dev/null || true)"
+if [ -z "$VERCEL_USER" ]; then
+  echo "  Vercel 未登录 → 运行 vercel login（浏览器授权）"
+  npx vercel login
+else
+  echo "  Vercel 已登录: $VERCEL_USER"
+fi
+
+echo "==> [3/4] build"
 npm run build
 
-echo "==> [3/3] deploy to Vercel (CLI)"
+echo "==> [4/4] deploy to Vercel (CLI)"
 # 信任 .vercel/project.json 里的 link 配置；如果不存在（或项目搞错了想重 link），
 # 手动跑一次 `npx vercel link`（交互式，选 acecrush-craft）然后重 deploy。
 if [ -f ".vercel/project.json" ]; then

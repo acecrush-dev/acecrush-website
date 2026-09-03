@@ -10,7 +10,7 @@ import { Reveal } from "@/components/motion/reveal";
  *   用户明确去掉该模块；iOS 卡片只剩 AppleLogo + 文案。
  * v6u：APK 走 Vercel 静态托管（已废弃；plan 011 改走 GitHub Releases）。
  * plan 011：APK 走 GitHub Releases。下载链接默认
- *   `https://github.com/acecrush-dev/acecrushcraft/releases/latest/download/acecrush-craft.apk`——
+ *   `https://github.com/acecrush-dev/acecrushcraft-app/releases/latest/download/acecrush-craft.apk`——
  *   `app/scripts/release-apk.sh` build + 上传（`gh release create`），`/releases/latest/`
  *   永远指向最新版本，前端代码零改动。env var 仍可覆盖用于 staging。
  */
@@ -18,7 +18,7 @@ export function DownloadSection() {
   const t = useTranslations("download");
   const apkUrl =
     process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL ??
-    "https://github.com/acecrush-dev/acecrushcraft/releases/latest/download/acecrush-craft.apk";
+    "https://github.com/acecrush-dev/acecrushcraft-app/releases/latest/download/acecrush-craft.apk";
   return (
     <section
       id="download"
