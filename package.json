@@ -1,0 +1,32 @@
+{
+  "name": "acecrush-craft-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx next dev",
+    "build": "npx next build",
+    "start": "npx next start",
+    "lint": "npx next lint",
+    "serve": "npx serve out",
+    "check:i18n": "node scripts/check-i18n-keys.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "test:store": "node scripts/test-store.mjs",
+    "test": "node scripts/smoke.mjs && node scripts/test-store.mjs && node scripts/check-i18n-keys.mjs"
+  },
+  "dependencies": {
+    "next": "^16.3.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "motion": "^12.23.0",
+    "@phosphor-icons/react": "^2.1.7",
+    "next-intl": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.7.0"
+  }
+}

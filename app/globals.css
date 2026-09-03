@@ -1,0 +1,266 @@
+@import "tailwindcss";
+
+/* ============================================================
+ * Design tokens (plan 004 v4 / skill §3.A / §8 · v5 调色)
+ *
+ * 用户反馈（2026-08-23）：原版 light #008F4D 偏墨绿（太深沉）、dark #00FF8A
+ * 偏刺眼（太霓虹），要"亮的绿色"且"两套背景字体都清晰且不刺眼"。
+ *
+ * v5 调整：
+ *   light 模式
+ *     --color-accent:        #00B86B   亮绿（介于 008F4D 与 00FF8A 之间，明显亮于原 008F4D）
+ *     --color-accent-fg:     #062310   深绿（按钮文字，非纯白）→ WCAG AAA ~7.6:1
+ *     --color-bg:            #FAFAF6   暖白不变
+ *     --color-surface-tint:  #E8F7EE   浅绿 tint（替代原本的 E6E5DC 米色，呼应绿色系）
+ *     --color-accent-soft:   #C8F0DC   soft 浅绿
+ *
+ *   dark 模式
+ *     --color-accent:        #00E676   降饱和（从 #00FF8A → #00E676，仍亮但不刺眼）
+ *     --color-accent-fg:     #062310   深绿（保持深绿文字，按钮高对比 ~14:1）
+ *     --color-bg:            #0E1410   减少绿色饱和（从 #0F1A12 → #0E1410，更中性的深色）
+ *     --color-surface-tint:  #1F2E22   深绿 tint
+ *     --color-accent-soft:   #0F2E1F   深绿 soft
+ *
+ *   主体文字 token 维持不变：
+ *     light --color-fg: #14181A（深灰）；muted #5B6066；subtle #8C9197
+ *     dark  --color-fg: #F5F5F0（暖白）；muted #B5BDB7；subtle #828C84（略去绿）
+ *
+ * v6p 字体栈（用户给定）：
+ *   H1 大标题：Space Grotesk（强科技感，仅大标题）
+ *   正文 / 按钮 / 小标题：Geist Sans
+ *   数字 / 关节坐标 / 日志：Geist Mono
+ *   中文：阿里巴巴普惠体 + 系统回退（PingFang SC / HarmonyOS Sans SC /
+ *         Microsoft YaHei）
+ *   CDN 走 jsDelivr @fontsource；加载失败自动回退系统原生字体。
+ * ============================================================ */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 006 v6：BrandLogo 改用 inline-style 全驱动，CSS 仅保留 dark mode variant 标记。
+   之前 .brand-logo-wrapper 用 inline-flex + box-sizing: border-box 默认值导致
+   容器总尺寸与 image 尺寸在不同 box-sizing 模型下产生歧义（image 被 flex shrink
+   影响显得宽度被压窄）。v6 改为 inline-block + 显式 box-sizing: border-box + 显式
+   width/height，不再依赖此 CSS 类。 */
+
+@theme {
+  /* --- Light mode (default) --- */
+  --color-bg: #FAFAF6;          /* 暖白 */
+  --color-bg-elevated: #FFFFFF;
+  --color-surface: #FFFFFF;        /* v6m: 纯白，去掉墨绿/beige tint，科技感 */
+  --color-surface-tint: #E8F7EE;   /* v5: 浅绿 tint 替代米色 */
+  --color-fg: #14181A;
+  --color-fg-muted: #5B6066;
+  --color-fg-subtle: #8C9197;
+  --color-border: #DEDED7;
+  --color-divider: #E5E5DF;
+
+  /* 单 accent（v5 科技绿 light：亮绿 + 深绿字） */
+  --color-accent: #00B86B;
+  --color-accent-fg: #062310;
+  --color-accent-soft: #C8F0DC;
+
+  /* v6p 字体 token - 集中定义避免散落 */
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "PingFang SC", "Alibaba PuHuiTi", "Microsoft YaHei", sans-serif;
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "PingFang SC", "Alibaba PuHuiTi", "HarmonyOS Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* --- Dark mode (toggle by `.dark` class on <html>) --- */
+.dark {
+  --color-bg: #0E1410;          /* v5: 减少绿饱和，中性更深 */
+  --color-bg-elevated: #161D17;
+  --color-surface: #14141A;        /* v6m: 中性深灰，彻底去绿 tint */
+  --color-surface-tint: #1F2E22;
+  --color-fg: #F5F5F0;
+  --color-fg-muted: #B5BDB7;
+  --color-fg-subtle: #828C84;
+  --color-border: #2A3A2F;
+  --color-divider: #1F2E22;
+
+  /* 单 accent（v5 科技绿 dark：降饱和，避免霓虹刺眼） */
+  --color-accent: #00E676;
+  --color-accent-fg: #062310;
+  --color-accent-soft: #0F2E1F;
+}
+
+/* ============================================================
+ * Base layer
+ * ============================================================ */
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);    /* v6p: Geist Sans + 系统回退 */
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* v6p：H1 / 大标题专属 Space Grotesk。仅作用于 h1 与 .font-display 显式类，
+   避免污染正文（用户避坑：Space Grotesk 不用于正文小字号）。
+   v6q：weight 700 → 800（用户「标题字体粗大一些」），tracking 更紧 -0.025em
+   让 Space Grotesk 几何感更强。 */
+h1, .font-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+/* v6p：数字、关节坐标、日志统一用 Geist Mono（仪表盘观感） */
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* v6m：html 强制至少一屏高，确保背景色在内容短时也铺满整页（footer 之外区域
+   不会露白/露黑）。100dvh 适配移动浏览器地址栏收缩场景。 */
+html { min-height: 100dvh; }
+
+/* 主题切换时给基础元素加 220ms 颜色过渡，避免深浅切换时整页硬切 */
+html { transition: background-color 220ms ease, color 220ms ease; }
+
+/* 锚点跳转走原生平滑滚动（用户 v6k 反馈「要 smooth」）。
+   respects prefers-reduced-motion：reduced 段已经把它强制切回 auto。 */
+html { scroll-behavior: smooth; }
+
+* { box-sizing: border-box; }
+
+::selection { background: var(--color-accent); color: var(--color-accent-fg); }
+
+a { color: inherit; }
+
+/* ============================================================
+ * Reduced motion (skill §6.B - mandatory when MOTION_INTENSITY > 3)
+ * ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+ * Component primitives (skill §3.E, §4.4)
+ * ============================================================ */
+
+.container-x {
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container-x { padding-inline: 2rem; }
+}
+
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  color: var(--color-fg-muted);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), filter 200ms ease;
+}
+
+.btn-primary:hover { transform: translateY(-1px); filter: brightness(1.06); }
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  line-height: 1;
+  transition: background 200ms ease;
+}
+
+.btn-ghost:hover { background: var(--color-surface); }
+
+.card-elevated {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+}
+
+.text-mono {
+  font-family: "Geist Mono", ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+}
+
+/* Theme switcher segmented control */
+.theme-seg {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+}
+
+.theme-seg button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  color: var(--color-fg-muted);
+  transition: background 180ms ease, color 180ms ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.theme-seg button:hover { color: var(--color-fg); }
+
+.theme-seg button[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+.locale-seg {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  overflow: hidden;
+}
+
+.locale-seg a {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-fg-muted);
+  text-decoration: none;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.locale-seg a[aria-current="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
