@@ -6,14 +6,18 @@ import { Reveal, RevealStagger } from "@/components/motion/reveal";
 /**
  * How it works - 错位三段（不是等宽三卡，plan §4.3 / §9.C）。
  * 桌面横排错位；移动端单列堆叠。
+ *
+ * plan 001 §4-8：文案 key 由 `howItWorks.*` 改为 `products.craft.howItWorks.*`；
+ * heading 降为 h3（页面 h1 = BrandHero，h2 = CraftHero 产品头）。
  */
+const STEPS = [
+  { labelKey: "step1Label", bodyKey: "step1Body" },
+  { labelKey: "step2Label", bodyKey: "step2Body" },
+  { labelKey: "step3Label", bodyKey: "step3Body" },
+] as const;
+
 export function HowItWorks() {
-  const t = useTranslations("howItWorks");
-  const steps = [
-    { labelKey: "step1Label", bodyKey: "step1Body" },
-    { labelKey: "step2Label", bodyKey: "step2Body" },
-    { labelKey: "step3Label", bodyKey: "step3Body" },
-  ] as const;
+  const t = useTranslations("products.craft.howItWorks");
 
   return (
     <section
@@ -22,20 +26,20 @@ export function HowItWorks() {
       aria-labelledby="how-heading"
     >
       <Reveal>
-        <h2
+        <h3
           id="how-heading"
           className="text-[32px] md:text-[44px] leading-[1.1] tracking-tight font-semibold max-w-[20ch]"
           style={{ color: "var(--color-fg)" }}
         >
           {t("heading")}
-        </h2>
+        </h3>
       </Reveal>
 
       <RevealStagger
         className="mt-14 grid gap-6 md:grid-cols-3 md:[&>div:nth-child(2)]:translate-y-8"
-        items={steps.map((s, i) => (
+        items={STEPS.map((s, i) => (
           <StepCard
-            key={i}
+            key={s.labelKey}
             index={i + 1}
             label={t(s.labelKey)}
             body={t(s.bodyKey)}
@@ -58,7 +62,7 @@ function StepCard({
   body: string;
   stepPrefix: string;
 }) {
-  // 注意：父级 RevealStagger 已经在外层包了 <motion.li>，这里必须用 <div>，
+  // 注意：父级 RevealStagger 已经在外层包了 <motion.div>，这里必须用 <div>，
   // 否则 <li> 嵌套 <li> 触发 React validateDOMNesting + hydration mismatch。
   return (
     <div

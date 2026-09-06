@@ -4,40 +4,49 @@ import {
   BellRinging,
   Calculator,
   Camera,
-  FirstAidKit,
   Ruler,
   TennisBall,
 } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/motion/reveal";
+import { FeatureCard, type FeatureCardTone } from "@/components/sections/FeatureCard";
 
 /**
- * Features - 6 项不对称 bento（plan §4.7 BENTO CELL COUNT RULE：6 项 → 6 格）。
- * 桌面 3 列 2 行；第二行第一格占 2 列宽。
- * accent：第一张 card 用科技绿（item1 is accent tone）；
- * 第五张 card（球拍档案）用 surface-tint 浅绿做差异化背景（tinted tone）。
+ * Features - AceCrush Craft 特性网格。
+ *
+ * plan 001 §4-7：
+ *   - FeatureCard 抽到 components/sections/FeatureCard.tsx 共享（SwingSection 复用）
+ *   - 文案 key 由 `features.*` 改为 `products.craft.features.*`
+ *   - ICONS / TONES / ITEMS 全部提升为模块级常量（rerender 卫生）
+ *   - heading 降为 h3（页面 h1 = BrandHero，h2 = CraftHero 产品头）
+ *
+ * 用户 2026-09-05 追加调整：
+ *   - 删除「伤病提示 / Injury awareness」卡（原 item6），6 项 → 5 项
+ *   - 「球拍档案 / Racket profiles」提到第 3 位，key 顺序随展示顺序重排
+ *   - 所有卡片等宽：移除原 item5 的 `lg:col-span-2`（那正是「第五个拉太长」的原因）
+ *   - 3 列 × 2 行 = 6 格，5 张卡后最后一格**留空**（grid 自然空位，
+ *     不渲染任何占位元素），不再用 CTA 之类的东西填。
  */
-const ICONS = {
-  item1: Camera,
-  item2: Ruler,
-  item3: BellRinging,
-  item4: Calculator,
-  item5: TennisBall,
-  item6: FirstAidKit,
-} as const;
+const ICONS = [Camera, Ruler, TennisBall, BellRinging, Calculator] as const;
 
-const TONES = ["accent", "default", "default", "default", "tinted", "default"] as const;
+const TONES: readonly FeatureCardTone[] = [
+  "accent",
+  "default",
+  "tinted",
+  "default",
+  "default",
+];
+
+const ITEMS = [
+  { titleKey: "item1Title", bodyKey: "item1Body" },
+  { titleKey: "item2Title", bodyKey: "item2Body" },
+  { titleKey: "item3Title", bodyKey: "item3Body" },
+  { titleKey: "item4Title", bodyKey: "item4Body" },
+  { titleKey: "item5Title", bodyKey: "item5Body" },
+] as const;
 
 export function FeaturesBento() {
-  const t = useTranslations("features");
-  const items = [
-    { titleKey: "item1Title", bodyKey: "item1Body" },
-    { titleKey: "item2Title", bodyKey: "item2Body" },
-    { titleKey: "item3Title", bodyKey: "item3Body" },
-    { titleKey: "item4Title", bodyKey: "item4Body" },
-    { titleKey: "item5Title", bodyKey: "item5Body" },
-    { titleKey: "item6Title", bodyKey: "item6Body" },
-  ] as const;
+  const t = useTranslations("products.craft.features");
 
   return (
     <section
@@ -46,13 +55,13 @@ export function FeaturesBento() {
       aria-labelledby="features-heading"
     >
       <Reveal>
-        <h2
+        <h3
           id="features-heading"
           className="text-[32px] md:text-[44px] leading-[1.1] tracking-tight font-semibold max-w-[20ch]"
           style={{ color: "var(--color-fg)" }}
         >
           {t("heading")}
-        </h2>
+        </h3>
       </Reveal>
       <Reveal delay={0.08}>
         <p
@@ -64,67 +73,18 @@ export function FeaturesBento() {
       </Reveal>
 
       <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {items.map((it, i) => (
+        {ITEMS.map((it, i) => (
           <FeatureCard
-            key={i}
+            key={it.titleKey}
             title={t(it.titleKey)}
             body={t(it.bodyKey)}
-            Icon={ICONS[`item${i + 1}` as keyof typeof ICONS]}
+            Icon={ICONS[i]}
             tone={TONES[i]}
-            span={i === 4 ? "lg:col-span-2" : undefined}
           />
         ))}
+        {/* 第 6 格刻意留空（用户要求：占位就是 space，不放任何内容）。
+            CSS grid 会自动空出这一格，不需要渲染占位元素。 */}
       </div>
     </section>
-  );
-}
-
-function FeatureCard({
-  title,
-  body,
-  Icon,
-  tone,
-  span,
-}: {
-  title: string;
-  body: string;
-  Icon: typeof Camera;
-  tone: "accent" | "tinted" | "default";
-  span?: string;
-}) {
-  const isAccent = tone === "accent";
-  const isTinted = tone === "tinted";
-
-  return (
-    <article
-      className={`relative p-7 rounded-[20px] min-h-[180px] flex flex-col gap-4 overflow-hidden ${span ?? ""}`}
-      style={{
-        background: isAccent
-          ? "var(--color-accent)"
-          : isTinted
-          ? "var(--color-surface-tint)"
-          : "var(--color-bg-elevated)",
-        color: isAccent ? "var(--color-accent-fg)" : "var(--color-fg)",
-        border: isAccent ? "none" : "1px solid var(--color-border)",
-      }}
-    >
-      <div
-        className="inline-flex items-center justify-center rounded-2xl"
-        style={{
-          width: 40,
-          height: 40,
-          background: isAccent
-            ? "rgba(255,255,255,0.18)"
-            : "var(--color-accent-soft)",
-          color: isAccent ? "var(--color-accent-fg)" : "var(--color-fg)",
-        }}
-      >
-        <Icon size={22} weight="regular" />
-      </div>
-      <h3 className="text-[20px] font-semibold leading-snug">{title}</h3>
-      <p className="text-[14px] leading-relaxed max-w-[42ch]" style={{ opacity: 0.82 }}>
-        {body}
-      </p>
-    </article>
   );
 }

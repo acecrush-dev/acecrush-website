@@ -2,10 +2,10 @@
 /**
  * Smoke tests — 不依赖 Next dev/build，纯 node 自检，CI 可直接跑。
  *
- * 覆盖（plan 004 v6c）：
+ * 覆盖（plan 004 v6c / plan 001 §4-23）：
  *  1. i18n key 100% 对齐（messages/zh-CN.json ↔ messages/en.json）
  *  2. messages JSON 格式合法（无语法错误）
- *  3. 关键文件存在（store / I18nProvider / ThemeProvider / 6 sections / AppNav / AppFooter）
+ *  3. 关键文件存在（store / I18nProvider / ThemeProvider / sections / AppNav）
  *  4. 设计令牌齐全（globals.css 必含 8 个 --color-* token + .dark 覆盖）
  *  5. 无 em-dash 散布（lib/components/app/messages 源码）
  *  6. 无科技绿色 hex 散落（除 globals.css 外）
@@ -13,6 +13,8 @@
  *  8. 无 [locale] 动态段残留
  *  9. 无 @/i18n/navigation 老引用
  * 10. package.json 必要依赖存在
+ * 11. AppNav 联系邮箱为 lunatic0072006@hotmail.com（plan 001）
+ * 12. 全源码无旧邮箱 hi@acecrush.dev 残留（plan 001）
  *
  * 退出码：0 = 全部 PASS；1 = 任一 FAIL。
  */
@@ -40,7 +42,7 @@ function fail(name, msg) { failed.push({ name, msg }); console.log(`  ✗ ${name
 function read(p) { return readFileSync(join(root, p), "utf-8"); }
 function exists(p) { return existsSync(join(root, p)); }
 
-console.log("\n[1/10] i18n key 100% 对齐");
+console.log("\n[1/12] i18n key 100% 对齐");
 try {
   const flatten = (obj, prefix = "") => {
     const out = [];
@@ -64,7 +66,7 @@ try {
   fail("i18n keys aligned", e.message);
 }
 
-console.log("\n[2/10] messages JSON 格式合法");
+console.log("\n[2/12] messages JSON 格式合法");
 for (const loc of ["zh-CN", "en"]) {
   try {
     JSON.parse(read(`messages/${loc}.json`));
@@ -74,7 +76,7 @@ for (const loc of ["zh-CN", "en"]) {
   }
 }
 
-console.log("\n[3/10] 关键文件存在");
+console.log("\n[3/12] 关键文件存在");
 const required = [
   "lib/i18n/store.ts",
   "lib/i18n/I18nProvider.tsx",
@@ -82,12 +84,14 @@ const required = [
   "lib/theme/ThemeScript.tsx",
   "components/i18n/LocaleLangSync.tsx",
   "components/layout/AppNav.tsx",
-  "components/layout/AppFooter.tsx",
   "components/layout/LandingContent.tsx",
   "components/layout/PrivacyContent.tsx",
   "components/layout/LocaleSwitcher.tsx",
   "components/layout/ThemeSwitcher.tsx",
-  "components/sections/HeroSection.tsx",
+  "components/sections/BrandHero.tsx",
+  "components/sections/CraftHero.tsx",
+  "components/sections/FeatureCard.tsx",
+  "components/sections/SwingSection.tsx",
   "components/sections/HowItWorks.tsx",
   "components/sections/FeaturesBento.tsx",
   "components/sections/PrivacyStrip.tsx",
@@ -96,9 +100,8 @@ const required = [
   "components/motion/reveal.tsx",
   "app/layout.tsx",
   "app/page.tsx",
-  "app/privacy/page.tsx",
   "app/not-found.tsx",
-  "app/icon.svg",
+  "app/icon.png",
   "i18n/request.ts",
   "next.config.mjs",
 ];
@@ -107,7 +110,7 @@ for (const f of required) {
   else fail(f, "missing");
 }
 
-console.log("\n[4/10] 设计令牌齐全");
+console.log("\n[4/12] 设计令牌齐全");
 const css = read("app/globals.css");
 const requiredTokens = [
   "--color-bg",
@@ -131,7 +134,7 @@ const darkCount = (css.match(/\.dark\s*\{/g) || []).length;
 if (darkCount >= 1) ok(`.dark override block (×${darkCount})`);
 else fail(".dark override block", "missing");
 
-console.log("\n[5/10] 无 em-dash 散布");
+console.log("\n[5/12] 无 em-dash 散布");
 let emDashHits = [];
 for (const d of ["lib", "components", "app", "messages"]) {
   walk(join(root, d), (p) => {
@@ -143,7 +146,7 @@ for (const d of ["lib", "components", "app", "messages"]) {
 if (emDashHits.length === 0) ok("no em/en dash in src");
 else fail("no em/en dash", emDashHits.join(", "));
 
-console.log("\n[6/10] 无科技绿色 hex 散落");
+console.log("\n[6/12] 无科技绿色 hex 散落");
 let greenHexHits = [];
 for (const d of ["lib", "components", "app", "messages", "i18n"]) {
   walk(join(root, d), (p) => {
@@ -157,7 +160,7 @@ const offGlobals = greenHexHits.filter((h) => !h.file.endsWith("globals.css"));
 if (offGlobals.length === 0) ok("tech-green hex only in globals.css");
 else fail("tech-green hex scattered", `${offGlobals.length} files`);
 
-console.log("\n[7/10] 无 ICP 备案残留");
+console.log("\n[7/12] 无 ICP 备案残留");
 let icpHits = [];
 for (const d of ["app", "components", "lib", "messages", "i18n"]) {
   walk(join(root, d), (p) => {
@@ -169,7 +172,7 @@ for (const d of ["app", "components", "lib", "messages", "i18n"]) {
 if (icpHits.length === 0) ok("no ICP ref in source");
 else fail("no ICP ref", icpHits.join(", "));
 
-console.log("\n[8/10] 无 [locale] 动态段残留");
+console.log("\n[8/12] 无 [locale] 动态段残留");
 let hasLocale = false;
 walk(join(root, "app"), (p) => {
   if (p.includes("[locale]")) hasLocale = true;
@@ -177,7 +180,7 @@ walk(join(root, "app"), (p) => {
 if (!hasLocale) ok("no [locale] dir in app/");
 else fail("no [locale] dir", "still exists");
 
-console.log("\n[9/10] 无 @/i18n/navigation 老引用");
+console.log("\n[9/12] 无 @/i18n/navigation 老引用");
 let oldRefs = [];
 for (const d of ["app", "components"]) {
   walk(join(root, d), (p) => {
@@ -189,12 +192,30 @@ for (const d of ["app", "components"]) {
 if (oldRefs.length === 0) ok("no @/i18n/navigation refs");
 else fail("no @/i18n/navigation refs", oldRefs.join(", "));
 
-console.log("\n[10/10] package.json 必要依赖");
+console.log("\n[10/12] package.json 必要依赖");
 const pkg = JSON.parse(read("package.json"));
 const requiredDeps = ["next", "react", "react-dom", "motion", "@phosphor-icons/react", "next-intl"];
 const missingDeps = requiredDeps.filter((d) => !pkg.dependencies[d]);
 if (missingDeps.length === 0) ok(`all required deps present`);
 else fail("deps missing", missingDeps.join(", "));
+
+console.log("\n[11/12] 联系邮箱已切到 lunatic0072006@hotmail.com");
+// 用户 2026-09-05 移除全站 footer，联系入口搬到 AppNav 右上角，故这里改查 AppNav。
+const navSrc = read("components/layout/AppNav.tsx");
+if (navSrc.includes("lunatic0072006@hotmail.com")) ok("AppNav contact mailto uses new address");
+else fail("AppNav contact mailto", "lunatic0072006@hotmail.com not found");
+
+console.log("\n[12/12] 无旧邮箱 hi@acecrush.dev 残留");
+let oldMailHits = [];
+for (const d of ["app", "components", "lib", "messages", "i18n"]) {
+  walk(join(root, d), (p) => {
+    if (!/\.(ts|tsx|json|css)$/.test(p)) return;
+    const c = readFileSync(p, "utf-8");
+    if (c.includes("hi@acecrush.dev")) oldMailHits.push(p);
+  });
+}
+if (oldMailHits.length === 0) ok("no hi@acecrush.dev in source");
+else fail("no hi@acecrush.dev", oldMailHits.join(", "));
 
 // Summary
 console.log("\n" + "=".repeat(60));

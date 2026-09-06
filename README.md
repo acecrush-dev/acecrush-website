@@ -1,23 +1,35 @@
-# AceCrush Craft 官网
+# AceCrush 官网
 
+> **AceCrush 品牌站**（单页 SPA，静态导出），呈现两款产品：
+> - **AceCrush Craft** · Android 端网球装备数据工具（AI 握把尺寸 / 球拍档案 / 穿线记录 / 磅数换算）
+> - **Swing Analysis** · 桌面端网球挥拍自动切分（Python 后端 + Electron GUI + CLI）
+>
 > Next.js（App Router, RSC）+ Tailwind v4 + Motion + Phosphor Icons + **next-intl（zh-CN + en）**。
 > 静态导出（`output: 'export'`），支持 **Vercel** 与 plan 003 自有 Nginx 两种部署。
 >
-> **v4 (2026-08-22)**: 科技绿 accent（dark `#00FF8A` / light `#008F4D`，来自 ainnis_app）+ 显式三态主题切换（light/dark/system + localStorage + 防闪烁）+ 双 locale i18n（next-intl middleware）。
+> **plan 001 (2026-09-05)**: 单产品落地页 → 双产品品牌站；messages 重构为
+> `products.craft.*` / `products.swing.*`；补 metadata / skip link / focus-visible /
+> scroll-margin / color-scheme 等设计审查整改项。联系邮箱 `lunatic0072006@hotmail.com`。
 
 ## 开发
 
 ```bash
-cd website
-npm install              # 需要 Node 22+；v4 依赖 next-intl
-npm run dev              # http://localhost:3000  （默认 zh-CN；/en 走英文）
+cd acecrush-website
+npm install              # 需要 Node 22+
+npm run dev              # http://localhost:3000（默认 en；右上角切 zh-CN，走 localStorage）
+```
+
+## 测试
+
+```bash
+npm test                 # smoke（12 组）+ store 断言 + i18n key 对齐
 ```
 
 ## i18n key 对齐校验（W-M4 硬校验）
 
 ```bash
 node scripts/check-i18n-keys.mjs
-# [OK] zh-CN ↔ en key-aligned (100 keys)
+# [OK] zh-CN ↔ en key-aligned (138 keys)
 ```
 
 ## 构建
@@ -135,12 +147,26 @@ python3 -m http.server -d out 8080
 
 设计规范与 Pre-Flight 自查见：
 
-- [`PREFLIGHT.md`](./PREFLIGHT.md) - design-taste-frontend skill §14 全部勾选
 - [`TODO-assets.md`](./TODO-assets.md) - 真实素材占位登记（用户后续替换）
+
+审查基线（`.claude/skills/`）：`web-design-guidelines`（Vercel Web Interface Guidelines）
+与 `vercel-react-best-practices`。plan 001 的整改项见 `plans/001-two-product-spa-landing.md` 附录 A / B。
 
 ## 文案
 
-所有可见文案集中管理在 [`lib/content.ts`](./lib/content.ts)。改文案改这一个文件。
+所有可见文案集中在 [`messages/en.json`](./messages/en.json) 与
+[`messages/zh-CN.json`](./messages/zh-CN.json)，两份 key 必须 100% 对齐
+（`npm test` 会硬校验）。组件里禁止硬编码可见文案，一律走 `useTranslations`。
+
+命名空间结构：
+
+```
+site / nav / theme / brandHero          共享
+products.craft.*                        Craft 产品区全部文案
+products.swing.*                        Swing Analysis 产品区全部文案
+download / faq                          双产品共享区标题
+footer / notFound / privacy             其余
+```
 
 ## 部署到 plan 003 Nginx
 
@@ -149,25 +175,38 @@ python3 -m http.server -d out 8080
 ## 关键文件
 
 ```
-website/
+acecrush-website/
 ├── app/
-│   ├── layout.tsx       # 根布局 + metadata
-│   ├── globals.css      # Tailwind v4 + 设计令牌（双主题）
-│   ├── page.tsx          # 首页组装
-│   ├── privacy/page.tsx  # 隐私政策
-│   └── not-found.tsx
+│   ├── layout.tsx            # 根布局 + metadata（title/description/preconnect）+ Viewport themeColor
+│   ├── globals.css           # Tailwind v4 + 设计令牌（双主题）+ focus-visible / skip-link / scroll-margin
+│   ├── page.tsx              # 首页 = <LandingContent />
+│   └── not-found.tsx         # 404（走 i18n notFound.*）
 ├── components/
 │   ├── layout/
-│   │   ├── nav.tsx       # 单行 nav, 移动 details/summary 折叠
-│   │   └── footer.tsx    # ICP 占位 + 链接
-│   ├── sections/         # 7 个 section（hero / how / features / privacy-strip / download / faq）
-│   └── motion/reveal.tsx # Motion 隔离岛
+│   │   ├── AppNav.tsx        # sticky nav，移动端 details/summary 折叠（Esc / 外点 / 点链接关闭）
+│   │   ├── AppFooter.tsx     # id="contact"，mailto 联系入口
+│   │   ├── LandingContent.tsx# skip link + 分区组装
+│   │   ├── LocaleSwitcher.tsx# en / zh-CN 分段按钮（<button aria-pressed>）
+│   │   └── ThemeSwitcher.tsx # light / system / dark 三态
+│   ├── sections/
+│   │   ├── BrandHero.tsx     # 品牌 h1 + 两张产品简介卡
+│   │   ├── CraftHero.tsx     # id="craft"，产品头 + 手机框真渲染预览
+│   │   ├── HowItWorks.tsx    # Craft 三步错位卡
+│   │   ├── FeaturesBento.tsx # Craft 6 项不对称 bento
+│   │   ├── PrivacyStrip.tsx  # Craft 隐私强调段
+│   │   ├── SwingSection.tsx  # id="swing"，产品头 + 4 张特性卡
+│   │   ├── FeatureCard.tsx   # Bento 与 Swing 共用的特性卡
+│   │   ├── DownloadSection.tsx # id="download"，双产品分组
+│   │   └── FaqSection.tsx    # id="faq"，双产品分组手风琴
+│   ├── brand/BrandLogo.tsx
+│   └── motion/reveal.tsx     # Motion 隔离岛（honour reduced-motion）
 ├── lib/
-│   └── content.ts        # 全站文案
-├── public/
-│   └── apk/              # APK 占位 + README
-├── vercel.json           # Vercel 部署配置（5 行）
-├── PREFLIGHT.md          # skill §14 自查清单
-├── TODO-assets.md         # 真实素材占位登记
-└── README.md             # 本文件
+│   ├── i18n/                 # localStorage locale store + Provider
+│   └── theme/                # 三态主题 Provider
+├── messages/                 # en.json / zh-CN.json（唯一文案来源）
+├── public/theme-init.js      # 防 FOUC inline 主题脚本（只切 .dark class）
+├── scripts/                  # smoke / test-store / check-i18n-keys / deploy-vercel
+├── vercel.json
+├── TODO-assets.md
+└── README.md
 ```

@@ -6,25 +6,24 @@ import Link from "next/link";
 import { Reveal } from "@/components/motion/reveal";
 
 /**
- * Hero - 非对称分屏（plan 004 v4 / skill §4.3 ANTI-CENTER BIAS, VARIANCE: 8）。
- * 左：eyebrow + headline + subtext + CTAs（≤ 4 文本元素，§4.7）。
- * 右：手机框真渲染迷你测量结果卡（§4.8 Hero needs a real visual）。
+ * CraftHero - AceCrush Craft 产品区首屏（plan 001 §4-4）。
  *
- * accent 通过 CSS 变量（--color-accent / --color-accent-soft）随主题自动切换。
+ * 由旧 HeroSection.tsx 改名搬家而来：
+ *   - 页面 h1 已上移到 BrandHero（品牌级），这里降为 h2 产品头
+ *   - 文案 key 从 `hero.*` 改读 `products.craft.intro.*`
+ *   - section id="craft"，供 nav 与 BrandHero 产品卡锚点跳转
  *
- * v6n：grid 移入 container-x 内部，由 container-x 的 padding-inline 提供左右
- * 内边距；旧版 lg:px-0 覆盖让文案贴左（实际只离 main padding 24px），用户
- * 反馈「太靠左了」。现两侧至少 32px+ 安全留空，与下面 sections 对齐。
+ * 布局与动效保持原样：左文案 + 右手机框真渲染测量结果卡
+ * （skill §4.8 Hero needs a real visual，不是 div 假截图）。
  */
-export function HeroSection() {
-  const t = useTranslations("hero");
+export function CraftHero() {
+  const t = useTranslations("products.craft.intro");
+  const tCraft = useTranslations("products.craft");
   return (
     <section
-      // v6g：min-h-[100dvh] 只在 lg+ 启用（双列布局 + 右侧手机预览都在的屏）；
-      // 窄屏走自然流式高度，避免「文本短 + 100dvh 强制」导致底部大片空白。
-      // v6n：去掉外层 grid，改在内部 container-x div 上 grid，承接 container-x 内边距。
-      className="lg:min-h-[100dvh] pt-16 lg:pt-24 pb-16"
-      aria-labelledby="hero-headline"
+      id="craft"
+      className="pt-16 lg:pt-20 pb-16"
+      aria-labelledby="craft-headline"
     >
       <div className="container-x grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] items-center gap-12 lg:gap-16">
         {/* 左：文案 */}
@@ -32,10 +31,10 @@ export function HeroSection() {
           <Reveal>
             <p className="eyebrow">{t("eyebrow")}</p>
           </Reveal>
-          <Reveal delay={0.08}>
-            <h1
-              id="hero-headline"
-              className="mt-5 text-[48px] md:text-[64px] lg:text-[80px] leading-[1.02] tracking-tighter font-extrabold"
+          <Reveal delay={0.06}>
+            <h2
+              id="craft-headline"
+              className="mt-4 text-[40px] md:text-[54px] lg:text-[68px] leading-[1.04] tracking-tighter font-extrabold font-display"
               style={{ color: "var(--color-fg)" }}
             >
               {t("headline")
@@ -45,11 +44,19 @@ export function HeroSection() {
                     {line}
                   </span>
                 ))}
-            </h1>
+            </h2>
           </Reveal>
-          <Reveal delay={0.16}>
+          <Reveal delay={0.12}>
             <p
-              className="mt-6 max-w-[58ch] text-[16px] md:text-[17px] leading-relaxed"
+              className="mt-3 text-[15px] font-medium"
+              style={{ color: "var(--color-fg-subtle)" }}
+            >
+              {tCraft("name")} · {tCraft("tagline")}
+            </p>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <p
+              className="mt-5 max-w-[58ch] text-[16px] md:text-[17px] leading-relaxed"
               style={{ color: "var(--color-fg-muted)" }}
             >
               {t("subtext")}
@@ -59,7 +66,7 @@ export function HeroSection() {
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link href="/#download" className="btn-primary">
                 {t("primaryCta")}
-                <ArrowRight size={16} weight="bold" />
+                <ArrowRight size={16} weight="bold" aria-hidden />
               </Link>
               <Link href="/#how-it-works" className="btn-ghost">
                 {t("secondaryCta")}
@@ -79,7 +86,7 @@ export function HeroSection() {
 
 /** 真渲染的迷你测量结果卡（不是 div 假截图） */
 function PhoneFramePreview() {
-  const t = useTranslations("hero");
+  const t = useTranslations("products.craft.intro");
   return (
     <div
       className="relative"
@@ -110,7 +117,7 @@ function PhoneFramePreview() {
 }
 
 function PreviewScreen() {
-  const t = useTranslations("hero");
+  const t = useTranslations("products.craft.intro");
   return (
     <div className="h-full flex flex-col">
       <div

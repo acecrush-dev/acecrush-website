@@ -53,7 +53,9 @@ eq("I18nProvider listens to storage events", /addEventListener\(\s*"storage"/.te
 const switcherSrc = readFileSync(join(here, "..", "components", "layout", "LocaleSwitcher.tsx"), "utf-8");
 console.log("\n[LocaleSwitcher] uses i18n store directly (not URL)");
 eq("LocaleSwitcher uses useLocaleStore", /useLocaleStore\(\)/.test(switcherSrc), true);
-eq("LocaleSwitcher uses native anchor (no router)", /<a\s+key=/.test(switcherSrc), true);
+// plan 001 §4-24（附录 B3）：旧断言是 /<a\s+key=/，把「假链接 <a href='#'>」
+// 这个反模式锁死在测试里。切换语言不是导航，正确语义是 <button>。
+eq("LocaleSwitcher uses real buttons (not fake anchors)", /<button\s+key=/.test(switcherSrc), true);
 eq("LocaleSwitcher does NOT use router.replace", !/router\.replace/.test(switcherSrc), true);
 
 // 验证 theme store

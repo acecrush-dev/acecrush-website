@@ -2,7 +2,8 @@
 
 `acecrush-craft.apk` **不再存放在此目录**。plan 011 起，APK 改走 **GitHub Releases** 分发：
 
-- **下载链接（永久）**：<https://github.com/acecrush-dev/acecrushcraft-app/releases/latest/download/acecrush-craft.apk>
+- **下载链接（永久）**：<https://github.com/acecrush-dev/acecrush-craft-app/releases/latest/download/acecrush-craft.apk>
+  （plan 001：repo 已改名为 `acecrush-craft-app`，带横线；旧 slug `acecrushcraft-app` 仅靠 GitHub 301 苟活，勿再使用）
 - 历史版本：`/releases` 页可看到所有 tag（如 `v1.0.0`、`v1.1.0+3`）
 
 ## 流程

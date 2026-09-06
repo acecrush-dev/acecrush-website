@@ -59,12 +59,18 @@
   --color-accent-fg: #062310;
   --color-accent-soft: #C8F0DC;
 
-  /* v6p 字体 token - 集中定义避免散落 */
-  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  /* v6p 字体 token - 集中定义避免散落
+     plan 001 restyle (2026-09-07)：从 Space Grotesk / Geist 换到 cosmos.network
+     同款字体栈。display 用 Archivo Variable 开 wdth=125 宽体模式，
+     视觉上更扁更现代（web3 / 基建产品调性）。
+     注：--font-display 的 font-variation-settings 写在下方 h1 / .font-display
+     选择器里（这里只定义 family，因为 font-variation-settings 不是 token
+     继承属性，必须挂在使用它的选择器上）。 */
+  --font-display: "Archivo Variable", "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "PingFang SC", "Alibaba PuHuiTi", "Microsoft YaHei", sans-serif;
-  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  --font-sans: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "PingFang SC", "Alibaba PuHuiTi", "HarmonyOS Sans SC", "Microsoft YaHei", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
 }
 
@@ -99,14 +105,15 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
-/* v6p：H1 / 大标题专属 Space Grotesk。仅作用于 h1 与 .font-display 显式类，
-   避免污染正文（用户避坑：Space Grotesk 不用于正文小字号）。
-   v6q：weight 700 → 800（用户「标题字体粗大一些」），tracking 更紧 -0.025em
-   让 Space Grotesk 几何感更强。 */
+/* v6p：H1 / 大标题专属字体。plan 001 restyle 后改用 Archivo Variable
+   开 wdth=125 宽体模式 + weight 900（Black）—— cosmos.network 同款。
+   仅作用于 h1 与 .font-display 显式类，避免污染正文（用户避坑 + cosmos
+   官方指南：Archivo Expanded 是宽体 Display，小于 24px 可读性下降）。 */
 h1, .font-display {
   font-family: var(--font-display);
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
+  font-variation-settings: "wdth" 100;
 }
 
 /* v6p：数字、关节坐标、日志统一用 Geist Mono（仪表盘观感） */
@@ -206,7 +213,7 @@ a { color: inherit; }
 }
 
 .text-mono {
-  font-family: "Geist Mono", ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+  font-family: var(--font-mono);
 }
 
 /* Theme switcher segmented control */
@@ -223,8 +230,9 @@ a { color: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  /* plan 001 §4-20（附录 A6）：28px → 32px，触控目标偏小的整改。 */
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   color: var(--color-fg-muted);
   transition: background 180ms ease, color 180ms ease;
@@ -249,18 +257,82 @@ a { color: inherit; }
   overflow: hidden;
 }
 
-.locale-seg a {
+.locale-seg button {
   display: inline-flex;
   align-items: center;
-  padding: 6px 10px;
+  /* plan 001 §4-20（附录 A6）：触控目标从 24px 高提到 40px，
+     满足 44x44 逼近值 / WCAG 2.5.8 最小 24px 的舒适区间。 */
+  padding: 8px 12px;
+  min-height: 40px;
   font-size: 12px;
   font-weight: 500;
   color: var(--color-fg-muted);
-  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
   transition: background 180ms ease, color 180ms ease;
 }
 
-.locale-seg a[aria-current="true"] {
+.locale-seg button:hover { color: var(--color-fg); }
+
+.locale-seg button[aria-pressed="true"] {
   background: var(--color-accent);
   color: var(--color-accent-fg);
+}
+
+/* ============================================================
+ * plan 001 §4-20 · 设计审查整改（附录 A2 / A3 / A6 / A7 / A13）
+ * ============================================================ */
+
+/* A7：告诉浏览器当前配色，滚动条、表单控件、原生 UI 跟着主题走。
+   缺了它，dark 模式下滚动条与 <details> 标记仍是浅色原生外观。 */
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+
+/* A2：全局可见焦点环。此前只有浏览器默认样式，在 accent 底/深色卡上
+   几乎看不见，键盘用户无法定位当前焦点。只针对 :focus-visible，
+   不影响鼠标点击（浏览器不会为鼠标点击触发 focus-visible）。 */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* A3：sticky nav 高 64px，锚点跳转后目标标题会被压在导航条下面。
+   scroll-margin-top 让浏览器提前 84px 停住（64 + 20 余量）。 */
+#craft,
+#swing,
+#download,
+#faq,
+#features,
+#how-it-works,
+#main {
+  scroll-margin-top: 84px;
+}
+
+/* 移动端点击反馈：去掉 iOS/Android 的灰色高亮块，
+   同时用 touch-action: manipulation 干掉双击缩放导致的 300ms 点击延迟。 */
+body { -webkit-tap-highlight-color: transparent; }
+a, button, summary { touch-action: manipulation; }
+
+/* A13：skip link。默认移出视口，键盘 Tab 到时滑入左上角，
+   让键盘/读屏用户一键跳过整条导航直达 <main>。 */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 180ms ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
 }

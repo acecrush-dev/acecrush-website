@@ -1,6 +1,9 @@
 "use client";
 
-import { Moon, Sun, SunHorizon } from "@phosphor-icons/react";
+// plan 001 §4-16（附录 B1 bundle-barrel-imports）：原先从 `@phosphor-icons/react`
+// barrel 入口 import，会把整包图标拖进依赖图；改走 `/dist/ssr` 子路径，与
+// 其余所有组件一致。
+import { Moon, Sun, SunHorizon } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { useTheme, type ThemeMode } from "@/lib/theme/ThemeProvider";
 

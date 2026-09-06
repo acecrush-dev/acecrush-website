@@ -1,9 +1,19 @@
+"use client";
+
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+
 /**
- * Top-level 404（plan 004 v4）。
- * output: 'export' 下生成 out/404.html 供 nginx 直接 serve 不匹配路径。
- * 内容用 zh-CN（默认 locale），en 用户也能看懂基本术语。
+ * Top-level 404（plan 001 §4-19 / 附录 A9）。
+ *
+ * output: 'export' 下生成 out/404.html 供静态托管直接 serve 不匹配路径。
+ *
+ * 旧版硬编码中英混排（「找不到这页。」+ 英文一句 + 「回到首页 / Home」按钮），
+ * 完全绕开 i18n。改为 useTranslations("notFound")（key 早已存在于两份 messages）。
+ * 已知取舍：404.html 的文案依赖 hydration，无 JS 时显示 en 默认，可接受。
  */
 export default function NotFound() {
+  const t = useTranslations("notFound");
   return (
     <main
       style={{
@@ -23,7 +33,7 @@ export default function NotFound() {
           color: "var(--color-fg-subtle)",
         }}
       >
-        404
+        {t("code")}
       </p>
       <h1
         style={{
@@ -32,12 +42,10 @@ export default function NotFound() {
           letterSpacing: "-0.02em",
         }}
       >
-        找不到这页。
+        {t("title")}
       </h1>
-      <p style={{ color: "var(--color-fg-muted)", fontSize: 15 }}>
-        Page not found. The link may be expired, or this page never existed.
-      </p>
-      <a
+      <p style={{ color: "var(--color-fg-muted)", fontSize: 15 }}>{t("body")}</p>
+      <Link
         href="/"
         style={{
           display: "inline-flex",
@@ -51,8 +59,8 @@ export default function NotFound() {
           marginTop: 8,
         }}
       >
-        回到首页 / Home
-      </a>
+        {t("cta")}
+      </Link>
     </main>
   );
 }

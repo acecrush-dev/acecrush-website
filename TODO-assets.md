@@ -15,10 +15,12 @@
 - [ ] **TestFlight 邀请链接** — iOS 上线后填入 download.ios.cta
 - [ ] **华为 / 小米 / OPPO / vivo 应用市场上架链接** — 上架后填入 download.markets
 
-## 产品截图（Hero 右侧手机框可替换）
+## 产品截图（plan 001 双产品改版新增）
 
-- [ ] **真手机框套图** — 用真机截图替换现在 React 组件预览（更可信）
+- [ ] **真手机框套图** — 用真机截图替换 CraftHero 右侧的 React 组件预览（更可信）
 - [ ] **测量场景照** — A4 + 手掌 顶拍实拍，4:3 或 16:9
+- [ ] **Swing Analysis 界面截图 / 切分结果动图** — SwingSection 目前纯文字 + 特性卡，
+  没有任何视觉证据；一张 Electron GUI 截图或一段 clip 切分 GIF 会显著提升可信度
 
 ## 视觉素材
 
@@ -32,7 +34,8 @@
 
 ## 联系方式
 
-- [ ] **真实邮箱** — 当前用 `hi@acecrush.dev` 占位（域名已确定；邮箱待用户绑定）
+- [x] **真实邮箱** — ✅ `lunatic0072006@hotmail.com`（用户指定，2026-09-05 / plan 001）；
+  已替换 footer mailto 与 `privacy.section6Body`，smoke 第 11/12 组硬校验不再出现 `hi@acecrush.dev`
 
 ## 多语言（plan 004 v4 新增）
 

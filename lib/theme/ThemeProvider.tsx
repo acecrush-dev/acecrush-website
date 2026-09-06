@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 /**
  * 三态主题 provider（plan 004 v6f · 2026-08-23）。
@@ -35,11 +35,13 @@ function getSystemPref(): "light" | "dark" {
 
 function applyClass(actual: "light" | "dark") {
   if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  root.classList.toggle("dark", actual === "dark");
-  // 同时更新 meta theme-color，让浏览器 chrome 配色跟主题走
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", actual === "dark" ? "#0F1A12" : "#FAFAF6");
+  document.documentElement.classList.toggle("dark", actual === "dark");
+  // plan 001 §4-21（附录 A8）：此处原本还直写 meta[name="theme-color"] 的
+  // content。三方冲突：app/layout.tsx 的 Viewport.themeColor 已经输出了
+  // light/dark 两条带 media query 的 meta，浏览器会自动按系统配色挑一条；
+  // 这里再 querySelector 第一条硬写 content，等于覆盖掉 media 语义。
+  // 而且写入的 hex #0F1A12 是 v5 调色前的旧值（现为 #0E1410）。
+  // 直接删掉，只留 .dark class 切换，配色交给 Viewport meta。
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -98,11 +100,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const resolved = mode === "system" ? systemPref : mode;
 
-  return (
-    <ThemeContext.Provider value={{ mode, setMode, resolved }}>
-      {children}
-    </ThemeContext.Provider>
+  // plan 001 §4-21（附录 B7 rerender-memo）：context value 原先是内联对象字面量，
+  // 每次 ThemeProvider 渲染都产生新引用，害得整棵消费树无条件重渲染。
+  const value = useMemo<ThemeContextValue>(
+    () => ({ mode, setMode, resolved }),
+    [mode, setMode, resolved]
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

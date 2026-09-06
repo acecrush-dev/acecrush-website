@@ -1,24 +1,41 @@
 "use client";
 
-import { AndroidLogo, AppleLogo, DownloadSimple } from "@phosphor-icons/react/dist/ssr";
+import {
+  AndroidLogo,
+  AppleLogo,
+  ArrowUpRight,
+  DownloadSimple,
+  Monitor,
+} from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/motion/reveal";
 
 /**
- * Download - 2 列：左 APK 主 CTA，右 iOS 占位。
- * v6o：删除国内应用市场四厂商块（Huawei/Xiaomi/OPPO/vivo + 「上架准备中」），
- *   用户明确去掉该模块；iOS 卡片只剩 AppleLogo + 文案。
- * v6u：APK 走 Vercel 静态托管（已废弃；plan 011 改走 GitHub Releases）。
- * plan 011：APK 走 GitHub Releases。下载链接默认
- *   `https://github.com/acecrush-dev/acecrushcraft-app/releases/latest/download/acecrush-craft.apk`——
- *   `app/scripts/release-apk.sh` build + 上传（`gh release create`），`/releases/latest/`
- *   永远指向最新版本，前端代码零改动。env var 仍可覆盖用于 staging。
+ * Download - 双产品分组（plan 001 §4-10）。
+ *
+ * 组 A · AceCrush Craft：Android APK 主下载 + iOS 占位。
+ * 组 B · Swing Analysis：桌面端卡片。**故意不放主下载按钮**：
+ *   `acecrush-dev/swing-analysis-app` 目前 0 releases（2026-09-05 复核），
+ *   放 latest 链接就是死链。改为「安装指引 ↗」+「GitHub Releases ↗」外链
+ *   + releasesNote 说明「打包版尚未发布，先按文档从源码运行」。
+ *
+ * APK 链接（plan 001 §3）：repo 现名 `acecrush-craft-app`（带横线）；
+ *   站上原先的 `acecrushcraft-app` 是改名前旧 slug，仅靠 GitHub 301 苟活。
+ *   asset 名 `acecrush-craft.apk` 不变，`/releases/latest/download/` 永远指向最新版。
+ *   `NEXT_PUBLIC_APK_DOWNLOAD_URL` env 覆盖保留（staging 用）。
  */
+const APK_FALLBACK_URL =
+  "https://github.com/acecrush-dev/acecrush-craft-app/releases/latest/download/acecrush-craft.apk";
+const APK_FILE_SIZE = "50 MB";
+const SWING_DOCS_URL = "https://acecrush-dev.github.io/swing-analysis-app/";
+const SWING_RELEASES_URL = "https://github.com/acecrush-dev/swing-analysis-app/releases";
+
 export function DownloadSection() {
   const t = useTranslations("download");
-  const apkUrl =
-    process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL ??
-    "https://github.com/acecrush-dev/acecrushcraft-app/releases/latest/download/acecrush-craft.apk";
+  const tCraft = useTranslations("products.craft.download");
+  const tSwing = useTranslations("products.swing.download");
+  const apkUrl = process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL ?? APK_FALLBACK_URL;
+
   return (
     <section
       id="download"
@@ -42,48 +59,111 @@ export function DownloadSection() {
         </p>
       </Reveal>
 
-      <div className="mt-12 grid gap-6 md:grid-cols-2">
-        {/* Android */}
-        <Reveal className="h-full">
+      {/* 组 A · Craft */}
+      <div className="mt-14" aria-labelledby="dl-craft-heading">
+        <Reveal>
+          <h3
+            id="dl-craft-heading"
+            className="text-[20px] md:text-[24px] font-semibold tracking-tight"
+            style={{ color: "var(--color-fg)" }}
+          >
+            {tCraft("productHeading")}
+          </h3>
+        </Reveal>
+
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {/* Android */}
+          <Reveal className="h-full">
+            <div
+              className="card-elevated p-8 h-full flex flex-col gap-5"
+              style={{ background: "var(--color-bg-elevated)" }}
+            >
+              <div className="flex items-center gap-3">
+                <AndroidLogo size={32} weight="regular" aria-hidden />
+                <h4 className="text-[20px] font-semibold">{tCraft("androidLabel")}</h4>
+              </div>
+              <p className="text-[14px] leading-relaxed" style={{ color: "var(--color-fg-muted)" }}>
+                {tCraft("androidBody", { fileSize: APK_FILE_SIZE })}
+              </p>
+              <div className="mt-auto flex flex-col gap-2">
+                <a href={apkUrl} className="btn-primary justify-center" download>
+                  <DownloadSimple size={18} weight="bold" aria-hidden />
+                  {tCraft("androidCta")}
+                </a>
+                <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
+                  {tCraft("androidNote")}
+                </p>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* iOS 占位 */}
+          <Reveal delay={0.1} className="h-full">
+            <div
+              className="card-elevated p-8 h-full flex flex-col gap-5"
+              style={{ background: "var(--color-surface)" }}
+            >
+              <div className="flex items-center gap-3">
+                <AppleLogo size={32} weight="regular" aria-hidden />
+                <h4 className="text-[20px] font-semibold">{tCraft("iosLabel")}</h4>
+              </div>
+              <p className="text-[14px] leading-relaxed" style={{ color: "var(--color-fg-muted)" }}>
+                {tCraft("iosBody")}
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+
+      {/* 组 B · Swing Analysis（无主下载按钮，见文件头注释） */}
+      <div className="mt-14" aria-labelledby="dl-swing-heading">
+        <Reveal>
+          <h3
+            id="dl-swing-heading"
+            className="text-[20px] md:text-[24px] font-semibold tracking-tight"
+            style={{ color: "var(--color-fg)" }}
+          >
+            {tSwing("productHeading")}
+          </h3>
+        </Reveal>
+
+        <Reveal delay={0.1}>
           <div
-            className="card-elevated p-8 h-full flex flex-col gap-5"
+            className="mt-6 card-elevated p-8 flex flex-col gap-5"
             style={{ background: "var(--color-bg-elevated)" }}
           >
             <div className="flex items-center gap-3">
-              <AndroidLogo size={32} weight="regular" />
-              <div className="text-[20px] font-semibold">{t("androidLabel")}</div>
+              <Monitor size={32} weight="regular" aria-hidden />
+              <h4 className="text-[20px] font-semibold">{tSwing("desktopLabel")}</h4>
             </div>
-            <p className="text-[14px]" style={{ color: "var(--color-fg-muted)" }}>
-              {t("androidBody", { fileSize: "35 MB" })}
+            <p
+              className="text-[14px] leading-relaxed max-w-[68ch]"
+              style={{ color: "var(--color-fg-muted)" }}
+            >
+              {tSwing("desktopBody")}
             </p>
-            <div className="mt-auto flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <a
-                href={apkUrl}
-                className="btn-primary justify-center"
-                download
+                href={SWING_DOCS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost"
               >
-                <DownloadSimple size={18} weight="bold" />
-                {t("androidCta")}
+                {tSwing("docsCta")}
+                <ArrowUpRight size={15} weight="bold" aria-hidden />
               </a>
-              <p className="text-[12px]" style={{ color: "var(--color-fg-subtle)" }}>
-                {t("androidNote")}
-              </p>
+              <a
+                href={SWING_RELEASES_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost"
+              >
+                {tSwing("releasesCta")}
+                <ArrowUpRight size={15} weight="bold" aria-hidden />
+              </a>
             </div>
-          </div>
-        </Reveal>
-
-        {/* iOS 占位（v6o 去掉原 markets 块） */}
-        <Reveal delay={0.1} className="h-full">
-          <div
-            className="card-elevated p-8 h-full flex flex-col gap-5"
-            style={{ background: "var(--color-surface)" }}
-          >
-            <div className="flex items-center gap-3">
-              <AppleLogo size={32} weight="regular" />
-              <div className="text-[20px] font-semibold">{t("iosLabel")}</div>
-            </div>
-            <p className="text-[14px]" style={{ color: "var(--color-fg-muted)" }}>
-              {t("iosBody")}
+            <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
+              {tSwing("releasesNote")}
             </p>
           </div>
         </Reveal>

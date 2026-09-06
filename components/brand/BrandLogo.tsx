@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /**
- * BrandLogo — 006 v6 主题感知 + 长宽比严格保形（与 App AppLogo 统一）
+ * BrandLogo · 006 v6 主题感知 + 长宽比严格保形（与 App AppLogo 统一）
  *
  * 用户 2026-08-25 反馈 v5：白底容器把 logo 球体的宽度压窄了。
  * v6 修复：
@@ -19,7 +19,7 @@ import * as React from "react";
  * props：
  *   - size: img 像素尺寸（默认 32）
  *   - className: 透传外层 div
- *   - alt: a11y，默认 "AceCrush Craft"
+ *   - alt: a11y，默认 "AceCrush"（plan 001 §4-17：品牌站，不再是单产品名）
  */
 export interface BrandLogoProps {
   size?: number;
@@ -30,7 +30,7 @@ export interface BrandLogoProps {
 export function BrandLogo({
   size = 32,
   className,
-  alt = "AceCrush Craft",
+  alt = "AceCrush",
 }: BrandLogoProps) {
   const PAD = 4;
   const RAD = 8;

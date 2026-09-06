@@ -1,14 +1,16 @@
 {
   "site": {
-    "appName": "AceCrush Craft",
-    "appSubtitle": "Tennis Gear Data Toolkit",
-    "appTagline": "Perfect Photo,\nPerfect Grip"
+    "brandName": "AceCrush",
+    "tagline": "Tennis Tech Tools",
+    "description": "On-device tennis tools from AceCrush: AceCrush Craft for grip size, racket profiles and stringing data on Android, and Swing Analysis for automatic swing segmentation on the desktop."
   },
   "nav": {
-    "primaryFeatures": "Features",
-    "primaryHow": "How it works",
-    "primaryDownload": "Download",
-    "primaryFaq": "FAQ",
+    "navLabel": "Main navigation",
+    "skipToContent": "Skip to main content",
+    "productCraft": "AceCrush Craft",
+    "productSwing": "Swing Analysis",
+    "download": "Download",
+    "faq": "FAQ",
     "localeLabel": "Language",
     "themeLabel": "Theme",
     "menuToggle": "Menu",
@@ -19,75 +21,136 @@
     "dark": "Dark",
     "system": "System"
   },
-  "hero": {
-    "eyebrow": "V1.1 in beta",
-    "headline": "Perfect Photo,\nPerfect Grip",
-    "subtext": "On‑device AI measures hand size via A4 reference, recommends your optimal grip, and tracks your next string‑job.",
-    "primaryCta": "Download APK",
-    "secondaryCta": "How measurement works",
-    "previewLabel": "Measurement result preview",
-    "previewResult": "Measurement",
-    "previewPalmLength": "Palm length",
-    "previewConfidence": "Confidence · High",
-    "previewRecommended": "Recommended size",
-    "previewAdjacentSmaller": "Smaller G2",
-    "previewAdjacentLarger": "Larger G4"
+  "brandHero": {
+    "eyebrow": "Two products, one toolkit",
+    "headline": "Tennis tech that\nruns on your device.",
+    "subtext": "AceCrush builds focused tools for players and coaches. Measurement, video and records are all processed locally, so nothing about your game is uploaded.",
+    "craftCardTag": "Mobile app",
+    "craftCardBody": "Measure your grip size from a palm photo, keep a profile for every racket, log each restring with expiry reminders, and convert tension across DT, RT, lbs and kg.",
+    "craftCardPlatform": "Android",
+    "swingCardTag": "Desktop app",
+    "swingCardBody": "Drop in a match video and get every swing cut into its own clip, each labelled with ready, windup, contact and follow-through phases plus exact timecodes.",
+    "swingCardPlatform": "Windows · macOS · Linux",
+    "docsLink": "Docs"
   },
-  "howItWorks": {
-    "eyebrow": "Three steps",
-    "heading": "From photo to recommendation in under 30 seconds.",
-    "step1Label": "Place an A4 sheet",
-    "step1Body": "Lay an A4 sheet flat on the table with your palm resting on it.",
-    "step2Label": "Take a top-down photo",
-    "step2Body": "Hold at least 50 cm above, keep your palm open, fingers and heel fully in frame.",
-    "step3Label": "See the recommendation",
-    "step3Body": "AI returns the recommended size and adjacent sizes. You can fine-tune manually.",
-    "stepPrefix": "Step"
-  },
-  "features": {
-    "heading": "What it does for you.",
-    "subheading": "Six tools. One download. Works fully offline.",
-    "item1Title": "AI grip size measurement",
-    "item1Body": "On-device inference. The photo is discarded right after processing. Nothing is uploaded.",
-    "item2Title": "Manual calc + grip wrap offset",
-    "item2Body": "Enter palm length and ring finger length to get a recommended size and wrap-driven size shift.",
-    "item3Title": "Restring log + expiry alerts",
-    "item3Body": "Default restring cycles per material (polyester / multifilament / natural gut). Local notifications when due.",
-    "item4Title": "Tension calculator",
-    "item4Body": "Convert main to cross tension, get a main-cross delta, quick refs for 16x19 and 18x20 patterns.",
-    "item5Title": "Racket archive",
-    "item5Body": "Log multiple rackets with specs and notes. Stored locally, backup whenever you want.",
-    "item6Title": "Injury awareness",
-    "item6Body": "Informational cards on TFCC and tennis elbow. Not medical advice. See a doctor if pain persists."
-  },
-  "privacyStrip": {
-    "heading": "Your photos stay on your phone.",
-    "body": "AI measurement runs entirely on-device. Once your photo is processed, we neither store nor upload it."
+  "products": {
+    "craft": {
+      "name": "AceCrush Craft",
+      "tagline": "Tennis Gear Data Toolkit",
+      "intro": {
+        "eyebrow": "",
+        "headline": "Perfect Photo,\nPerfect Grip",
+        "subtext": "On-device AI measures hand size via an A4 reference, recommends your optimal grip, and tracks your next string job.",
+        "primaryCta": "Download APK",
+        "secondaryCta": "How measurement works",
+        "previewLabel": "Measurement result preview",
+        "previewResult": "Measurement",
+        "previewPalmLength": "Palm length",
+        "previewConfidence": "Confidence · High",
+        "previewRecommended": "Recommended size",
+        "previewAdjacentSmaller": "Smaller G2",
+        "previewAdjacentLarger": "Larger G4"
+      },
+      "howItWorks": {
+        "eyebrow": "Three steps",
+        "heading": "From photo to recommendation in under 30 seconds.",
+        "stepPrefix": "Step",
+        "step1Label": "Place an A4 sheet",
+        "step1Body": "Lay an A4 sheet flat on the table with your palm resting on it.",
+        "step2Label": "Take a top-down photo",
+        "step2Body": "Line the edges of the A4 sheet up with the green frame on screen, keep your palm open, fingers and heel fully in frame.",
+        "step3Label": "See the recommendation",
+        "step3Body": "AI returns the recommended size and adjacent sizes. You can fine-tune manually."
+      },
+      "features": {
+        "heading": "What it does for you.",
+        "subheading": "Five tools. One download. Works fully offline.",
+        "item1Title": "AI grip size measurement",
+        "item1Body": "On-device MediaPipe inference maps your palm to Yonex, Wilson and Head-Prince-Babolat sizing. The photo is discarded right after processing and never uploaded.",
+        "item2Title": "Manual calc + grip wrap offset",
+        "item2Body": "Enter palm length and ring finger length to get a recommended size and a wrap-driven size shift.",
+        "item3Title": "Racket profiles",
+        "item3Body": "Log multiple rackets with specs and notes. Stored locally in SQLite, backup whenever you want.",
+        "item4Title": "Restring log + expiry alerts",
+        "item4Body": "Default restring cycles per material (polyester, multifilament, natural gut). Local notifications when a job is due.",
+        "item5Title": "Tension conversion",
+        "item5Body": "Convert DT ⇄ RT ⇄ lbs ⇄ kg in one place, then tap once to write the result straight into a restring record."
+      },
+      "privacyStrip": {
+        "heading": "Your photos stay on your phone.",
+        "body": "AI measurement runs entirely on-device. Once your photo is processed, we neither store nor upload it."
+      },
+      "download": {
+        "productHeading": "AceCrush Craft",
+        "androidLabel": "Android",
+        "androidBody": "Primary platform today. Minimum Android 7.0 (API 24), target API 34, about {fileSize}. No root and no Google Play Services required.",
+        "androidCta": "Download Android APK",
+        "androidNote": "Android blocks unknown sources on first install. Open Settings, Apps, Special app access, Install unknown apps, allow this source, then tap the APK again.",
+        "iosLabel": "iOS",
+        "iosBody": "No iOS build yet. The TestFlight invite link will be posted here when it is ready."
+      },
+      "faq": {
+        "heading": "AceCrush Craft Related",
+        "q1": "How accurate is the AI measurement?",
+        "a1": "We return a recommended size plus or minus one adjacent size with a confidence hint. Geometric error between your palm plane and the A4 sheet is a known physical limit. We do not claim millimeter precision and we do not fabricate percentage numbers.",
+        "q2": "Do I have to use A4 paper?",
+        "a2": "We strongly recommend it. A4 is a reference of known size used to convert pixels into millimeters. Other sheet sizes or objects work too, as long as you know their real dimensions when taking the photo.",
+        "q3": "What if my photo is taken at an angle?",
+        "a3": "Try to shoot straight down. If the angle is off, the confidence drops to medium or low and the result may drift by one or two grip sizes. Recompute with a flatter photo in that case.",
+        "q4": "Can I skip the camera and measure manually?",
+        "a4": "Yes. The manual entry lets you type palm length and ring finger length without invoking the camera. The two flows coexist and you can switch at any time."
+      }
+    },
+    "swing": {
+      "name": "Swing Analysis",
+      "tagline": "Desktop Swing Segmentation",
+      "intro": {
+        "eyebrow": "Desktop · Python + Electron",
+        "headline": "Every swing, cut and timecoded.",
+        "subtext": "Feed in a match video. The v2.1 two-pass pipeline tracks a single right-wrist signal, cuts each swing into its own clip, and labels ready, windup, contact and follow-through with exact timecodes.",
+        "docsCta": "Read the docs",
+        "downloadCta": "Get it"
+      },
+      "features": {
+        "heading": "Built for frame-level review.",
+        "subheading": "Three things it does that scrubbing a timeline cannot.",
+        "item1Title": "Two-pass swing segmentation",
+        "item1Body": "The v2.1 pipeline reads one right-wrist signal to find swing boundaries, then refines them offline. Every segment carries ready, windup, contact and follow-through phases with timecodes.",
+        "item2Title": "Streaming results in pass 1",
+        "item2Body": "Segments appear while pass 1 is still running, so you can start reviewing before the full video finishes processing.",
+        "item3Title": "Skeleton and bbox overlays",
+        "item3Body": "MediaPipe 33 point pose drives segmentation, with optional RTMDet person boxes and RTMPose skeletons merged into each clip."
+      },
+      "download": {
+        "productHeading": "Swing Analysis",
+        "desktopLabel": "Desktop",
+        "desktopBody": "Runs on Windows, macOS and Linux. A Python backend plus an Electron GUI, with a CLI for terminal use. The models ship inside the repo, so clone and run works offline.",
+        "docsCta": "Install guide",
+        "releasesCta": "GitHub Releases",
+        "releasesNote": "Packaged installers are not published yet. For now, follow the install guide to run it from source."
+      },
+      "faq": {
+        "heading": "Swing Analysis Related",
+        "q1": "Does my video get uploaded anywhere?",
+        "a1": "No. Everything runs on your own machine. The local service binds to 127.0.0.1 only, and your video never leaves the computer.",
+        "q2": "How does it decide where a swing starts?",
+        "a2": "The v2.1 pipeline uses a single signal, your right wrist, tracked by MediaPipe pose. Pass 1 emits candidate segments while streaming, then an offline pass refines the boundaries and labels the four phases.",
+        "q3": "Do I need a GPU?",
+        "a3": "No, it runs on CPU. The RTMDet and RTMPose overlays are the heaviest step and are entirely optional, so you can switch them off for a much faster first pass.",
+        "q4": "Can I use it without the desktop GUI?",
+        "a4": "Yes. The CLI drives the exact same pipeline, and the local REST plus WebSocket service on port 8321 is open to any front end you want to build."
+      }
+    }
   },
   "download": {
-    "heading": "Get AceCrush Craft.",
-    "subheading": "Android available now. iOS and China app stores coming soon.",
-    "androidLabel": "Android",
-    "androidBody": "Primary platform today. Minimum Android 6.0 (API 23), about {fileSize}.",
-    "androidCta": "Download Android APK",
-    "androidNote": "If the browser blocks the download, allow downloads from this site.",
-    "iosLabel": "iOS",
-    "iosBody": "The TestFlight invite link will be posted here when ready."
+    "heading": "Downloads",
+    "subheading": "AceCrush Craft ships as an Android APK today. Swing Analysis runs from source while packaged desktop builds are in progress."
   },
   "faq": {
-    "heading": "Common questions.",
-    "q1": "How accurate is the AI measurement?",
-    "a1": "We return a recommended size plus or minus one adjacent size with a confidence hint. Geometric error between your palm plane and the A4 sheet is a known physical limit. We do not claim millimeter precision and we do not fabricate percentage numbers.",
-    "q2": "Do I have to use A4 paper?",
-    "a2": "We strongly recommend it. A4 is a reference of known size used to convert pixels into millimeters. Other sheet sizes or objects work too, as long as you know their real dimensions when taking the photo.",
-    "q3": "What if my photo is taken at an angle?",
-    "a3": "Try to shoot straight down. If the angle is off, the confidence drops to medium or low and the result may drift by one or two grip sizes. Recompute with a flatter photo in that case.",
-    "q4": "Can I skip the camera and measure manually?",
-    "a4": "Yes. The manual entry lets you type palm length and ring finger length without invoking the camera. The two flows coexist and you can switch at any time."
+    "heading": "Common questions."
   },
   "footer": {
-    "contactLink": "Contact us",
-    "copyright": "© 2026 AceCrush Craft"
+    "contactLink": "Contact us"
   },
   "notFound": {
     "code": "404",
@@ -110,6 +173,6 @@
     "section5Title": "Server fallback (optional)",
     "section5Body": "If on-device AI inference fails (low-end hardware or iOS-side on-device CV not yet shipped), the app may send a single photo to our independently deployed CV service (port 8081). The service processes the image and discards it immediately. Only metadata such as device ID, SHA256, byte size, latency, and confidence is logged for quality improvement. The original image is not retained.",
     "section6Title": "Updates and contact",
-    "section6Body": "Policy updates ship with new app releases and are reflected both in the in-app Settings - Privacy policy screen and on this page. Questions: hi@acecrush.dev."
+    "section6Body": "Policy updates ship with new app releases and are reflected both in the in-app Settings - Privacy policy screen and on this page. Questions: lunatic0072006@hotmail.com."
   }
 }

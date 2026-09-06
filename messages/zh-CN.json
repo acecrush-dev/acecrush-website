@@ -1,14 +1,16 @@
 {
   "site": {
-    "appName": "AceCrush Craft",
-    "appSubtitle": "网球装备数据工具",
-    "appTagline": "一拍即合，\n完美把握"
+    "brandName": "AceCrush",
+    "tagline": "网球科技工具",
+    "description": "AceCrush 打造全本机运行的网球工具：AceCrush Craft 负责 Android 端的握把尺寸、球拍档案与穿线数据，Swing Analysis 负责桌面端的挥拍自动切分。"
   },
   "nav": {
-    "primaryFeatures": "功能",
-    "primaryHow": "原理",
-    "primaryDownload": "下载",
-    "primaryFaq": "常见问题",
+    "navLabel": "主导航",
+    "skipToContent": "跳到主内容",
+    "productCraft": "AceCrush Craft",
+    "productSwing": "Swing Analysis",
+    "download": "下载",
+    "faq": "常见问题",
     "localeLabel": "语言",
     "themeLabel": "主题",
     "menuToggle": "菜单",
@@ -19,75 +21,136 @@
     "dark": "深色",
     "system": "跟随系统"
   },
-  "hero": {
-    "eyebrow": "V1.1 内测中",
-    "headline": "一拍即合，\n完美把握",
-    "subtext": "依托 A4 参照，本地 AI 精准估算手掌大小，匹配最优握把档位，穿线到期智能提醒。",
-    "primaryCta": "下载 APK",
-    "secondaryCta": "了解测量原理",
-    "previewLabel": "测量结果预览",
-    "previewResult": "测量结果",
-    "previewPalmLength": "掌长",
-    "previewConfidence": "置信度 · 高",
-    "previewRecommended": "推荐档位",
-    "previewAdjacentSmaller": "偏小 G2",
-    "previewAdjacentLarger": "偏大 G4"
+  "brandHero": {
+    "eyebrow": "两款产品，一套工具",
+    "headline": "网球科技，\n全部跑在你的设备上。",
+    "subtext": "AceCrush 为球员与教练做小而专的工具。测量、视频、记录全部本机处理，你的球场数据不会被上传。",
+    "craftCardTag": "手机应用",
+    "craftCardBody": "拍一张手掌照片测握把尺寸，为每支球拍建档，记录每次穿线并到期提醒，DT、RT、lbs、kg 磅数一键互转。",
+    "craftCardPlatform": "Android",
+    "swingCardTag": "桌面应用",
+    "swingCardBody": "丢进一段比赛视频，自动把每一次挥拍切成独立片段，每段标注 ready、windup、contact、follow-through 四相位与精确时间码。",
+    "swingCardPlatform": "Windows · macOS · Linux",
+    "docsLink": "文档"
   },
-  "howItWorks": {
-    "eyebrow": "三步搞定",
-    "heading": "从拍照到建议，30 秒内完成。",
-    "step1Label": "放一张 A4 纸",
-    "step1Body": "把 A4 纸平放在桌面，手掌压在纸上。",
-    "step2Label": "顶拍一张照片",
-    "step2Body": "距离 ≥50 cm，手掌自然张开，确保四指与掌根都入镜。",
-    "step3Label": "查看推荐档位",
-    "step3Body": "AI 给出推荐尺寸与相邻档，你也可以手动微调。",
-    "stepPrefix": "步骤"
-  },
-  "features": {
-    "heading": "它能帮你做什么。",
-    "subheading": "六个工具，一次下载，全部离线可用。",
-    "item1Title": "AI 拍照测握把尺寸",
-    "item1Body": "端侧推理，照片处理完即丢弃，不上传任何服务器。",
-    "item2Title": "手动测算 + 手胶补偿",
-    "item2Body": "支持掌长与无名指长输入，自动给出推荐档位与手胶跨档提示。",
-    "item3Title": "穿线记录 + 到期提醒",
-    "item3Body": "按聚酯/复丝/肠线等材质给出默认换线周期，过期本地通知。",
-    "item4Title": "磅数计算器",
-    "item4Body": "横竖磅互转、主横磅差建议，16×19 与 18×20 拍面速查。",
-    "item5Title": "球拍档案",
-    "item5Body": "记录多支球拍的规格与备注，数据存本地，随时备份。",
-    "item6Title": "伤病提示",
-    "item6Body": "TFCC 与网球肘的信息性卡片，持续不适请就医（非医疗建议）。"
-  },
-  "privacyStrip": {
-    "heading": "你的照片，只在你手机里。",
-    "body": "AI 测量完全在设备本地推理。拍完照片后，我们既不存，也不传。"
+  "products": {
+    "craft": {
+      "name": "AceCrush Craft",
+      "tagline": "网球装备数据工具",
+      "intro": {
+        "eyebrow": "",
+        "headline": "一拍即合，\n完美把握",
+        "subtext": "依托 A4 参照，本地 AI 精准估算手掌大小，匹配最优握把档位，穿线到期智能提醒。",
+        "primaryCta": "下载 APK",
+        "secondaryCta": "了解测量原理",
+        "previewLabel": "测量结果预览",
+        "previewResult": "测量结果",
+        "previewPalmLength": "掌长",
+        "previewConfidence": "置信度 · 高",
+        "previewRecommended": "推荐档位",
+        "previewAdjacentSmaller": "偏小 G2",
+        "previewAdjacentLarger": "偏大 G4"
+      },
+      "howItWorks": {
+        "eyebrow": "三步搞定",
+        "heading": "从拍照到建议，30 秒内完成。",
+        "stepPrefix": "步骤",
+        "step1Label": "放一张 A4 纸",
+        "step1Body": "把 A4 纸平放在桌面，手掌压在纸上。",
+        "step2Label": "顶拍一张照片",
+        "step2Body": "让 A4 纸的边缘尽量贴近屏幕上的绿色取景框，手掌自然张开，确保四指与掌根都入镜。",
+        "step3Label": "查看推荐档位",
+        "step3Body": "AI 给出推荐尺寸与相邻档，你也可以手动微调。"
+      },
+      "features": {
+        "heading": "它能帮你做什么。",
+        "subheading": "五个工具，一次下载，全部离线可用。",
+        "item1Title": "AI 拍照测握把尺寸",
+        "item1Body": "端侧 MediaPipe 推理，把掌型换算成 Yonex、Wilson、Head-Prince-Babolat 三套制式档位。照片处理完即丢弃，不上传任何服务器。",
+        "item2Title": "手动测算 + 手胶补偿",
+        "item2Body": "支持掌长与无名指长输入，自动给出推荐档位与手胶跨档提示。",
+        "item3Title": "球拍档案",
+        "item3Body": "记录多支球拍的规格与备注，数据存本地 SQLite，随时备份。",
+        "item4Title": "穿线记录 + 到期提醒",
+        "item4Body": "按聚酯、复丝、肠线等材质给出默认换线周期，到期本地通知。",
+        "item5Title": "磅数换算",
+        "item5Body": "DT ⇄ RT ⇄ lbs ⇄ kg 一处互转，算完一键写入穿线记录。"
+      },
+      "privacyStrip": {
+        "heading": "你的照片，只在你手机里。",
+        "body": "AI 测量完全在设备本地推理。拍完照片后，我们既不存，也不传。"
+      },
+      "download": {
+        "productHeading": "AceCrush Craft",
+        "androidLabel": "Android",
+        "androidBody": "当前主推平台。最低 Android 7.0（API 24），目标 API 34，约 {fileSize}。无需 root，不依赖 Google 服务框架。",
+        "androidCta": "获取 Android 安装包",
+        "androidNote": "首次安装 Android 会拦截「未知来源」。进入 设置 → 应用 → 特殊应用权限 → 安装未知应用，允许当前来源后重新点开 APK 即可。",
+        "iosLabel": "iOS",
+        "iosBody": "iOS 版本暂未发布。TestFlight 邀请准备好后会在这里更新。"
+      },
+      "faq": {
+        "heading": "AceCrush Craft 相关",
+        "q1": "AI 测量的精度怎么样？",
+        "a1": "我们给出「推荐档位 ± 相邻档」并附带置信度提示。手平面与 A4 之间的几何误差是已知的物理限制，我们不承诺 mm 级精度，也不在文案里编造百分比。",
+        "q2": "必须用 A4 纸吗？",
+        "a2": "强烈建议。A4 是已知尺寸的参照物，用于把像素换算成毫米。其他尺寸的纸张或物体都能用，只要你在拍照时知道它的真实尺寸。",
+        "q3": "拍照角度偏了怎么办？",
+        "a3": "尽量垂直俯拍。如果角度偏差过大，置信度会降到「中」或「低」，此时结果可能与真实掌长偏差 1-2 个尺码，建议重新拍一张。",
+        "q4": "可以只用手动测算，不用 AI 拍照吗？",
+        "a4": "可以。在「手动测算」入口直接输入掌长与无名指长，不调用相机、不读取照片。两种方式可随时切换，不冲突。"
+      }
+    },
+    "swing": {
+      "name": "Swing Analysis",
+      "tagline": "桌面端挥拍自动切分",
+      "intro": {
+        "eyebrow": "桌面端 · Python + Electron",
+        "headline": "每一次挥拍，都切好并打上时间码。",
+        "subtext": "丢进一段比赛视频。v2.1 两阶段管线只跟一路右手腕信号，把每次挥拍切成独立片段，并标注 ready、windup、contact、follow-through 四相位与精确时间码。",
+        "docsCta": "查看文档",
+        "downloadCta": "获取"
+      },
+      "features": {
+        "heading": "为逐帧复盘而生。",
+        "subheading": "三件手动拖进度条做不到的事。",
+        "item1Title": "两阶段挥拍切分",
+        "item1Body": "v2.1 管线用单一右手腕信号定位挥拍边界，再离线精修。每一段都带 ready、windup、contact、follow-through 四相位与时间码。",
+        "item2Title": "Pass 1 流式出段",
+        "item2Body": "第一遍还在跑，切好的段就已经陆续出现，不用等整段视频处理完才能开始看。",
+        "item3Title": "骨架与人物框叠加",
+        "item3Body": "MediaPipe 33 点姿态驱动切分，可选叠加 RTMDet 人物框与 RTMPose 骨架，直接合并到每段 clip。"
+      },
+      "download": {
+        "productHeading": "Swing Analysis",
+        "desktopLabel": "桌面端",
+        "desktopBody": "支持 Windows、macOS、Linux。Python 后端 + Electron 图形界面，另有 CLI 供终端使用。模型已随仓库入库，clone 下来即可离线运行。",
+        "docsCta": "安装指引",
+        "releasesCta": "GitHub Releases",
+        "releasesNote": "打包安装程序尚未发布。目前请按安装指引从源码运行。"
+      },
+      "faq": {
+        "heading": "Swing Analysis 相关",
+        "q1": "我的视频会被上传吗？",
+        "a1": "不会。全流程都在你自己的电脑上运行，本机服务只监听 127.0.0.1，视频不会离开这台机器。",
+        "q2": "它怎么判断一次挥拍从哪里开始？",
+        "a2": "v2.1 管线只用一路信号，也就是 MediaPipe 姿态跟踪的右手腕。Pass 1 边跑边给出候选段，随后离线一遍精修边界并标注四个相位。",
+        "q3": "需要显卡吗？",
+        "a3": "不需要，CPU 就能跑。RTMDet 与 RTMPose 叠加是最重的一步，而且完全可选，关掉后第一遍会快很多。",
+        "q4": "不用桌面图形界面可以吗？",
+        "a4": "可以。CLI 驱动的是完全相同的管线；本机 REST + WebSocket 服务开在 8321 端口，你想自己写前端也能直接接。"
+      }
+    }
   },
   "download": {
-    "heading": "下载 AceCrush Craft。",
-    "subheading": "Android 当前可用；iOS 与国内市场筹备中。",
-    "androidLabel": "Android",
-    "androidBody": "当前主推平台。最低 Android 6.0（API 23），约 {fileSize}。",
-    "androidCta": "获取 Android 安装包",
-    "androidNote": "如浏览器拦截，请允许来自此站点的下载。",
-    "iosLabel": "iOS",
-    "iosBody": "TestFlight 邀请准备好后会在这里更新。"
+    "heading": "下载",
+    "subheading": "AceCrush Craft 现已提供 Android 安装包；Swing Analysis 目前从源码运行，桌面端打包版本正在准备中。"
   },
   "faq": {
-    "heading": "常见疑问。",
-    "q1": "AI 测量的精度怎么样？",
-    "a1": "我们给出「推荐档位 ± 相邻档」并附带置信度提示。手平面与 A4 之间的几何误差是已知的物理限制，我们不承诺 mm 级精度，也不在文案里编造百分比。",
-    "q2": "必须用 A4 纸吗？",
-    "a2": "强烈建议。A4 是已知尺寸的参照物，用于把像素换算成毫米。其他尺寸的纸张或物体都能用，只要你在拍照时知道它的真实尺寸。",
-    "q3": "拍照角度偏了怎么办？",
-    "a3": "尽量垂直俯拍。如果角度偏差过大，置信度会降到「中」或「低」，此时结果可能与真实掌长偏差 1-2 个尺码，建议重新拍一张。",
-    "q4": "可以只用手动测算，不用 AI 拍照吗？",
-    "a4": "可以。在「手动测算」入口直接输入掌长与无名指长，不调用相机、不读取照片。两种方式可随时切换，不冲突。"
+    "heading": "常见疑问。"
   },
   "footer": {
-    "contactLink": "联系我们",
-    "copyright": "© 2026 AceCrush Craft"
+    "contactLink": "联系我们"
   },
   "notFound": {
     "code": "404",
@@ -110,6 +173,6 @@
     "section5Title": "服务端兜底（可选）",
     "section5Body": "若您设备本地 AI 推理失败（低端机或 iOS 端暂未实现端侧 CV），App 可将单张照片发送至我们独立部署的 CV 服务（端口 8081）。该服务在收到图片后立即处理并丢弃，仅记录设备 ID、SHA256、字节数、延迟、置信度等元数据，用于质量改进，不存原图。",
     "section6Title": "更新与联系",
-    "section6Body": "政策更新会随应用版本发布，变更会在 App 内「设置 - 隐私政策」与本页面同步。如有疑问：hi@acecrush.dev。"
+    "section6Body": "政策更新会随应用版本发布，变更会在 App 内「设置 - 隐私政策」与本页面同步。如有疑问：lunatic0072006@hotmail.com。"
   }
 }

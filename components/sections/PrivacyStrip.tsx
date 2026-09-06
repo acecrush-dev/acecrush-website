@@ -7,9 +7,12 @@ import { Reveal } from "@/components/motion/reveal";
 /**
  * Privacy Strip - 全宽强调段（plan §4.7 不同 layout family）
  * 与 App 隐私口径一致，是 v4 关键差异化卖点。
+ *
+ * plan 001 §4-9：文案 key 由 `privacyStrip.*` 改为 `products.craft.privacyStrip.*`；
+ * heading 降为 h3（页面 h1 = BrandHero，h2 = CraftHero 产品头）。
  */
 export function PrivacyStrip() {
-  const t = useTranslations("privacyStrip");
+  const t = useTranslations("products.craft.privacyStrip");
   return (
     <section
       className="py-20 lg:py-24"
@@ -32,13 +35,13 @@ export function PrivacyStrip() {
               <ShieldCheck size={28} weight="fill" />
             </div>
             <div>
-              <h2
+              <h3
                 id="privacy-heading"
                 className="text-[26px] md:text-[34px] leading-[1.15] tracking-tight font-semibold"
                 style={{ color: "var(--color-fg)" }}
               >
                 {t("heading")}
-              </h2>
+              </h3>
               <p
                 className="mt-3 text-[16px] md:text-[17px] leading-relaxed max-w-[58ch]"
                 style={{ color: "var(--color-fg-muted)" }}
