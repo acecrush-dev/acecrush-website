@@ -65,7 +65,11 @@ export function TennisBallGlobe({
   height = 360,
 }: {
   ariaLabel: string;
-  height?: number;
+  /**
+   * canvas 像素高度。
+   * 传数字 = 固定像素高度；传 "100%" = 跟随父容器高度（用于响应式场景）。
+   */
+  height?: number | string;
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
 
@@ -83,27 +87,39 @@ export function TennisBallGlobe({
     }
 
     const width = mount.clientWidth;
+    // height: 数字 = 固定 px；"100%" = 跟随父容器 clientHeight
+    const resolvedHeight =
+      typeof height === "number"
+        ? height
+        : Math.max(240, mount.clientHeight);
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     const scene = new THREE.Scene();
     // plan 002：场景背景改为深灰（参考 0x111111）
     scene.background = new THREE.Color(0x111111);
 
-    // plan 002：相机取景按参考等比 ×1.5 映射（near 0.01, position (0, 0.225, 4.8)）
+    // plan 002：相机取景按参考等比 ×1.5 映射（near 0.01, position (0, 0.225, 4.8)）。
+    // 用户 2026-09-07：
+    //   - 球稍小 → 拉远到 5.6
+    //   - 移动端不能显示不全 → 相机距离根据 canvas 宽高比自适应，
+    //     窄屏（aspect < 1）拉得更远一些，球完整出现在画面内 + 留出文字空间
+    const aspect = width / resolvedHeight;
+    // 宽屏（桌面 16:9 ≈ 1.78）→ 5.6；方屏（1:1）→ ~7.0；窄屏（mobile 9:16 ≈ 0.56）→ ~8.5
+    const camZ = 5.6 + Math.max(0, (1 - aspect)) * 4.5;
     const camera = new THREE.PerspectiveCamera(
       45,
-      width / height,
+      aspect,
       0.01,
       100
     );
-    camera.position.set(0, 0.225, 4.8);
+    camera.position.set(0, 0.225, camZ);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
     });
     renderer.setPixelRatio(dpr);
-    renderer.setSize(width, height, false);
+    renderer.setSize(width, resolvedHeight, false);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // v5.2：参考实现的阴影配置
     renderer.shadowMap.enabled = true;
@@ -119,17 +135,18 @@ export function TennisBallGlobe({
     const BALL_R = 1.5;
     const { sphere } = buildBallWithSeams(BALL_R, scene);
 
-    // v5.2：完全照抄参考实现的三光源配置（HemisphereLight + key + fill）
-    // 用户反馈"光的效果也加上去，照抄即可"。
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 2.2);
+    // 用户 2026-09-07：网球颜色太亮 / 光线过强 → 调暗到 1.0/1.8/0.4；
+    // 之后再追调"光线稍微增强一些"（hemi 1.0→1.4 / keyLight 1.8→2.4 / fillLight 0.4→0.7），
+    // 球面色维持 0x7d8c0a（深橄榄绿，不刺眼）。
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 1.4);
     scene.add(hemi);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 4);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4);
     keyLight.position.set(3, 4, 5);
     keyLight.castShadow = true;
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 1);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.7);
     fillLight.position.set(-4, 1, -3);
     scene.add(fillLight);
 
@@ -146,17 +163,20 @@ export function TennisBallGlobe({
     scene.add(ground);
 
     // plan 002：OrbitControls 替换手写 pointer 拖拽（阻尼 + 缩放）
+    // 用户 2026-09-07：
+    //   - 松开鼠标后立即恢复自转（不等 3s，不要"失焦才转"）
+    //   - 滚轮 zoom in/out 不需要，禁用（避免劫持页面滚动 + 移动端 pinch 不必要）
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.enableZoom = false; // 禁用滚轮缩放 + 移动端 pinch zoom
     controls.minDistance = 2.7;
     controls.maxDistance = 9;
     controls.addEventListener("start", () => {
       autoRotate = false;
-      lastInteract = performance.now();
     });
     controls.addEventListener("end", () => {
-      lastInteract = performance.now();
+      autoRotate = true;
     });
 
     // 两个产品 marker（小球 + 屏幕坐标 tooltip 锚点）
@@ -186,7 +206,6 @@ export function TennisBallGlobe({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let rotY = 0;
     let autoRotate = !reduce;
-    let lastInteract = 0;
     renderer.domElement.style.cursor = "grab";
 
     // 渲染循环
@@ -239,15 +258,29 @@ export function TennisBallGlobe({
       fo.setAttribute("height", "56");
       const wrapper = document.createElement("div");
       wrapper.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+      // plan 002 用户 2026-09-07：tooltip 配色强对比
+      //   - 在 dark 主题（html.dark）下：白底黑字
+      //   - 在 light 主题下：黑底白字
+      // 用 inline 颜色而非 CSS var，避免被站点其它 token 覆盖。
+      const isDark = document.documentElement.classList.contains("dark");
+      const bg = isDark ? "#ffffff" : "#0a0a0a";
+      const fg = isDark ? "#0a0a0a" : "#ffffff";
+      const subColor = isDark ? "rgba(10,10,10,0.62)" : "rgba(255,255,255,0.7)";
+      const borderColor = isDark
+        ? "rgba(10,10,10,0.08)"
+        : "rgba(255,255,255,0.18)";
+      const shadow = isDark
+        ? "0 6px 20px rgba(255,255,255,0.35)"
+        : "0 6px 20px rgba(0,0,0,0.55)";
       wrapper.style.cssText = [
         "padding:6px 10px",
         "border-radius:8px",
-        "background:var(--color-bg-elevated)",
-        "border:1px solid var(--color-border)",
-        "box-shadow:0 6px 16px rgba(0,0,0,0.18)",
+        `background:${bg}`,
+        `border:1px solid ${borderColor}`,
+        `box-shadow:${shadow}`,
         "font-size:12px",
         "line-height:1.35",
-        "color:var(--color-fg)",
+        `color:${fg}`,
         "display:inline-block",
         "white-space:nowrap",
       ].join(";");
@@ -265,8 +298,7 @@ export function TennisBallGlobe({
       label.style.cssText = "font-weight:600";
       label.textContent = spec.label;
       const sub = document.createElement("div");
-      sub.style.cssText =
-        "color:var(--color-fg-subtle);font-size:11px;margin-top:2px;padding-left:14px";
+      sub.style.cssText = `color:${subColor};font-size:11px;margin-top:2px;padding-left:14px`;
       sub.textContent = spec.sub;
       wrapper.appendChild(dot);
       wrapper.appendChild(label);
@@ -295,14 +327,14 @@ export function TennisBallGlobe({
         // z > 1 = 在相机远平面之外（背面）
         const facing = world.dot(camDir) < 0; // camDir 指向相机身后，朝向相机的点在 camDir 反方向
         tooltipAnchors[i].x = ((v.x + 1) / 2) * width;
-        tooltipAnchors[i].y = ((1 - v.y) / 2) * height;
+        tooltipAnchors[i].y = ((1 - v.y) / 2) * resolvedHeight;
         tooltipAnchors[i].facing = facing;
       }
     }
 
     function updateOverlays() {
       const cx = width / 2;
-      const cy = height / 2;
+      const cy = resolvedHeight / 2;
       for (let i = 0; i < tooltipAnchors.length; i++) {
         const a = tooltipAnchors[i];
         const node = tooltipNodes[i];
@@ -363,7 +395,7 @@ export function TennisBallGlobe({
           foX = endX - foW - 8;
         }
         // 垂直居中于 endY
-        foY = Math.max(0, Math.min(height - foH, endY - foH / 2));
+        foY = Math.max(0, Math.min(resolvedHeight - foH, endY - foH / 2));
         node.fo.setAttribute("x", foX.toFixed(1));
         node.fo.setAttribute("y", foY.toFixed(1));
         node.fo.setAttribute("width", foW.toString());
@@ -373,10 +405,10 @@ export function TennisBallGlobe({
 
     function loop() {
       raf = requestAnimationFrame(loop);
-      // 3s 无交互后恢复 auto-rotate（plan 002：OrbitControls.start/end 驱动 lastInteract）
-      if (!reduce && performance.now() - lastInteract > 3000) {
-        autoRotate = true;
-      }
+      // 用户 2026-09-07：自转状态完全由 OrbitControls.start/end 切换。
+      //   start → autoRotate=false（拖拽时停转）
+      //   end   → autoRotate=true（松手立即恢复）
+      // 不再有 3s 无交互定时器。
       if (autoRotate) rotY += 0.0025;
       // plan 002：球体只绕 Y 自转（X 由 OrbitControls 的 polar angle 控制）
       sphere.rotation.y = rotY;
@@ -416,11 +448,16 @@ export function TennisBallGlobe({
     }
     renderer.domElement.addEventListener("pointermove", onPointerMoveHover);
 
-    // 自适应窗口尺寸
+    // 自适应窗口尺寸：mode="100%" 时跟随父容器高度（移动端响应式）。
+    // 同时根据新 aspect 重新调整相机距离，让球在所有屏幕比例下都完整显示。
     const ro = new ResizeObserver(() => {
       const w = mount.clientWidth;
-      renderer.setSize(w, height, false);
-      camera.aspect = w / height;
+      const h =
+        typeof height === "number" ? height : Math.max(240, mount.clientHeight);
+      renderer.setSize(w, h, false);
+      const newAspect = w / h;
+      camera.aspect = newAspect;
+      camera.position.set(0, 0.225, 5.6 + Math.max(0, 1 - newAspect) * 4.5);
       camera.updateProjectionMatrix();
     });
     ro.observe(mount);
@@ -555,9 +592,9 @@ function buildBallWithSeams(
   position.needsUpdate = true;
   sphereGeo.computeVertexNormals();
 
-  // 3. 球面材质（与参考实现完全一致）
+  // 3. 球面材质（用户 2026-09-07：颜色调暗 0xc8e600 → 0x7d8c0a）
   const ballMaterial = new THREE.MeshStandardMaterial({
-    color: 0xc8e600,
+    color: 0x7d8c0a,
     roughness: 0.88,
     metalness: 0.0,
   });

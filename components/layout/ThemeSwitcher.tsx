@@ -17,7 +17,7 @@ const OPTIONS: { mode: ThemeMode; Icon: typeof Sun; labelKey: "light" | "dark" |
   { mode: "dark", Icon: Moon, labelKey: "dark" },
 ];
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   const { mode, setMode } = useTheme();
   const t = useTranslations("theme");
   const tNav = useTranslations("nav");
@@ -26,6 +26,7 @@ export function ThemeSwitcher() {
       className="theme-seg"
       role="group"
       aria-label={tNav("themeLabel")}
+      style={compact ? { padding: 2 } : undefined}
     >
       {OPTIONS.map(({ mode: m, Icon, labelKey }) => {
         const active = mode === m;
@@ -37,6 +38,7 @@ export function ThemeSwitcher() {
             aria-label={t(labelKey)}
             title={t(labelKey)}
             onClick={() => setMode(m)}
+            style={compact ? { width: 28, height: 28 } : undefined}
           >
             <Icon size={14} weight={active ? "fill" : "regular"} />
           </button>

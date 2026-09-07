@@ -5,22 +5,41 @@ import { useLocaleStore, type Locale } from "@/lib/i18n/store";
 
 /**
  * LocaleSwitcher - zh-CN / en 切换（v6 改 localStorage store，不再走 URL）。
- * 直接调 setLocale：store 写 localStorage + setState，触发 I18nProvider 重渲染 messages，
- * 所有 useTranslations 消费者自动 rerender。
  *
- * plan 001 §4-15（附录 A5）：原实现用 `<a href="#">` + preventDefault 做假链接，
- * 语义错误（不是导航）、中键/右键「在新标签打开」会跳到 `#`、屏幕阅读器读成链接。
- * 改为 `<button type="button">` + `aria-pressed` 标记激活项；
- * globals.css 的 `.locale-seg a` 选择器同步改为 `.locale-seg button`。
+ * compact 模式（移动端）：原生 <select>，下拉形式，最省空间。
+ * 默认模式（桌面端）：segmented buttons，与 plan 001 §4-15 的 btn + aria-pressed 风格保持一致。
  */
 const OPTIONS: { code: Locale; label: string }[] = [
   { code: "en", label: "EN" },
   { code: "zh-CN", label: "中" },
 ];
 
-export function LocaleSwitcher() {
+export function LocaleSwitcher({ compact = false }: { compact?: boolean }) {
   const { locale, setLocale } = useLocaleStore();
   const t = useTranslations("nav");
+
+  if (compact) {
+    return (
+      <select
+        aria-label={t("localeLabel")}
+        value={locale}
+        onChange={(e) => setLocale(e.target.value as Locale)}
+        className="px-2 py-1.5 text-[12px] rounded-full"
+        style={{
+          background: "var(--color-bg-elevated)",
+          border: "1px solid var(--color-border)",
+          color: "var(--color-fg)",
+          minHeight: 36,
+        }}
+      >
+        {OPTIONS.map((o) => (
+          <option key={o.code} value={o.code}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    );
+  }
 
   return (
     <div className="locale-seg" role="group" aria-label={t("localeLabel")}>
