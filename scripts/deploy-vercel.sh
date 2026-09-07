@@ -87,10 +87,21 @@ if [ "$SKIP_DNS" -eq 0 ]; then
 fi
 
 echo "==> [2/4] vercel login check"
-VERCEL_USER="$(npx vercel whoami 2>/dev/null || true)"
+# 2026-09-07 修复"卡死"：本机没装全局 vercel 时，`npx vercel whoami` 会先弹
+# "Ok to proceed? (y)" 安装确认 —— 该提问走 stderr，被 2>/dev/null 吞掉后
+# 脚本就停在等你按 y 的地方，看起来像永远卡住。
+# 处理：优先用全局 vercel；否则 npx --yes（自动确认，不再提问），且不吞 stderr。
+if command -v vercel >/dev/null 2>&1; then
+  VERCEL_BIN="vercel"
+else
+  echo "  未找到全局 vercel CLI → 改用 npx --yes vercel（首次自动下载，可能较慢）"
+  echo "  建议先执行一次:  npm i -g vercel   （之后本脚本直接用全局命令，秒过）"
+  VERCEL_BIN="npx --yes vercel"
+fi
+VERCEL_USER="$($VERCEL_BIN whoami || true)"
 if [ -z "$VERCEL_USER" ]; then
   echo "  Vercel 未登录 → 运行 vercel login（浏览器授权）"
-  npx vercel login
+  $VERCEL_BIN login
 else
   echo "  Vercel 已登录: $VERCEL_USER"
 fi
@@ -105,7 +116,8 @@ if [ -f ".vercel/project.json" ]; then
   CURRENT_PROJECT="$(grep -o '"projectName":"[^"]*"' .vercel/project.json | head -1 | cut -d'"' -f4)"
   echo "  using saved Vercel project config: $CURRENT_PROJECT"
   echo "  (re-link 到别的项目:  rm .vercel/project.json && npx vercel link)"
-  npx vercel deploy --prod --yes
+  # 同 [2/4] 的修复：用解析好的 VERCEL_BIN，避免 npx 安装确认提问卡死
+  $VERCEL_BIN deploy --prod --yes
 else
   echo "  ❌ .vercel/project.json 不存在 — 需要先 link 一次"
   echo "     在 website/ 目录跑:  npx vercel link"
