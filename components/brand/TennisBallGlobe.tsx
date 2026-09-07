@@ -9,7 +9,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
  *
  * 设计：白底 + 弯曲接缝 + 绒毛噪点的程序化网球纹理贴在球面上，
  * 两个产品 marker（Craft + Swing Analysis）固定在球面坐标上。
- * 用户可鼠标拖动旋转（OrbitControls），光标悬停 marker 时弹 tooltip。
+ * 用户可鼠标拖动旋转（OrbitControls），光标悬停 marker 时弹 tooltip；
+ * tooltip 本身是 <a href="#craft|#swing"> 锚点，点击跳转到下方产品区。
  *
  * 性能 / a11y：
  *   - DPR 限制到 2，避免 Retina 屏过度采样
@@ -32,6 +33,8 @@ type MarkerSpec = {
   label: string;
   /** tooltip 副标题（一行小字） */
   sub: string;
+  /** 用户 2026-09-07：点击 tooltip 跳转的页内锚点（如 "#craft"） */
+  targetId: string;
 };
 
 type MarkerAnchor = {
@@ -50,6 +53,7 @@ const MARKERS: MarkerSpec[] = [
     color: "#2563EB", // blue
     label: "AceCrush Craft",
     sub: "Android · grip + stringing",
+    targetId: "#craft",
   },
   {
     lon: 65,
@@ -57,6 +61,7 @@ const MARKERS: MarkerSpec[] = [
     color: "#DC2626", // red
     label: "Swing Analysis",
     sub: "Desktop · auto segmentation",
+    targetId: "#swing",
   },
 ];
 
@@ -86,9 +91,11 @@ export function TennisBallGlobe({
       return;
     }
 
-    const width = mount.clientWidth;
+    // 用户 2026-09-07 手机版修复：width/resolvedHeight 用 let，
+    // ResizeObserver 时同步更新（overlay 投影坐标依赖这两个值）。
+    let width = mount.clientWidth;
     // height: 数字 = 固定 px；"100%" = 跟随父容器 clientHeight
-    const resolvedHeight =
+    let resolvedHeight =
       typeof height === "number"
         ? height
         : Math.max(240, mount.clientHeight);
@@ -98,14 +105,16 @@ export function TennisBallGlobe({
     // plan 002：场景背景改为深灰（参考 0x111111）
     scene.background = new THREE.Color(0x111111);
 
-    // plan 002：相机取景按参考等比 ×1.5 映射（near 0.01, position (0, 0.225, 4.8)）。
-    // 用户 2026-09-07：
-    //   - 球稍小 → 拉远到 5.6
-    //   - 移动端不能显示不全 → 相机距离根据 canvas 宽高比自适应，
-    //     窄屏（aspect < 1）拉得更远一些，球完整出现在画面内 + 留出文字空间
+    // plan 002：相机取景按参考等比 ×1.5 映射。
+    // 用户 2026-09-07 手机版二次修复：相机距离按「球占画面宽度比例」反推。
+    //   球直径 3 世界单位；可视高度 visH = 2·camZ·tan(fov/2)，可视宽 = visH·aspect。
+    //   目标：窄屏球占画面宽 ~34% → camZ ≈ 10.5/aspect；宽屏维持 5.6。
+    //   用 max 保证 aspect ≥ 1.875 时连续回落到 5.6，桌面端不受影响。
+    const BALL_SCREEN_W = 0.34;
+    const computeCamZ = (asp: number) =>
+      Math.max(5.6, (3 / BALL_SCREEN_W) / (2 * Math.tan((45 / 2) * (Math.PI / 180)) * asp));
     const aspect = width / resolvedHeight;
-    // 宽屏（桌面 16:9 ≈ 1.78）→ 5.6；方屏（1:1）→ ~7.0；窄屏（mobile 9:16 ≈ 0.56）→ ~8.5
-    const camZ = 5.6 + Math.max(0, (1 - aspect)) * 4.5;
+    const camZ = computeCamZ(aspect);
     const camera = new THREE.PerspectiveCamera(
       45,
       aspect,
@@ -119,7 +128,12 @@ export function TennisBallGlobe({
       alpha: false,
     });
     renderer.setPixelRatio(dpr);
-    renderer.setSize(width, resolvedHeight, false);
+    // ★ 根因修复（用户 2026-09-07 手机截图）：第三参数绝不能传 false。
+    //   setSize(w, h, false) 只设置绘制缓冲（w×dpr），不写 CSS 尺寸，
+    //   canvas 无 CSS 尺寸时按 attribute 显示 → dpr=2 手机上 canvas 以
+    //   2 倍 CSS 尺寸溢出容器，球被裁掉一半、tooltip 锚点与 3D marker 错位 2×。
+    //   默认（true）会让 three 写入 style.width/height = CSS 像素，正确铺满 mount。
+    renderer.setSize(width, resolvedHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // v5.2：参考实现的阴影配置
     renderer.shadowMap.enabled = true;
@@ -252,12 +266,21 @@ export function TennisBallGlobe({
       endDot.setAttribute("fill", spec.color);
       g.appendChild(endDot);
 
-      // 标签（foreignObject 容许 HTML，方便走 design tokens）
+      // 标签（foreignObject 容许 HTML，方便走 design tokens）。
+      // 用户 2026-09-07：Swing Analysis 右侧被截掉。foW 要够宽容下
+      // "Swing Analysis" + 副标题 "Desktop · auto segmentation"。
+      // 初始 width/height 只是占位，updateOverlays 每帧根据 foW/foH 重设。
       const fo = document.createElementNS(overlayNS, "foreignObject");
-      fo.setAttribute("width", "200");
-      fo.setAttribute("height", "56");
-      const wrapper = document.createElement("div");
-      wrapper.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+      fo.setAttribute("width", "240");
+      fo.setAttribute("height", "60");
+      // 用户 2026-09-07：tooltip 可以点击跳转到下方对应产品区（/#craft、/#swing）。
+      // 用真正的 <a href="#...">：原生 hash 导航复用全局 scroll-behavior:smooth
+      // + scroll-margin-top:84px，且天然可键盘 Tab 聚焦 + Enter 激活。
+      const wrapper = document.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "a"
+      ) as HTMLAnchorElement;
+      wrapper.setAttribute("href", spec.targetId);
       // plan 002 用户 2026-09-07：tooltip 配色强对比
       //   - 在 dark 主题（html.dark）下：白底黑字
       //   - 在 light 主题下：黑底白字
@@ -283,6 +306,11 @@ export function TennisBallGlobe({
         `color:${fg}`,
         "display:inline-block",
         "white-space:nowrap",
+        // overlay svg 是 pointer-events:none（不挡 OrbitControls 拖拽），
+        // 锚点自己重新开启 hit-testing，才能接住点击 / 键盘焦点。
+        "pointer-events:auto",
+        "cursor:pointer",
+        "text-decoration:none",
       ].join(";");
       const dot = document.createElement("span");
       dot.style.cssText = [
@@ -306,7 +334,12 @@ export function TennisBallGlobe({
       fo.appendChild(wrapper);
       g.appendChild(fo);
 
-      return { path, endDot, fo, wrapper };
+      // 用户 2026-09-07：量出 tooltip 实际渲染宽度（inline-block 收缩宽），
+      // 之后每帧的边界 clamp / 引线锚点都用它 —— 保证 box 永不出画布、
+      // 引线永远贴着 box 边缘（量不到时回退 230）。
+      const boxW = wrapper.getBoundingClientRect().width || 230;
+
+      return { path, endDot, fo, wrapper, boxW };
     }
 
     const tooltipNodes = MARKERS.map((spec, i) =>
@@ -356,49 +389,59 @@ export function TennisBallGlobe({
         // 拐点方向：偏好朝画布外（左 / 右 / 上 / 下），按 marker 方位选最大分量
         const absX = Math.abs(dx);
         const absY = Math.abs(dy);
-        const LABEL_OFFSET = 90; // 标签中心距离 marker 的距离
-        let endX: number;
-        let endY: number;
-        if (absX > absY) {
-          // 左右延伸
-          endX = a.x + Math.sign(dx) * LABEL_OFFSET;
-          endY = a.y;
-        } else {
-          // 上下延伸
-          endX = a.x;
-          endY = a.y + Math.sign(dy) * LABEL_OFFSET;
-        }
-        // 折线：marker → 拐点 1 → 拐点 2 → 标签
-        const bend1 = { x: lineStart.x + (endX - lineStart.x) * 0.5, y: lineStart.y };
-        const bend2 = { x: endX, y: lineStart.y + (endY - lineStart.y) * 0.5 };
+        // 用户 2026-09-07：「tooltip 像同步卫星跟随自转」。
+        // 设计：
+        //   - tooltip 中心位置 = marker 屏幕坐标 + marker 径向单位向量 × LEADER。
+        //   - marker 径向单位向量用 marker 在画布坐标的方向（从画布中心 →
+        //     marker）作为屏幕空间的近似径向方向；球自转时 marker 屏幕位置在
+        //     变化，tooltip 跟随旋转并保持固定 LEADER 距离。
+        //   - label 方向永远沿「marker 离开球心」方向放在 marker 外侧，
+        //     不再用画布左右二分（这样在 marker 转到正上 / 正下时 tooltip
+        //     也能正确飞到上下边缘，而不是被左右二分逻辑卡住）。
+        const foW = node.boxW; // tooltip 实际渲染宽度（build 时量出）
+        const foH = 56;
+        const RADIAL = 14; // marker 边缘的视觉半径
+        // 黄金分割：marker → label 中心距离 = 0.618 × 球面像素半径。
+        // 用户 2026-09-07：球面像素半径按相机实际距离反推（不再用
+        // min(w,h)×0.42 估算 —— 相机拉远后估算值会远大于真实球）：
+        //   visH = 2·dist·tan(fov/2)，ballPxR = BALL_R / visH × canvas 高。
+        const camDist = camera.position.length();
+        const visH = 2 * camDist * Math.tan((45 / 2) * (Math.PI / 180));
+        const ballPxR = (BALL_R / visH) * resolvedHeight;
+        const LEADER = ballPxR * 0.618;
+
+        // 直线起点：marker 边缘（沿屏幕径向外推 RADIAL）
+        const edgeX = a.x + ux * RADIAL;
+        const edgeY = a.y + uy * RADIAL;
+        // label 中心：marker 边缘再外推 LEADER
+        const labelCenterX = edgeX + ux * LEADER;
+        const labelCenterY = edgeY + uy * LEADER;
+
+        let foX = labelCenterX - foW / 2;
+        let foY = labelCenterY - foH / 2;
+        // 边界 clamp：label 整体不出画布（用户 2026-09-07 手机版：
+        // 右侧 marker 的 tooltip 之前被推出右缘截断，这里必须硬 clamp）。
+        foX = Math.max(4, Math.min(width - foW - 4, foX));
+        foY = Math.max(4, Math.min(resolvedHeight - foH - 4, foY));
+
+        // 引线终点 = clamp 后 box 矩形上离 marker 边缘最近的点。
+        // 之前用「未 clamp 的 label 内缘中点」，box 被 clamp 后线会脱离 box；
+        // 改成矩形最近点后，无论 box 被推到哪，线都始终贴着 box。
+        const nearestX = Math.max(foX, Math.min(edgeX, foX + foW));
+        const nearestY = Math.max(foY, Math.min(edgeY, foY + foH));
+
+        // 直线：marker 边缘 → box 最近点
         node.path.setAttribute(
           "d",
-          `M ${lineStart.x.toFixed(1)} ${lineStart.y.toFixed(1)} ` +
-            `L ${bend1.x.toFixed(1)} ${bend1.y.toFixed(1)} ` +
-            `L ${bend2.x.toFixed(1)} ${bend2.y.toFixed(1)} ` +
-            `L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+          `M ${edgeX.toFixed(1)} ${edgeY.toFixed(1)} ` +
+            `L ${nearestX.toFixed(1)} ${nearestY.toFixed(1)}`
         );
-        node.endDot.setAttribute("cx", endX.toFixed(1));
-        node.endDot.setAttribute("cy", endY.toFixed(1));
+        node.endDot.setAttribute("cx", nearestX.toFixed(1));
+        node.endDot.setAttribute("cy", nearestY.toFixed(1));
 
-        // foreignObject 定位：标签盒以 endX/endY 为参考点
-        // 文本方向：marker 在右 → 标签锚左；marker 在左 → 标签锚右
-        const foW = 200;
-        const foH = 56;
-        let foX: number;
-        let foY: number;
-        if (dx >= 0) {
-          // marker 在右半，标签在 marker 右侧 → foX 紧贴 endX + 8
-          foX = endX + 8;
-        } else {
-          // marker 在左半，标签在 marker 左侧 → foX 紧贴 endX - foW - 8
-          foX = endX - foW - 8;
-        }
-        // 垂直居中于 endY
-        foY = Math.max(0, Math.min(resolvedHeight - foH, endY - foH / 2));
         node.fo.setAttribute("x", foX.toFixed(1));
         node.fo.setAttribute("y", foY.toFixed(1));
-        node.fo.setAttribute("width", foW.toString());
+        node.fo.setAttribute("width", foW.toFixed(1));
         node.fo.setAttribute("height", foH.toString());
       }
     }
@@ -450,14 +493,18 @@ export function TennisBallGlobe({
 
     // 自适应窗口尺寸：mode="100%" 时跟随父容器高度（移动端响应式）。
     // 同时根据新 aspect 重新调整相机距离，让球在所有屏幕比例下都完整显示。
+    // 用户 2026-09-07：同步 width/resolvedHeight（overlay 投影用）；
+    // setSize 同样不传 false（见上方根因修复注释）。
     const ro = new ResizeObserver(() => {
-      const w = mount.clientWidth;
-      const h =
-        typeof height === "number" ? height : Math.max(240, mount.clientHeight);
-      renderer.setSize(w, h, false);
-      const newAspect = w / h;
+      width = mount.clientWidth;
+      resolvedHeight =
+        typeof height === "number"
+          ? height
+          : Math.max(240, mount.clientHeight);
+      renderer.setSize(width, resolvedHeight);
+      const newAspect = width / resolvedHeight;
       camera.aspect = newAspect;
-      camera.position.set(0, 0.225, 5.6 + Math.max(0, 1 - newAspect) * 4.5);
+      camera.position.set(0, 0.225, computeCamZ(newAspect));
       camera.updateProjectionMatrix();
     });
     ro.observe(mount);
