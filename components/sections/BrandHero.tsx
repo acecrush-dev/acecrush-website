@@ -9,6 +9,7 @@ import {
   Monitor,
 } from "@phosphor-icons/react/dist/ssr";
 import { Reveal } from "@/components/motion/reveal";
+import { TennisBallGlobe } from "@/components/brand/TennisBallGlobe";
 
 /**
  * BrandHero - 品牌级 hero（plan 001 §4-3）。
@@ -62,6 +63,19 @@ export function BrandHero() {
           >
             {t("subtext")}
           </p>
+        </Reveal>
+
+        {/* 网球地球（Three.js）：两颗产品 marker 浮在球面，
+            鼠标拖动旋转、悬停弹 tooltip。位置在 subtext 与产品卡之间，
+            把"地球代表生态 / 两个产品点"这个视觉概念坐实。
+            容器限定 720 宽 + 水平居中，让球体比之前大且真正居中。 */}
+        <Reveal delay={0.22} className="mt-12 flex justify-center">
+          <div className="w-full max-w-[720px]">
+            <TennisBallGlobe
+              ariaLabel={`${tCraft("name")} + ${tSwing("name")} ecosystem`}
+              height={520}
+            />
+          </div>
         </Reveal>
 
         {/* 两张产品卡：桌面左宽右窄，移动端单列堆叠 */}

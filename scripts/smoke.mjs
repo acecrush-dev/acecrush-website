@@ -90,6 +90,7 @@ const required = [
   "components/layout/ThemeSwitcher.tsx",
   "components/sections/BrandHero.tsx",
   "components/sections/CraftHero.tsx",
+  "components/brand/TennisBallGlobe.tsx",
   "components/sections/FeatureCard.tsx",
   "components/sections/SwingSection.tsx",
   "components/sections/HowItWorks.tsx",
