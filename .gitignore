@@ -34,3 +34,4 @@ tsconfig.tsbuildinfo
 .cc-tail
 .claude
 plans
+next-env.d.ts
