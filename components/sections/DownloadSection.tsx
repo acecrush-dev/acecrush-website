@@ -14,10 +14,9 @@ import { Reveal } from "@/components/motion/reveal";
  * Download - 双产品分组（plan 001 §4-10）。
  *
  * 组 A · AceCrush Craft：Android APK 主下载 + iOS 占位。
- * 组 B · Swing Analysis：桌面端卡片。**故意不放主下载按钮**：
- *   `acecrush-dev/swing-analysis-app` 目前 0 releases（2026-09-05 复核），
- *   放 latest 链接就是死链。改为「安装指引 ↗」+「GitHub Releases ↗」外链
- *   + releasesNote 说明「打包版尚未发布，先按文档从源码运行」。
+ * 组 B · Swing Analysis：桌面端主下载（`/releases/latest` → GitHub 302 到当前最新版本页）。
+ *   仅桌面端，使用 `md:grid-cols-2` 让卡片独占左列与 Craft Android 块同宽，右列留白。
+ *   安装文档入口已上移到 SwingSection / BrandHero（hero 与产品区各一处），本区不再重复。
  *
  * APK 链接（plan 001 §3）：repo 现名 `acecrush-craft-app`（带横线）；
  *   站上原先的 `acecrushcraft-app` 是改名前旧 slug，仅靠 GitHub 301 苟活。
@@ -27,8 +26,8 @@ import { Reveal } from "@/components/motion/reveal";
 const APK_FALLBACK_URL =
   "https://github.com/acecrush-dev/acecrush-craft-app/releases/latest/download/acecrush-craft.apk";
 const APK_FILE_SIZE = "50 MB";
-const SWING_DOCS_URL = "https://acecrush-dev.github.io/swing-analysis-app/";
-const SWING_RELEASES_URL = "https://github.com/acecrush-dev/swing-analysis-app/releases";
+const SWING_RELEASES_URL =
+  "https://github.com/acecrush-dev/swing-analysis-app/releases/latest";
 
 export function DownloadSection() {
   const t = useTranslations("download");
@@ -115,7 +114,7 @@ export function DownloadSection() {
         </div>
       </div>
 
-      {/* 组 B · Swing Analysis（无主下载按钮，见文件头注释） */}
+      {/* 组 B · Swing Analysis：桌面端主下载单卡（无移动端） */}
       <div className="mt-14" aria-labelledby="dl-swing-heading">
         <Reveal>
           <h3
@@ -127,46 +126,42 @@ export function DownloadSection() {
           </h3>
         </Reveal>
 
-        <Reveal delay={0.1}>
-          <div
-            className="mt-6 card-elevated p-8 flex flex-col gap-5"
-            style={{ background: "var(--color-bg-elevated)" }}
-          >
-            <div className="flex items-center gap-3">
-              <Monitor size={32} weight="regular" aria-hidden />
-              <h4 className="text-[20px] font-semibold">{tSwing("desktopLabel")}</h4>
-            </div>
-            <p
-              className="text-[14px] leading-relaxed max-w-[68ch]"
-              style={{ color: "var(--color-fg-muted)" }}
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <Reveal delay={0.1} className="h-full">
+            <div
+              className="card-elevated p-8 h-full flex flex-col gap-5"
+              style={{ background: "var(--color-bg-elevated)" }}
             >
-              {tSwing("desktopBody")}
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <a
-                href={SWING_DOCS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost"
+              <div className="flex items-center gap-3">
+                <Monitor size={32} weight="regular" aria-hidden />
+                <h4 className="text-[20px] font-semibold">{tSwing("desktopLabel")}</h4>
+              </div>
+              <p
+                className="text-[14px] leading-relaxed"
+                style={{ color: "var(--color-fg-muted)" }}
               >
-                {tSwing("docsCta")}
-                <ArrowUpRight size={15} weight="bold" aria-hidden />
-              </a>
-              <a
-                href={SWING_RELEASES_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost"
-              >
-                {tSwing("releasesCta")}
-                <ArrowUpRight size={15} weight="bold" aria-hidden />
-              </a>
+                {tSwing("desktopBody")}
+              </p>
+              <div className="flex flex-col gap-2">
+                <a
+                  href={SWING_RELEASES_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary justify-center"
+                >
+                  <DownloadSimple size={18} weight="bold" aria-hidden />
+                  {tSwing("releasesCta")}
+                </a>
+                <p
+                  className="text-[12px] leading-relaxed"
+                  style={{ color: "var(--color-fg-subtle)" }}
+                >
+                  {tSwing("releasesNote")}
+                </p>
+              </div>
             </div>
-            <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
-              {tSwing("releasesNote")}
-            </p>
-          </div>
-        </Reveal>
+          </Reveal>
+        </div>
       </div>
     </section>
   );

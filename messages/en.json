@@ -125,9 +125,8 @@
         "productHeading": "Swing Analysis",
         "desktopLabel": "Desktop",
         "desktopBody": "Runs on Windows, macOS and Linux. A Python backend plus an Electron GUI, with a CLI for terminal use. The models ship inside the repo, so clone and run works offline.",
-        "docsCta": "Install guide",
-        "releasesCta": "GitHub Releases",
-        "releasesNote": "Packaged installers are not published yet. For now, follow the install guide to run it from source."
+        "releasesCta": "Download installer",
+        "releasesNote": "GitHub will redirect you to the current latest release."
       },
       "faq": {
         "heading": "Swing Analysis Related",

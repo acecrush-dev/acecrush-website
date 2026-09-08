@@ -125,9 +125,8 @@
         "productHeading": "Swing Analysis",
         "desktopLabel": "桌面端",
         "desktopBody": "支持 Windows、macOS、Linux。Python 后端 + Electron 图形界面，另有 CLI 供终端使用。模型已随仓库入库，clone 下来即可离线运行。",
-        "docsCta": "安装指引",
-        "releasesCta": "GitHub Releases",
-        "releasesNote": "打包安装程序尚未发布。目前请按安装指引从源码运行。"
+        "releasesCta": "下载安装包",
+        "releasesNote": "GitHub 会自动跳转到当前最新版本。"
       },
       "faq": {
         "heading": "Swing Analysis 相关",
