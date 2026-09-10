@@ -85,7 +85,7 @@ export function DownloadSection() {
                 {tCraft("androidBody", { fileSize: APK_FILE_SIZE })}
               </p>
               <div className="mt-auto flex flex-col gap-2">
-                <a href={apkUrl} className="btn-primary justify-center" download>
+                <a href={apkUrl} className="btn-primary self-start justify-center" download>
                   <DownloadSimple size={18} weight="bold" aria-hidden />
                   {tCraft("androidCta")}
                 </a>
@@ -147,7 +147,7 @@ export function DownloadSection() {
                   href={SWING_RELEASES_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-primary justify-center"
+                  className="btn-primary self-start justify-center"
                 >
                   <DownloadSimple size={18} weight="bold" aria-hidden />
                   {tSwing("releasesCta")}

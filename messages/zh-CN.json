@@ -84,7 +84,7 @@
         "productHeading": "AceCrush Craft",
         "androidLabel": "Android",
         "androidBody": "当前主推平台。最低 Android 7.0（API 24），目标 API 34，约 {fileSize}。无需 root，不依赖 Google 服务框架。",
-        "androidCta": "获取 Android 安装包",
+        "androidCta": "获取APK",
         "androidNote": "首次安装 Android 会拦截「未知来源」。进入 设置 → 应用 → 特殊应用权限 → 安装未知应用，允许当前来源后重新点开 APK 即可。",
         "iosLabel": "iOS",
         "iosBody": "iOS 版本暂未发布。TestFlight 邀请准备好后会在这里更新。"

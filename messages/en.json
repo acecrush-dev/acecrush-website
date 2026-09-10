@@ -84,7 +84,7 @@
         "productHeading": "AceCrush Craft",
         "androidLabel": "Android",
         "androidBody": "Primary platform today. Minimum Android 7.0 (API 24), target API 34, about {fileSize}. No root and no Google Play Services required.",
-        "androidCta": "Download Android APK",
+        "androidCta": "Download APK",
         "androidNote": "Android blocks unknown sources on first install. Open Settings, Apps, Special app access, Install unknown apps, allow this source, then tap the APK again.",
         "iosLabel": "iOS",
         "iosBody": "No iOS build yet. The TestFlight invite link will be posted here when it is ready."
