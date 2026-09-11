@@ -107,7 +107,8 @@
       "intro": {
         "eyebrow": "桌面端 · Python + Electron",
         "headline": "每一次挥拍，都切好并打上时间码。",
-        "subtext": "丢进一段比赛视频。v2.1 两阶段管线只跟一路右手腕信号，把每次挥拍切成独立片段，并标注 ready、windup、contact、follow-through 四相位与精确时间码。",
+        "subtext": "丢进一段比赛视频。两阶段管线只跟一路右手腕信号，把每次挥拍切成独立片段，并标注 ready、windup、contact、follow-through 四相位与精确时间码。",
+        "previewLabel": "Clip 回放预览",
         "docsCta": "查看文档",
         "downloadCta": "获取"
       },
@@ -119,7 +120,7 @@
         "item2Title": "Pass 1 流式出段",
         "item2Body": "第一遍还在跑，切好的段就已经陆续出现，不用等整段视频处理完才能开始看。",
         "item3Title": "骨架与人物框叠加",
-        "item3Body": "MediaPipe 33 点姿态驱动切分，可选叠加 RTMDet 人物框与 RTMPose 骨架，直接合并到每段 clip。"
+        "item3Body": "想看清动作姿态？两档可选。**快档**切分时顺手画骨架，出图快、骨架稍糙；**精档**切完用更稳的人物框 + 骨架重画一遍，适合做教学切片。两档都直接合进导出的视频，选哪档都不会留半成品。"
       },
       "download": {
         "productHeading": "Swing Analysis",

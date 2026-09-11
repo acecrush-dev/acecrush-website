@@ -58,13 +58,14 @@ export function BrandHero() {
   return (
     <section aria-labelledby="brand-headline">
       {/* 3D 中心：full page width。
-          高度响应式：桌面 ~720px，平板 ~560px，手机 ~ min(72vw, 520)px。
-          这样窄屏 canvas 不会过高，避免文字 + 球 + 产品卡挤在一起。
+          高度响应式：桌面 ~760px，平板 ~760px，手机 ~720px（2026-09-11 加高）。
+          用户反馈移动端文字 + 3D 球挤在一起，所以把窄屏的 minHeight 从 480 提到 720，
+          让球在画面里明显下沉，与上半部的 hero 文字错开。
           文字 absolute overlay 在 canvas 上半部（左对齐），
           pointer-events-none 让 OrbitControls / marker hover 仍能命中 canvas。 */}
       <div
         className="relative w-full"
-        style={{ height: "min(72vw, 720px)", minHeight: 480 }}
+        style={{ height: "min(110vw, 760px)", minHeight: 720 }}
       >
         <TennisBallGlobe
           ariaLabel={`${tCraft("name")} + ${tSwing("name")} ecosystem`}

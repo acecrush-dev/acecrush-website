@@ -16,12 +16,18 @@ import { FeatureCard, type FeatureCardTone } from "@/components/sections/Feature
  * SwingSection - Swing Analysis 产品区（plan 001 §4-6）。
  *
  * 结构与 Craft 区同族但刻意不同构（skill §4.7 不同 layout family）：
- *   产品头（h2 + tagline）+ intro 段落 + 3 张共享 FeatureCard（一行铺满）。
+ *   产品头（h2 + tagline）+ intro 段落 + **clip_play.png 桌面截图** +
+ *   「Built for frame-level review.」h3 + 3 张共享 FeatureCard（一行铺满）。
  * 首卡 accent tone 做视觉锚点。
  *
  * 用户 2026-09-05 追加：删除「原生 seek，前端可插拔」卡（原 item4），
  *   理由是产品实际没有原生 seek 这回事，不能写进卖点；4 项 → 3 项，
  *   同时移除原第 3 卡的 `lg:col-span-2`，三卡等宽正好占满一行。
+ *
+ * 用户 2026-09-11 追加：插入真实桌面端 clip_play.png 截图（来自
+ *   swing-analysis/docs），让产品区有视觉证据（之前 TODO-assets.md
+ *   「Swing 截图/GIF」一直空缺）。截图放在 intro 段后、features 头前，
+ *   桌面端最大宽度与 feature grid 一致；移动端 16:9 自适应。
  *
  * 下载 CTA 指向 /#download（Swing 目前无 release，实际下载区只给
  * 文档与 Releases 外链，不放死链主按钮）。
@@ -73,7 +79,37 @@ export function SwingSection() {
         </p>
       </Reveal>
 
-      <Reveal delay={0.24}>
+      {/* 用户 2026-09-11：插入桌面端真实截图（clip_play.png），给产品区视觉证据 */}
+      <Reveal delay={0.22}>
+        <figure className="mt-10">
+          <div
+            className="overflow-hidden rounded-2xl"
+            style={{
+              border: "1px solid var(--color-border)",
+              background: "var(--color-surface-tint)",
+              boxShadow: "0 20px 60px -28px rgba(0,0,0,0.35)",
+            }}
+          >
+            <img
+              src="/img/swing/clip_play.png"
+              alt={tIntro("previewLabel")}
+              width={1437}
+              height={1043}
+              loading="lazy"
+              decoding="async"
+              className="block w-full h-auto"
+            />
+          </div>
+          <figcaption
+            className="sr-only"
+            style={{ color: "var(--color-fg-subtle)" }}
+          >
+            {tIntro("previewLabel")}
+          </figcaption>
+        </figure>
+      </Reveal>
+
+      <Reveal delay={0.28}>
         <h3
           className="mt-16 text-[26px] md:text-[34px] leading-[1.15] tracking-tight font-semibold max-w-[20ch]"
           style={{ color: "var(--color-fg)" }}
@@ -81,7 +117,7 @@ export function SwingSection() {
           {tFeat("heading")}
         </h3>
       </Reveal>
-      <Reveal delay={0.28}>
+      <Reveal delay={0.32}>
         <p className="mt-3 max-w-[58ch] text-[15px]" style={{ color: "var(--color-fg-muted)" }}>
           {tFeat("subheading")}
         </p>

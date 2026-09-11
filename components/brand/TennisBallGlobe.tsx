@@ -180,7 +180,13 @@ export function TennisBallGlobe({
     // 用户 2026-09-07：
     //   - 松开鼠标后立即恢复自转（不等 3s，不要"失焦才转"）
     //   - 滚轮 zoom in/out 不需要，禁用（避免劫持页面滚动 + 移动端 pinch 不必要）
+    // 用户 2026-09-11：移动端把 OrbitControls 的 target.y 上抬 0.4，让球在画面里
+    //   偏下一些，避免与 hero 文案重叠（桌面端保持 target=(0,0,0)）。
+    const isMobile = window.innerWidth < 768;
+    const ballOffsetY = isMobile ? 0.4 : 0;
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, ballOffsetY, 0);
+    controls.update();
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.enableZoom = false; // 禁用滚轮缩放 + 移动端 pinch zoom

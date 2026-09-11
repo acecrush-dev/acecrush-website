@@ -107,7 +107,8 @@
       "intro": {
         "eyebrow": "Desktop · Python + Electron",
         "headline": "Every swing, cut and timecoded.",
-        "subtext": "Feed in a match video. The v2.1 two-pass pipeline tracks a single right-wrist signal, cuts each swing into its own clip, and labels ready, windup, contact and follow-through with exact timecodes.",
+        "subtext": "Feed in a match video. The two-pass pipeline tracks a single right-wrist signal, cuts each swing into its own clip, and labels ready, windup, contact and follow-through with exact timecodes.",
+        "previewLabel": "Clip playback preview",
         "docsCta": "Read the docs",
         "downloadCta": "Get it"
       },
@@ -119,7 +120,7 @@
         "item2Title": "Streaming results in pass 1",
         "item2Body": "Segments appear while pass 1 is still running, so you can start reviewing before the full video finishes processing.",
         "item3Title": "Skeleton and bbox overlays",
-        "item3Body": "MediaPipe 33 point pose drives segmentation, with optional RTMDet person boxes and RTMPose skeletons merged into each clip."
+        "item3Body": "Want to see the body lines on each clip? Two passes to choose from. The **fast pass** paints the skeleton while it cuts — quick and good enough for a first review. The **polish pass** re-renders each clip afterward with a steadier person box and a smoother skeleton — slower, but the kind of cut you'd hand to a student. Both bake straight into the export, no post-processing needed."
       },
       "download": {
         "productHeading": "Swing Analysis",
