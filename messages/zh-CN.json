@@ -172,6 +172,6 @@
     "section5Title": "服务端兜底（可选）",
     "section5Body": "若您设备本地 AI 推理失败（低端机或 iOS 端暂未实现端侧 CV），App 可将单张照片发送至我们独立部署的 CV 服务（端口 8081）。该服务在收到图片后立即处理并丢弃，仅记录设备 ID、SHA256、字节数、延迟、置信度等元数据，用于质量改进，不存原图。",
     "section6Title": "更新与联系",
-    "section6Body": "政策更新会随应用版本发布，变更会在 App 内「设置 - 隐私政策」与本页面同步。如有疑问：lunatic0072006@hotmail.com。"
+    "section6Body": "政策更新会随应用版本发布，变更会在 App 内「设置 - 隐私政策」与本页面同步。如有疑问：acecrushdev@gmail.com。"
   }
 }

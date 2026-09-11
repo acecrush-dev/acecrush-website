@@ -9,7 +9,7 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
 /** 用户 2026-09-05：联系入口从 footer 搬到导航右上角，footer 整块移除。 */
-const CONTACT_MAILTO = "mailto:lunatic0072006@hotmail.com";
+const CONTACT_MAILTO = "mailto:acecrushdev@gmail.com";
 
 /**
  * AppNav（plan 001 §4-13 + 用户 2026-09-07 调整）。

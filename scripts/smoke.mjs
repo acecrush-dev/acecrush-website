@@ -13,7 +13,7 @@
  *  8. 无 [locale] 动态段残留
  *  9. 无 @/i18n/navigation 老引用
  * 10. package.json 必要依赖存在
- * 11. AppNav 联系邮箱为 lunatic0072006@hotmail.com（plan 001）
+ * 11. AppNav 联系邮箱为 acecrushdev@gmail.com（用户 2026-09-11 切换）
  * 12. 全源码无旧邮箱 hi@acecrush.dev 残留（plan 001）
  *
  * 退出码：0 = 全部 PASS；1 = 任一 FAIL。
@@ -200,11 +200,11 @@ const missingDeps = requiredDeps.filter((d) => !pkg.dependencies[d]);
 if (missingDeps.length === 0) ok(`all required deps present`);
 else fail("deps missing", missingDeps.join(", "));
 
-console.log("\n[11/12] 联系邮箱已切到 lunatic0072006@hotmail.com");
+console.log("\n[11/12] 联系邮箱已切到 acecrushdev@gmail.com");
 // 用户 2026-09-05 移除全站 footer，联系入口搬到 AppNav 右上角，故这里改查 AppNav。
 const navSrc = read("components/layout/AppNav.tsx");
-if (navSrc.includes("lunatic0072006@hotmail.com")) ok("AppNav contact mailto uses new address");
-else fail("AppNav contact mailto", "lunatic0072006@hotmail.com not found");
+if (navSrc.includes("acecrushdev@gmail.com")) ok("AppNav contact mailto uses new address");
+else fail("AppNav contact mailto", "acecrushdev@gmail.com not found");
 
 console.log("\n[12/12] 无旧邮箱 hi@acecrush.dev 残留");
 let oldMailHits = [];

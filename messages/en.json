@@ -172,6 +172,6 @@
     "section5Title": "Server fallback (optional)",
     "section5Body": "If on-device AI inference fails (low-end hardware or iOS-side on-device CV not yet shipped), the app may send a single photo to our independently deployed CV service (port 8081). The service processes the image and discards it immediately. Only metadata such as device ID, SHA256, byte size, latency, and confidence is logged for quality improvement. The original image is not retained.",
     "section6Title": "Updates and contact",
-    "section6Body": "Policy updates ship with new app releases and are reflected both in the in-app Settings - Privacy policy screen and on this page. Questions: lunatic0072006@hotmail.com."
+    "section6Body": "Policy updates ship with new app releases and are reflected both in the in-app Settings - Privacy policy screen and on this page. Questions: acecrushdev@gmail.com."
   }
 }

@@ -9,7 +9,7 @@
 >
 > **plan 001 (2026-09-05)**: 单产品落地页 → 双产品品牌站；messages 重构为
 > `products.craft.*` / `products.swing.*`；补 metadata / skip link / focus-visible /
-> scroll-margin / color-scheme 等设计审查整改项。联系邮箱 `lunatic0072006@hotmail.com`。
+> scroll-margin / color-scheme 等设计审查整改项。联系邮箱 `acecrushdev@gmail.com`。
 
 ## 开发
 
