@@ -120,7 +120,7 @@
         "item2Title": "Streaming results in pass 1",
         "item2Body": "Segments appear while pass 1 is still running, so you can start reviewing before the full video finishes processing.",
         "item3Title": "Skeleton and bbox overlays",
-        "item3Body": "Want to see the body lines on each clip? Two passes to choose from. The **fast pass** paints the skeleton while it cuts — quick and good enough for a first review. The **polish pass** re-renders each clip afterward with a steadier person box and a smoother skeleton — slower, but the kind of cut you'd hand to a student. Both bake straight into the export, no post-processing needed."
+        "item3Body": "Want to see the body lines on each clip? Two passes to choose from. The **fast pass** paints the skeleton while it cuts - quick and good enough for a first review. The **polish pass** re-renders each clip afterward with a steadier person box and a smoother skeleton - slower, but the kind of cut you'd hand to a student. Both bake straight into the export, no post-processing needed."
       },
       "download": {
         "productHeading": "Swing Analysis",
@@ -174,5 +174,21 @@
     "section5Body": "If on-device AI inference fails (low-end hardware or iOS-side on-device CV not yet shipped), the app may send a single photo to our independently deployed CV service (port 8081). The service processes the image and discards it immediately. Only metadata such as device ID, SHA256, byte size, latency, and confidence is logged for quality improvement. The original image is not retained.",
     "section6Title": "Updates and contact",
     "section6Body": "Policy updates ship with new app releases and are reflected both in the in-app Settings - Privacy policy screen and on this page. Questions: acecrushdev@gmail.com."
+  },
+  "three3d": {
+    "modeToggle3d": "Enter 3D",
+    "modeToggleClassic": "Classic view",
+    "enterHint": "Drag to spin - click a label to enter",
+    "dragHintRoom": "Drag to look around",
+    "back": "Back",
+    "switchTo": "Switch product",
+    "downloadCta": "Download",
+    "docsCta": "Docs",
+    "contactNode": "Contact",
+    "loading": "Loading",
+    "webglFallback": "3D view needs WebGL. Showing classic page.",
+    "canvasAriaLabel": "3D tennis ball hub",
+    "productCraft": "AceCrush Craft",
+    "productSwing": "Swing Analysis"
   }
 }

@@ -10,6 +10,12 @@
 > **plan 001 (2026-09-05)**: 单产品落地页 → 双产品品牌站；messages 重构为
 > `products.craft.*` / `products.swing.*`；补 metadata / skip link / focus-visible /
 > scroll-margin / color-scheme 等设计审查整改项。联系邮箱 `acecrushdev@gmail.com`。
+>
+> **plan 003 (2026-09-11)**: 整站 3D 沉浸式重构。raw three.js 零新依赖；
+> 全屏 Hub（自转网球 + 2 个产品 marker）+ 球内产品房间（BackSide 球壳 +
+> 接缝光带 + CanvasTexture 面板 + 3D mesh 按钮）；AppNav 永远在顶端；
+> WebGL 不可用降级为提示卡（不切回经典页）。
+> `components/three/` 模块图见下文 §架构。
 
 ## 开发
 
@@ -42,6 +48,30 @@ npm run build
 构建产物可部署到：
 1. **Vercel**（推荐，最快上线）
 2. **自有 VPS + Nginx**（plan 003 部署栈，统一域名）
+
+## 架构（plan 003 3D 沉浸）
+
+```
+app/page.tsx
+└── components/layout/LandingContent.tsx      // 永远渲染 AppNav + <ThreeExperience/>
+    ├── components/layout/AppNav.tsx          // 顶端 nav：brand + Craft/Swing/Download/FAQ + locale/theme + contact
+    └── components/three/ThreeExperience.tsx  // WebGL 探测 + 启动 SceneManager
+        └── components/three/SceneManager.ts  // 单 renderer/RAF/ResizeObserver + 场景切换
+            ├── components/three/GlobeScene.ts       // Hub：网球 + 2 产品 marker + OrbitControls + 星尘
+            └── components/three/RoomScene.ts        // 房间：BackSide 球壳 + 接缝光带 + 4 面板 + 4 按钮
+                └── components/three/panelTexture.ts // CanvasTexture 工厂（drawPanel/drawButton/drawFelt）
+
+共享：
+- components/three/tennisBall.ts   // buildBallWithSeams / buildSeamRibbon / tennisSeamPoint / latLonToMarkerPos
+- components/three/overlay.ts      // SVG 折线 tooltip 覆盖层
+- components/three/tween.ts        // TweenGroup + 缓动函数（零依赖）
+- components/three/roomConfigs.ts  // buildCraftConfig / buildSwingConfig
+- lib/three/viewStore.ts           // useSyncExternalStore: view / phase / webglOk + requestEnter/Exit/initFromHash
+```
+
+降级链：WebGL 不可用 / contextlost → `webglFallback` 提示卡；`prefers-reduced-motion` 关闭自转与光带流动。
+
+i18n 新增 `three3d.*`（16 key：modeToggle3d/Classic、enterHint、dragHintRoom、back、switchTo、downloadCta、docsCta、contactNode、loading、webglFallback、canvasAriaLabel、productCraft、productSwing、enterCraftSr、enterSwingSr；en/zh 对齐）。
 
 ## 部署到 Vercel
 

@@ -336,3 +336,836 @@ a, button, summary { touch-action: manipulation; }
 .skip-link:focus-visible {
   transform: translateY(0);
 }
+/* ============================================================
+ * 3D immersive shell (plan 003 §4-13)
+ *
+ * 全屏 WebGL 壳层 + HUD 浮层 + 白幕 flash + 经典层容器
+ * 3D 模式下 <html data-view="3d"> 由 viewStore 同步，禁用滚动避免页面被滚走
+ */
+html[data-view="3d"] { overflow: hidden; }
+html[data-view="3d"] body { overflow: hidden; }
+
+.three-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: #0E1410;
+  overflow: hidden;
+}
+.three-shell .three-canvas-mount {
+  position: absolute;
+  inset: 0;
+}
+.three-shell canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 白幕 flash（js 控制 data-flash 属性 + opacity 过渡） */
+.three-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms ease;
+}
+.three-flash[data-flash="on"] { opacity: 1; }
+.three-flash[data-flash="out"] { opacity: 0; transition: opacity 320ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .three-flash { transition: none; }
+}
+
+/* HUD：四角浮层 */
+.three-hud {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+.three-hud.top-left { top: 16px; left: 16px; }
+.three-hud.top-right { top: 16px; right: 16px; }
+.three-hud.bottom-left { bottom: 16px; left: 16px; }
+.three-hud.bottom-right { bottom: 16px; right: 16px; }
+
+.three-hud-brand {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: #f5f5f0;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.three-hud-brand:hover { background: rgba(255,255,255,0.18); }
+
+.three-hud-hint {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.45);
+  color: rgba(255,255,255,0.85);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
+  animation: three-hud-hint-fade 1.2s ease-out 4s forwards;
+}
+@keyframes three-hud-hint-fade {
+  to { opacity: 0; pointer-events: none; }
+}
+
+.three-hud-toggle {
+  padding: 10px 16px;
+  min-height: 40px;
+  min-width: 40px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: #f5f5f0;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.18);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.three-hud-toggle:hover { background: rgba(255,255,255,0.2); }
+
+/* sr-only 焦点代理按钮组（键盘 a11y） */
+.sr-only-focusable-group {
+  position: fixed;
+  z-index: 70;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sr-only-focusable-group:focus-within {
+  /* 键盘聚焦时显示按钮组 */
+  background: rgba(0,0,0,0.6);
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.three-debug {
+  position: fixed;
+  bottom: 56px;
+  right: 16px;
+  z-index: 80;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.4);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* 经典层容器（3D 模式时整棵不渲染；保留类名便于样式隔离） */
+.app-classic { position: relative; z-index: 1; }
+
+/* 用户 2026-09-11 转向：放弃 classic view，只有 3D。
+   - nav 永远在顶端（AppNav z-index 高于 3D 壳层）
+   - 移除 .three-hud.toggle 相关样式（不再有 mode 切换按钮）
+   - AppNav 背景用 backdrop-filter 让 3D 球隐约可见
+*/
+.three-shell {
+  /* 上方留出 nav 高度（AppNav 是 fixed top 64px），3D canvas 占下方 */
+  top: 64px;
+  z-index: 1;
+}
+.three-shell.three-fallback {
+  top: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+}
+.three-fallback-card {
+  max-width: 480px;
+  padding: 32px;
+  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+.three-fallback-card h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--color-fg);
+}
+.three-fallback-card p {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-fg-muted);
+}
+
+/* AppNav 在 3D 模式下的样式：背景半透明 + backdrop-filter，让 3D 球隐约可见 */
+html[data-view="3d"] header,
+html:not([data-view]) header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(14, 20, 16, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================
+ * 用户 2026-09-11 转向：nav 3D btn 效果 + 立方体切换
+ * nav 上所有按钮的"3D 按钮"视觉（HTML div 模拟）：
+ *   - perspective + transform: translateZ 模拟深度
+ *   - hover: translateZ(更厚) + rotateX 微动 + 阴影变深
+ *   - active: translateZ(更薄) 模拟按下
+ */
+.app-nav-3d {
+  /* 顶层 nav 背景：3D 模式用半透明 + backdrop blur 让球隐约可见 */
+  background: color-mix(in oklab, var(--color-bg) 70%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--color-fg) 8%, transparent);
+  perspective: 800px;
+}
+
+.nav-btn-3d {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  background: color-mix(in oklab, var(--color-bg-elevated) 90%, transparent);
+  color: var(--color-fg);
+  border: 1px solid color-mix(in oklab, var(--color-fg) 10%, transparent);
+  transform-style: preserve-3d;
+  transition:
+    transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 220ms ease,
+    background 220ms ease,
+    color 220ms ease;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 2px 6px rgba(0, 0, 0, 0.18),
+    0 1px 2px rgba(0, 0, 0, 0.12);
+  will-change: transform;
+}
+.nav-btn-3d:hover {
+  transform: translateZ(4px) rotateX(4deg);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 6px 16px rgba(0, 0, 0, 0.28),
+    0 2px 4px rgba(0, 0, 0, 0.18);
+  background: color-mix(in oklab, var(--color-accent-soft) 60%, var(--color-bg-elevated));
+}
+.nav-btn-3d:active {
+  transform: translateZ(-2px) rotateX(-2deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition-duration: 80ms;
+}
+
+/* 产品 btn：hover 边框用产品 accent */
+.nav-btn-product {
+  position: relative;
+}
+.nav-btn-product::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: var(--btn-accent, var(--color-accent));
+  box-shadow: 0 0 8px var(--btn-accent, var(--color-accent));
+}
+
+.nav-btn-brand {
+  font-weight: 700;
+  font-size: 16px;
+  padding: 6px 12px;
+}
+
+.nav-btn-contact {
+  background: color-mix(in oklab, var(--color-accent-soft) 30%, var(--color-bg-elevated));
+}
+
+.nav-btn-menu {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+}
+
+.nav-menu-link {
+  display: block;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--color-fg);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 160ms ease;
+}
+.nav-menu-link:hover {
+  background: var(--color-surface-tint);
+}
+
+/* LocaleSwitcher 3D 立方体 */
+.locale-cube {
+  position: relative;
+  display: inline-block;
+}
+.locale-cube-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.locale-cube-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-fg);
+  background: color-mix(in oklab, var(--color-bg-elevated) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-fg) 10%, transparent);
+  cursor: pointer;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: background 200ms ease, color 200ms ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.locale-cube-face-front {
+  transform: translateZ(8px);
+}
+.locale-cube-face-front[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+.locale-cube-face-back[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+.locale-cube-face:hover {
+  background: color-mix(in oklab, var(--color-accent-soft) 50%, var(--color-bg-elevated));
+}
+
+/* ThemeSwitcher 3D 立方体（三面） */
+.theme-cube {
+  position: relative;
+  display: inline-block;
+}
+.theme-cube-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 480ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-cube-face {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -16px;
+  margin-top: -16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--color-fg);
+  background: color-mix(in oklab, var(--color-bg-elevated) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-fg) 10%, transparent);
+  cursor: pointer;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: background 200ms ease, color 200ms ease, transform 320ms ease, opacity 320ms ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.theme-cube-face[data-active="false"] {
+  opacity: 0.45;
+  filter: blur(0.5px);
+}
+.theme-cube-face[data-active="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  opacity: 1;
+  filter: none;
+}
+.theme-cube-face:hover {
+  background: color-mix(in oklab, var(--color-accent-soft) 50%, var(--color-bg-elevated));
+}
+
+/* ============================================================
+ * 用户 2026-09-11 转向：球内房间 polyhedron 包装样式
+ * 由 RoomScene.ts 通过 mesh.material.opacity / scale 控制面板显隐；
+ * 这里只放辅助 CSS（pointer cursor / fallback 文字）
+ */
+@media (prefers-reduced-motion: reduce) {
+  .locale-cube-inner,
+  .theme-cube-inner,
+  .nav-btn-3d {
+    transition-duration: 0ms;
+  }
+}
+
+/* ============================================================
+ * 用户 2026-09-11 转向 v2：locale/theme switcher 紧凑 + 移动端 popup
+ * 桌面端：3D 立方体（已存在）+ 紧贴；切换时短暂 scale 脉冲
+ * 移动端：触发按钮（图标 / 单字母） + 屏幕居中 fade popup
+ */
+.switcher-group {
+  /* 紧贴两个 switcher（gap-1 = 4px，比 gap-2 紧 4px） */
+}
+
+/* 桌面端 cube 翻转时短暂 scale 脉冲（增强"下拉感"） */
+@keyframes cube-pulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.locale-cube-flipping .locale-cube-inner,
+.theme-cube-flipping .theme-cube-inner {
+  animation: cube-pulse 480ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 移动端触发按钮（极简，仅图标或单字母） */
+.nav-btn-mini {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 移动端 popup：全屏遮罩 + 居中卡片 + fade/scale 入场 */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: popup-overlay-fade 220ms ease;
+}
+@keyframes popup-overlay-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.popup-card {
+  width: 100%;
+  max-width: 360px;
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  animation: popup-card-in 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popup-card-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.popup-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.popup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.popup-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-fg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background 180ms ease, transform 120ms ease, color 180ms ease;
+}
+.popup-option:hover {
+  background: var(--color-surface-tint);
+}
+.popup-option:active {
+  transform: scale(0.97);
+}
+.popup-option[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+}
+
+/* 移动端 popup 卡内嵌图标（theme 用） */
+.popup-card-theme .popup-option {
+  justify-content: flex-start;
+  padding: 14px 20px;
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-overlay,
+  .popup-card,
+  .locale-cube-flipping .locale-cube-inner,
+  .theme-cube-flipping .theme-cube-inner {
+    animation: none;
+  }
+}
+
+/* ============================================================
+ * 用户 2026-09-11 转向 v3：底部居中 back btn（HTML 覆盖层，仅房间模式）
+ * 移除了原 sr-only-focusable 焦点代理按钮组（避免视觉/语义冗余）
+ */
+.three-hud.bottom-center-room {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: back-btn-in 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes back-btn-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.nav-btn-back {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 28px;
+  min-height: 44px;
+  background: color-mix(in oklab, var(--color-bg-elevated) 95%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .three-hud.bottom-center-room {
+    animation: none;
+  }
+}
+
+/* ============================================================
+ * 用户 2026-09-11 转向 v4：透明 header + 简洁 dropdown 切换
+ * 移除了 logo 的 3D btn 背景；nav 不再有 backdrop blur / border；融入 3D 场景
+ * locale / theme 用普通按钮 + 下拉（替代之前不可点击的 3D cube）
+ */
+.app-nav-flat {
+  /* 完全透明，无 border / 无 backdrop-blur，让 3D 场景主导视觉 */
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
+  position: sticky;
+  top: 0;
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-fg);
+  text-decoration: none;
+  padding: 4px 0;
+  /* 不再有 3D btn 背景 / box / shadow */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+  transition: color 200ms ease, transform 200ms ease;
+}
+.app-brand:hover {
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+.app-brand-text {
+  /* 文字与 logo 同行，nav 上与其他控件视觉一致 */
+}
+
+.app-btn-flat {
+  /* 移动端汉堡按钮：扁平，无 3D 效果 */
+  background: color-mix(in oklab, var(--color-bg-elevated) 80%, transparent);
+  color: var(--color-fg);
+  border: 1px solid color-mix(in oklab, var(--color-fg) 12%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 200ms ease;
+}
+.app-btn-flat:hover {
+  background: color-mix(in oklab, var(--color-accent-soft) 50%, var(--color-bg-elevated));
+}
+
+.app-menu-popup {
+  background: color-mix(in oklab, var(--color-bg-elevated) 92%, transparent);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Locale / Theme 切换按钮（紧凑 + 显示当前态 + 下拉箭头） */
+.nav-btn-switcher {
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 4px;
+  min-width: 0;
+}
+.nav-btn-switcher-label {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.nav-btn-switcher-caret {
+  font-size: 10px;
+  margin-left: 2px;
+  opacity: 0.7;
+  transition: transform 200ms ease;
+}
+.nav-btn-switcher[aria-expanded="true"] .nav-btn-switcher-caret {
+  transform: rotate(180deg);
+}
+
+/* Dropdown 容器：relative 定位，菜单 absolute 在按钮下方 */
+.nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  padding: 6px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--color-bg-elevated) 95%, transparent);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: dropdown-menu-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes dropdown-menu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 160ms ease, color 160ms ease;
+}
+.nav-dropdown-item:hover {
+  background: var(--color-surface-tint);
+}
+.nav-dropdown-item[aria-selected="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+/* 紧贴的 switcher 组（gap-0.5 = 2px） */
+.switcher-group {
+  /* 容器内部已用 gap-0.5 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-dropdown-menu {
+    animation: none;
+  }
+}
+
+/* ============================================================
+ * 用户 2026-09-11 转向 v5：nav 立体感更强 + 普通矩形（无圆角） + 无红蓝点
+ * 区别于球体上的产品 marker 圆点（球上是 dots，nav 是 rectangles）
+ */
+.nav-btn-3d,
+.nav-btn-brand,
+.nav-btn-product,
+.nav-btn-contact,
+.nav-btn-switcher,
+.nav-btn-menu,
+.app-btn-flat {
+  border-radius: 0 !important;  /* 普通矩形，不要圆角 */
+}
+
+/* 立体感增强：更深的 perspective + 更大的 shadow + 更厚的 translateZ */
+.app-nav-flat {
+  perspective: 1200px;  /* 之前 800，更深 */
+}
+.nav-btn-3d {
+  /* 强化 3D btn：更厚的 box-shadow 多层 + 更明显的 hover translateZ */
+  box-shadow:
+    /* 顶部高光（内嵌） */
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    /* 主阴影 - 落地的厚重感 */
+    0 4px 8px rgba(0, 0, 0, 0.22),
+    0 8px 16px rgba(0, 0, 0, 0.18),
+    /* 边缘阴影 */
+    0 1px 2px rgba(0, 0, 0, 0.14);
+  transition:
+    transform 240ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 240ms ease,
+    background 220ms ease,
+    color 220ms ease;
+  will-change: transform;
+}
+.nav-btn-3d:hover {
+  /* hover: 抬升更多 + rotateX 更明显 */
+  transform: translateZ(8px) rotateX(6deg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 16px rgba(0, 0, 0, 0.32),
+    0 16px 32px rgba(0, 0, 0, 0.22),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.nav-btn-3d:active {
+  /* active: 下沉 + 阴影减弱（按下手感） */
+  transform: translateZ(-4px) rotateX(-3deg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.18),
+    0 2px 4px rgba(0, 0, 0, 0.14);
+  transition-duration: 80ms;
+}
+
+/* 移除 nav 上产品 btn 的红/蓝点（用户 2026-09-11 v5：不要 dot，
+   区别于球体上的彩色 marker dot — nav 上是 plain rectangles） */
+.nav-btn-product::before {
+  content: none !important;
+}
+
+/* Dropdown 菜单：普通矩形（无圆角） */
+.nav-dropdown-menu {
+  border-radius: 0 !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.nav-dropdown-item {
+  border-radius: 0 !important;
+}
+
+/* App menu popup（移动端）也用矩形 */
+.app-menu-popup {
+  border-radius: 0 !important;
+}
+.nav-menu-link {
+  border-radius: 0 !important;
+}
+
+/* Popup（移动端居中）也用矩形 */
+.popup-card,
+.popup-overlay {
+  /* popup-card 仍保留略圆润以与 nav 区分（focused modal） */
+}
+
+/* ============================================================
+ * 用户 2026-09-11 v7：联系我们仍保留圆角（与其他 nav 矩形区分）
+ * 右边 2 个 switcher btn 大小统一
+ */
+.nav-btn-contact {
+  border-radius: 999px !important;  /* 圆角胶囊形，区别于其他矩形 nav btn */
+  padding: 8px 16px;
+}
+
+/* Locale / Theme 切换按钮统一尺寸（之前 36 vs 32 不一致） */
+.nav-btn-switcher {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-btn-switcher-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ============================================================
+ * 用户 2026-09-11 v6：品牌 3D 文字浮在球上方，HTML brand 不再渲染
+ * 占位 span 保留 nav 左侧布局对齐
+ */
+.app-brand-placeholder {
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
+}
+
+/* ============================================================
+ * 用户 2026-09-11 v8：brand 静态 nav 左上角 logo
+ * - 与 3D 球体完全分隔开（独立 HTML，不在 scene 里）
+ * - 不能动（不旋转 / 不浮起，纯静态）
+ * - 无 3D btn 背景 / box（保持简洁）
+ */
+.app-brand-static {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-fg);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 4px 0;
+  /* 完全静态：no transform / no animation */
+  transform: none;
+  transition: color 200ms ease;
+}
+.app-brand-static:hover {
+  color: var(--color-accent);
+  /* hover 不动，只换颜色 */
+  transform: none;
+}
