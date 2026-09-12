@@ -18,14 +18,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
+  closeDetail,
   initFromHash,
   requestEnter,
   requestExit,
+  requestDetail,
   setWebglOk,
+  useDetailView,
   useThreeView,
 } from "@/lib/three/viewStore";
 import { SceneManager } from "./SceneManager";
 import { buildCraftConfig, buildSwingConfig } from "./roomConfigs";
+import { DetailPopup } from "./DetailPopup";
 
 function probeWebgl(): boolean {
   if (typeof window === "undefined") return false;
@@ -38,6 +42,7 @@ export function ThreeExperience() {
   const tCraft = useTranslations("products.craft");
   const tSwing = useTranslations("products.swing");
   const view = useThreeView();
+  const detailView = useDetailView();
   const mountRef = useRef<HTMLDivElement>(null);
   const managerRef = useRef<SceneManager | null>(null);
   const [webglOk, setWebglOkState] = useState(true);
@@ -127,6 +132,8 @@ export function ThreeExperience() {
         if (room === "craft") requestEnter("craft");
         else if (room === "swing") requestEnter("swing");
       },
+      // 用户 v20：双击面板触发详细 popup
+      onPanelActivate: (product, idx) => requestDetail(product, idx),
       roomConfigs,
       buttonLabels,
       switchUrls: {
@@ -174,7 +181,7 @@ export function ThreeExperience() {
 
   return (
     <div
-      className="three-shell"
+      className={`three-shell${detailView ? " detail-blur" : ""}`}
       role="region"
       aria-label={t("canvasAriaLabel")}
     >
@@ -186,7 +193,7 @@ export function ThreeExperience() {
           </span>
         )}
       </div>
-      {view !== "globe" && (
+      {view !== "globe" && !detailView && (
         <div className="three-hud bottom-center-room">
           <button
             type="button"
@@ -199,6 +206,16 @@ export function ThreeExperience() {
         </div>
       )}
       <div className="three-flash" data-flash="idle" />
+      {/* 用户 v20：双击面板触发详细 popup */}
+      {detailView && (
+        <DetailPopup
+          product={detailView.product}
+          panelIndex={detailView.panelIndex}
+          onClose={() => closeDetail()}
+          tCraft={tCraft}
+          tSwing={tSwing}
+        />
+      )}
     </div>
   );
 }

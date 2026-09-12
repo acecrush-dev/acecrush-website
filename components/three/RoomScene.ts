@@ -24,7 +24,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   drawButton,
   drawFelt,
-  drawHighlightBorder,
   drawPanel,
   disposeTexture,
 } from "./panelTexture";
@@ -60,15 +59,18 @@ export type RoomSceneOpts = {
   renderer: THREE.WebGLRenderer;
   config: RoomConfig;
   onAction: (action: RoomButton["action"]) => void;
+  /** 用户 v20：双击面板触发，传入 panelIndex */
+  onPanelActivate?: (idx: number) => void;
   reduced: boolean;
 };
 
-// 用户 2026-09-11 v12：缩小面板留 3px space 间距 + 拖拽方向反转
-//   PANEL_W 4.2 → 3.4（更窄面板，相邻面之间留视觉空隙）
+// 用户 2026-09-13 v25：缩小面板 + 整体下移
+//   - PANEL_W 3.4 → 2.8, PANEL_H 2.2 → 1.8（更小）
+//   - intro 面板 y 从 0.4/0.3 降到 0.1（避免顶部被切）
 const ROOM_R = 6.5;        // 球壳半径（内壁）
-const PANEL_RING_R = 3.2;  // polyhedron 各面板到中心距离
-const PANEL_W = 3.4;       // 面板宽度（缩窄 → 留 3px 视觉空隙）
-const PANEL_H = 2.2;       // 面板高度
+const PANEL_RING_R = 3.0;  // polyhedron 各面板到中心距离（略内推）
+const PANEL_W = 2.8;       // 面板宽度
+const PANEL_H = 1.8;       // 面板高度
 
 export class RoomScene {
   private scene: THREE.Scene;
@@ -78,14 +80,16 @@ export class RoomScene {
   private controls: OrbitControls;
   private config: RoomConfig;
   private onAction: (a: RoomButton["action"]) => void;
+  private onPanelActivate?: (idx: number) => void;
   private reduce: boolean;
   private width: number;
   private height: number;
   private textures: THREE.CanvasTexture[] = [];
   private buttonMeshes: THREE.Mesh[] = [];
   private panelMeshes: THREE.Mesh[] = [];
-  private panelBorderMeshes: THREE.Mesh[] = [];
   private activePanelIndex = -1;
+  /** 用户 v32：detail popup 打开时强制 active 的面板索引（覆盖几何检测） */
+  private detailActiveIndex: number | null = null;
   private hovered = -1;
   private raycaster = new THREE.Raycaster();
   private ndc = new THREE.Vector2();
@@ -98,6 +102,7 @@ export class RoomScene {
     this.renderer = opts.renderer;
     this.config = opts.config;
     this.onAction = opts.onAction;
+    this.onPanelActivate = opts.onPanelActivate;
     this.reduce = opts.reduced;
     this.width = opts.mount.clientWidth || window.innerWidth;
     this.height = opts.mount.clientHeight || window.innerHeight;
@@ -185,45 +190,6 @@ export class RoomScene {
       mesh.userData.index = i;
       this.panelMeshes.push(mesh);
       this.scene.add(mesh);
-
-      // 用户 2026-09-11 v15：活跃面板高亮边框要清晰醒目
-      // 边框 mesh 比面板大 0.6 unit（每边 0.3），始终朝向相机，初始隐藏
-      const isDark =
-        typeof document === "undefined"
-          ? true
-          : document.documentElement.classList.contains("dark");
-      const borderColor = isDark
-        ? "rgba(255, 255, 255, 1.0)"   // dark 模式：纯白边框
-        : "rgba(20, 24, 26, 1.0)";    // light 模式：纯深色边框
-      const glowColor = this.config.accent; // 房间 accent 颜色作为内层光晕
-      const borderMargin = 0.3;
-      const borderTex = drawHighlightBorder({
-        width: PANEL_W + borderMargin * 2,
-        height: PANEL_H + borderMargin * 2,
-        isDark,
-        borderColor,
-        glowColor,
-        borderWidth: 12,  // 粗边框
-      });
-      this.textures.push(borderTex);
-      const borderMat = new THREE.MeshBasicMaterial({
-        map: borderTex,
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-        depthTest: false,  // 永远显示在面板前
-      });
-      const borderMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(PANEL_W + borderMargin * 2, PANEL_H + borderMargin * 2),
-        borderMat
-      );
-      borderMesh.position.set(x, panel.y ?? 0, z - 0.005); // 略前于面板
-      borderMesh.lookAt(0, panel.y ?? 0, 0);
-      borderMesh.renderOrder = 10; // 永远在最后渲染
-      borderMesh.userData.index = i;
-      borderMesh.visible = false;
-      this.panelBorderMeshes.push(borderMesh);
-      this.scene.add(borderMesh);
     }
 
     // 5) 底部 3D 按钮（环形面板下方）
@@ -285,23 +251,43 @@ export class RoomScene {
       mat.opacity = 0.25 + Math.sin(t * 0.6) * 0.1;
     }
 
+    // 用户 v32：detail popup 打开时强制 active 面板（跳过几何检测）
+    if (this.detailActiveIndex !== null) {
+      // 已由 setDetailActive 主动设置过 active 面板
+      // 此处只需保持其他面板的非 active 状态（已重建过），无需重新检测
+      // 仍然更新 scale/opacity（用 detail 面板的 facing）
+      this.camera.getWorldDirection(this.cameraDir);
+      for (let i = 0; i < this.panelMeshes.length; i++) {
+        const mesh = this.panelMeshes[i];
+        const normal = mesh.position.clone().normalize().negate();
+        const facing = -normal.dot(this.cameraDir);
+        const visibility = Math.max(0, Math.min(1, (facing + 0.6) / 1.2));
+        const scale = 0.78 + 0.22 * visibility;
+        const opacity = 0.45 + 0.55 * visibility;
+        mesh.scale.set(scale, scale, 1);
+        (mesh.material as THREE.MeshBasicMaterial).opacity = opacity;
+      }
+      return;
+    }
+
     // 更新 panel 显隐 / scale（基于与相机的朝向）
     this.camera.getWorldDirection(this.cameraDir);
     let bestIndex = -1;
     let bestFacing = -2;
     for (let i = 0; i < this.panelMeshes.length; i++) {
       const mesh = this.panelMeshes[i];
-      // 面板法线方向（指向中心 = -position）
+      // 面板法线方向（指向中心 = -position.normalize = "from origin to panel" 的反向）
       const normal = mesh.position.clone().normalize().negate();
-      // 与相机视线方向的夹角余弦
-      const facing = normal.dot(this.cameraDir);
+      // 用户 v17 修复：facing 应该用 "从面板指向相机" 的方向，与 normal 点乘
+      // 之前用 cameraDir（相机视线方向 = 从相机向外），结果恒为 -1（面板永远"背朝相机"）
+      // → 修复：-normal.dot(cameraDir) = normal.dot(directionFromPanelToCamera)
+      const facing = -normal.dot(this.cameraDir);
       // 用户 2026-09-11 v10：减少虚化，提升非正面面可读性
       //   facing = 1（正对相机）→ visibility = 1
       //   facing = 0（垂直侧面）→ visibility = 0.55
       //   facing = -1（背面）→ visibility = 0.1
       const visibility = Math.max(0, Math.min(1, (facing + 0.6) / 1.2));
       // 活跃面：scale 1.0 + opacity 1.0；侧面：scale 0.78 + opacity 0.45
-      // （之前 0.55 + 0.18 太模糊）
       const scale = 0.78 + 0.22 * visibility;
       const opacity = 0.45 + 0.55 * visibility;
       mesh.scale.set(scale, scale, 1);
@@ -313,22 +299,46 @@ export class RoomScene {
       }
     }
 
-    // 用户 2026-09-11 v15：活跃面板高亮边框要清晰醒目
-    //   - 阈值：bestFacing > 0.0（任何前半球最朝相机面板即 active）
-    //   - 切换时快速 lerp（0.3 / frame ≈ 100ms）→ 不闪烁
-    //   - dark/light 模式颜色区分（边框纯白 / 纯深）
-    if (bestIndex !== this.activePanelIndex) {
+    // 用户 v28：active 状态改为底色变化（不用边框）
+    //   - 检测 active panel 切换 → 重建该面板的 CanvasTexture（带 active=true, accent）
+    //   - 同时重建旧的 active panel（恢复 inactive 底色）
+    //   - 每帧只在 activePanelIndex 变化时重建（性能）
+    if (bestIndex !== this.activePanelIndex && bestFacing > 0.0) {
+      const prev = this.activePanelIndex;
       this.activePanelIndex = bestIndex;
+      if (prev >= 0 && prev < this.panelMeshes.length) {
+        this.rebuildPanelTexture(prev, false);
+      }
+      if (bestIndex >= 0 && bestIndex < this.panelMeshes.length) {
+        this.rebuildPanelTexture(bestIndex, true);
+      }
     }
-    for (let i = 0; i < this.panelBorderMeshes.length; i++) {
-      const bm = this.panelBorderMeshes[i];
-      const isActive = i === bestIndex && bestFacing > 0.0;
-      const target = isActive ? 1.0 : 0.0;
-      const cur = (bm.material as THREE.MeshBasicMaterial).opacity;
-      // 平滑过渡（lerp 0.3 / frame 看起来 ~100ms，更快响应）
-      (bm.material as THREE.MeshBasicMaterial).opacity = cur + (target - cur) * 0.3;
-      bm.visible = cur > 0.01 || isActive;
-    }
+  }
+
+  /** 用户 v28：重建面板 CanvasTexture（active 状态切换底色） */
+  private rebuildPanelTexture(idx: number, active: boolean) {
+    const mesh = this.panelMeshes[idx];
+    if (!mesh) return;
+    const panel = this.config.panels[idx];
+    const isDark =
+      typeof document === "undefined"
+        ? true
+        : document.documentElement.classList.contains("dark");
+    const newTex = drawPanel({
+      title: panel.title,
+      eyebrow: panel.eyebrow,
+      body: panel.body,
+      qaList: panel.qaList,
+      isDark,
+      active,
+      accent: this.config.accent,
+    });
+    // 释放旧纹理
+    const oldTex = (mesh.material as THREE.MeshBasicMaterial).map;
+    this.textures.push(newTex);
+    (mesh.material as THREE.MeshBasicMaterial).map = newTex;
+    (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
+    disposeTexture(oldTex);
   }
 
   private rebuildButtonTexture(idx: number, hovered: boolean) {
@@ -376,6 +386,22 @@ export class RoomScene {
     if (action) this.onAction(action);
   }
 
+  /**
+   * 用户 v20：双击面板打开详细 popup
+   * raycast 击中 panel mesh → 调 onPanelActivate(index)
+   */
+  handleDoubleClick(e: PointerEvent) {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    this.ndc.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+    this.raycaster.setFromCamera(this.ndc, this.camera);
+    const hits = this.raycaster.intersectObjects(this.panelMeshes, false);
+    const idx = hits[0]?.object.userData.index;
+    if (typeof idx === "number") {
+      this.onPanelActivate?.(idx);
+    }
+  }
+
   resize() {
     this.width = this.mount.clientWidth || window.innerWidth;
     this.height = this.mount.clientHeight || window.innerHeight;
@@ -393,33 +419,27 @@ export class RoomScene {
   }
 
   applyTheme() {
-    // 主题切换：重建所有面板的边框纹理（dark / light 不同色）
-    const isDark =
-      typeof document === "undefined"
-        ? true
-        : document.documentElement.classList.contains("dark");
-    const borderColor = isDark
-      ? "rgba(255, 255, 255, 1.0)"
-      : "rgba(20, 24, 26, 1.0)";
-    const glowColor = this.config.accent;
-    const borderMargin = 0.3;
-    for (let i = 0; i < this.panelBorderMeshes.length; i++) {
-      const bm = this.panelBorderMeshes[i];
-      const oldTex = (bm.material as THREE.MeshBasicMaterial).map;
-      const newTex = drawHighlightBorder({
-        width: PANEL_W + borderMargin * 2,
-        height: PANEL_H + borderMargin * 2,
-        isDark,
-        borderColor,
-        glowColor,
-        borderWidth: 12,
-      });
-      this.textures.push(newTex);
-      (bm.material as THREE.MeshBasicMaterial).map = newTex;
-      (bm.material as THREE.MeshBasicMaterial).needsUpdate = true;
-      disposeTexture(oldTex);
+    // 主题切换：重建所有面板纹理（dark / light 不同底色）
+    for (let i = 0; i < this.panelMeshes.length; i++) {
+      const wasActive = i === this.activePanelIndex;
+      this.rebuildPanelTexture(i, wasActive);
     }
     this.applyLocale(this.config.buttonLabels);
+  }
+
+  /** 用户 v32：detail popup 打开时强制 active 面板（覆盖几何检测） */
+  setDetailActive(idx: number | null) {
+    if (this.detailActiveIndex === idx) return;
+    const prev = this.detailActiveIndex;
+    this.detailActiveIndex = idx;
+    if (prev != null && prev >= 0 && prev < this.panelMeshes.length) {
+      this.rebuildPanelTexture(prev, false);
+    }
+    if (idx != null && idx >= 0 && idx < this.panelMeshes.length) {
+      this.rebuildPanelTexture(idx, true);
+      // 重置几何检测的 active index 以避免视觉跳变
+      this.activePanelIndex = idx;
+    }
   }
 
   dispose() {

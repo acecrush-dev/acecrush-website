@@ -21,6 +21,7 @@ import { TweenGroup } from "./tween";
 import { GlobeScene } from "./GlobeScene";
 import { RoomScene, type RoomConfig } from "./RoomScene";
 import {
+  getDetailView,
   getViewState,
   setWebglOk,
   requestEnter,
@@ -33,6 +34,8 @@ export type SceneManagerOpts = {
   labels: { craft: string; swing: string };
   reduced: boolean;
   onMarkerActivate?: (marker: "craft" | "swing") => void;
+  /** 用户 v20：双击面板进入详细 popup */
+  onPanelActivate?: (product: "craft" | "swing", panelIndex: number) => void;
   roomConfigs: { craft: RoomConfig; swing: RoomConfig };
   buttonLabels: { back: string; switch: string; download: string; docs: string };
   switchUrls: { craft: string; swing: string };
@@ -48,11 +51,14 @@ export class SceneManager {
   private running = true;
   private activeScene: GlobeScene | RoomScene | null = null;
   private activeView: View = "globe";
+  /** 用户 v32：detail popup 激活的面板索引（用于同步背景几面体） */
+  private detailActiveIdx: number | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private onContextLost: ((e: Event) => void) | null = null;
   private onVisibilityChange: (() => void) | null = null;
   private pointerMoveHandler: ((e: PointerEvent) => void) | null = null;
   private clickHandler: ((e: MouseEvent) => void) | null = null;
+  private dblclickHandler: ((e: MouseEvent) => void) | null = null;
   private opts: SceneManagerOpts;
   private viewCheckInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -132,12 +138,29 @@ export class SceneManager {
       }
     };
     this.renderer.domElement.addEventListener("click", this.clickHandler);
+    // 用户 v20：双击面板 → 详细 popup
+    this.dblclickHandler = (e: MouseEvent) => {
+      if (this.activeScene instanceof RoomScene) {
+        const pe = e as unknown as PointerEvent;
+        this.activeScene.handleDoubleClick(pe);
+      }
+    };
+    this.renderer.domElement.addEventListener("dblclick", this.dblclickHandler);
 
-    // 监听 viewStore 变化（globe ↔ craft / swing）
+    // 监听 viewStore + detailView 变化
     this.viewCheckInterval = setInterval(() => {
       const v = getViewState().view;
       if (v !== this.activeView) {
         this.activateScene(v);
+      }
+      // 用户 v32：detail popup 打开时同步背景几面体的 active 面板
+      const dv = getDetailView();
+      const targetIdx = dv ? dv.panelIndex : null;
+      if (targetIdx !== this.detailActiveIdx) {
+        this.detailActiveIdx = targetIdx;
+        if (this.activeScene instanceof RoomScene) {
+          this.activeScene.setDetailActive(targetIdx);
+        }
       }
     }, 100);
 
@@ -172,6 +195,7 @@ export class SceneManager {
         renderer: this.renderer,
         config,
         onAction: (action) => this.handleRoomAction(action, view),
+        onPanelActivate: (idx) => this.opts.onPanelActivate?.(view, idx),
         reduced: this.opts.reduced,
       });
       this.activeScene.resize();
@@ -268,6 +292,10 @@ export class SceneManager {
     if (this.clickHandler) {
       this.renderer.domElement.removeEventListener("click", this.clickHandler);
       this.clickHandler = null;
+    }
+    if (this.dblclickHandler) {
+      this.renderer.domElement.removeEventListener("dblclick", this.dblclickHandler);
+      this.dblclickHandler = null;
     }
     this.activeScene?.dispose();
     this.renderer.dispose();

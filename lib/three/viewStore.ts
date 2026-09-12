@@ -29,6 +29,8 @@ type State = {
   view: View;
   phase: Phase;
   webglOk: boolean;
+  /** 用户 v20：双击面板进入详细模式 popup；null = 在 3D 中 */
+  detailView: { product: "craft" | "swing"; panelIndex: number } | null;
 };
 
 const listeners = new Set<() => void>();
@@ -37,6 +39,7 @@ let state: State = {
   view: "globe",
   phase: "idle",
   webglOk: true,
+  detailView: null,
 };
 
 function setState(patch: Partial<State>) {
@@ -57,6 +60,10 @@ function getSnapshot() {
 
 export function getViewState() {
   return state;
+}
+
+export function getDetailView() {
+  return state.detailView;
 }
 
 export function requestEnter(room: "craft" | "swing") {
@@ -85,6 +92,23 @@ export function setWebglOk(ok: boolean) {
 
 export function setPhase(p: Phase) {
   setState({ phase: p });
+}
+
+/** 用户 2026-09-11 v20：双击面板打开详细模式 popup */
+export function requestDetail(product: "craft" | "swing", panelIndex: number) {
+  setState({ detailView: { product, panelIndex } });
+}
+
+export function closeDetail() {
+  setState({ detailView: null });
+}
+
+/** 翻到下一页 / 上一页（detail popup 用） */
+export function navDetail(delta: number) {
+  if (!state.detailView) return;
+  setState({
+    detailView: { ...state.detailView, panelIndex: state.detailView.panelIndex + delta },
+  });
 }
 
 function syncHash() {
@@ -122,4 +146,8 @@ export function useThreePhase(): Phase {
 
 export function useThreeWebglOk(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot).webglOk;
+}
+
+export function useDetailView(): State["detailView"] {
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot).detailView;
 }

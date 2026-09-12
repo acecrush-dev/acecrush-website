@@ -109,6 +109,7 @@ const required = [
   "components/three/roomConfigs.ts",
   "components/three/SceneManager.ts",
   "components/three/brandText.ts",
+  "components/three/DetailPopup.tsx",
   "components/three/ThreeExperience.tsx",
   "lib/three/viewStore.ts",
   "app/layout.tsx",

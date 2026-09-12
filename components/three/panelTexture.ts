@@ -49,6 +49,10 @@ export type PanelOpts = {
   body?: string;
   qaList?: { q: string; a: string }[];
   isDark?: boolean;
+  /** 用户 v28：active 状态，背景使用 accent 色而非默认深色 */
+  active?: boolean;
+  /** 房间 accent 色（active 时背景用） */
+  accent?: string;
 };
 
 /**
@@ -60,15 +64,35 @@ export function drawPanel(opts: PanelOpts): THREE.CanvasTexture {
   const H = 576;
   const { c, ctx } = setupCanvas(W, H);
   const isDark = opts.isDark ?? true;
+  const active = opts.active ?? false;
 
-  // 背景：深色卡（dark 主题：0x0E1410；light：白）
-  ctx.fillStyle = isDark ? "#0E1410" : "#FAFAF6";
+  // 背景：用户 v34 - 更亮的网球绿（lime / chartreuse，像真的网球 🎾）
+  //   dark mode: 亮网球绿 rgba(200, 230, 60, 0.38)（白字高对比，绿感强）
+  //   light mode: 更亮网球绿 rgba(200, 230, 60, 0.55)（黑字高对比，绿感强）
+  //   inactive: 默认深色 / 浅色
+  let bgColor: string;
+  if (active) {
+    if (isDark) {
+      bgColor = "rgba(200, 230, 60, 0.38)";
+    } else {
+      bgColor = "rgba(200, 230, 60, 0.55)";
+    }
+  } else {
+    bgColor = isDark ? "#0E1410" : "#FAFAF6";
+  }
+  ctx.fillStyle = bgColor;
   roundedRect(ctx, 0, 0, W, H, 24);
   ctx.fill();
 
-  // 边框
-  ctx.strokeStyle = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)";
-  ctx.lineWidth = 2;
+  // 边框（淡），active 时稍亮
+  ctx.strokeStyle = active
+    ? isDark
+      ? "rgba(255,255,255,0.18)"
+      : "rgba(0,0,0,0.14)"
+    : isDark
+      ? "rgba(255,255,255,0.12)"
+      : "rgba(0,0,0,0.10)";
+  ctx.lineWidth = active ? 2.5 : 2;
   ctx.stroke();
 
   // eyebrow（小字、accent 蓝/红）：避用 smoke 禁用的科技绿 hex
@@ -209,66 +233,78 @@ export function drawFelt(): THREE.CanvasTexture {
 /**
  * 渲染面板高亮边框纹理（活跃面板用）。
  *
- * 透明中心 + 四条彩色边框，主题感知：
- *   - dark mode: 浅色边框 + accent 光晕
- *   - light mode: 深色边框 + accent 光晕
+ * 用户 v22：高亮要克制不突兀 → 边框更细 + 半透明 + 不用 accent 内层线。
+ * 中心透明 → 内容透出。主题感知（dark/light 不同色）。
  *
- * 返回的 CanvasTexture 透明度：中心 = 0，边框 = 1（+shadow glow 半透明外延）。
+ * 返回的 CanvasTexture：中心 = 0（透明），边框 = 半透明 1（柔和）。
  * mesh 用稍大于 panel 的 PlaneGeometry 形成"边框外框"效果。
- *
- * 用户 2026-09-11 v15：边框要清晰醒目（之前 4px 太细看不见）。
  */
+const PIXEL_RES = 1024;
+
 export type HighlightBorderOpts = {
+  /** mesh 宽（world units），仅用于计算 canvas 像素长宽比 */
   width: number;
+  /** mesh 高（world units） */
   height: number;
   isDark: boolean;
-  /** 边框色：dark 模式下浅色，light 模式下深色 */
+  /** 边框色：dark 模式下浅色，light 模式下深色（用户 v22 改半透明以柔和） */
   borderColor: string;
-  /** 内层光晕色（accent），叠在边框内侧 */
+  /** 保留兼容但用户 v22 已不用（避免 swing 红边框突兀） */
   glowColor?: string;
   borderWidth?: number;
 };
 
 export function drawHighlightBorder(opts: HighlightBorderOpts): THREE.CanvasTexture {
-  const { width: W, height: H, isDark, borderColor, glowColor, borderWidth = 12 } = opts;
+  const { width, height, borderColor, borderWidth = 8 } = opts;
+
+  const aspect = height / width;
+  const W = PIXEL_RES;
+  const H = Math.round(W * aspect);
   const { c, ctx } = setupCanvas(W, H);
 
-  // 外层：粗边框 + 强光晕（用户 v15：边框要清晰醒目）
-  ctx.strokeStyle = borderColor;
-  ctx.lineWidth = borderWidth;
-  ctx.shadowColor = borderColor;
-  ctx.shadowBlur = 28;       // 强光晕
+  // 用户 v22：边框更细 (~0.7% 宽度 @ 1024 ≈ 7px)，半透明
+  const borderPx = Math.max(4, Math.round(W * 0.007));
+
+  // 边框颜色半透明处理（如果传入纯色，注入 alpha 0.55）
+  const softColor = injectAlpha(borderColor, 0.55);
+
+  // 单层细边框，无 accent 内层线（用户 v22: 红色太突兀，移除）
+  ctx.strokeStyle = softColor;
+  ctx.lineWidth = borderPx;
   ctx.lineJoin = "miter";
   ctx.miterLimit = 4;
 
-  // 画四边框（用 rect 的 stroke）
   ctx.beginPath();
-  ctx.rect(borderWidth / 2, borderWidth / 2, W - borderWidth, H - borderWidth);
+  ctx.rect(borderPx / 2, borderPx / 2, W - borderPx, H - borderPx);
   ctx.stroke();
-  ctx.shadowBlur = 0;
 
-  // 内层光晕（accent 色）：在边框内侧 12px 处画一条粗线
-  if (glowColor) {
-    ctx.strokeStyle = glowColor;
-    ctx.lineWidth = 4;
-    ctx.shadowColor = glowColor;
-    ctx.shadowBlur = 16;
-    ctx.beginPath();
-    ctx.rect(
-      borderWidth + 10,
-      borderWidth + 10,
-      W - (borderWidth + 10) * 2,
-      H - (borderWidth + 10) * 2
-    );
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-  }
+  // glowColor 参数保留兼容但不绘制（用户 v22 移除 accent 内层线）
+  void opts.glowColor;
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 16;
   tex.needsUpdate = true;
   return tex;
+}
+
+/** 给 CSS 颜色字符串注入/覆盖 alpha（用于半透明边框） */
+function injectAlpha(color: string, alpha: number): string {
+  // 处理 rgb(...) 格式
+  const rgbMatch = color.match(/^rgba?\(([^)]+)\)$/i);
+  if (rgbMatch) {
+    const parts = rgbMatch[1].split(",").map((s) => s.trim());
+    const [r, g, b] = parts;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  // 处理 #rrggbb 格式
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return color;
 }
 
 export function disposeTexture(tex: THREE.Texture | undefined | null) {

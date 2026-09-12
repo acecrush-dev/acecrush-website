@@ -27,41 +27,41 @@ export function buildCraftConfig(opts: {
     id: "craft",
     accent: "#2563EB",
     buttonLabels: opts.buttonLabels,
-    // 7 面：intro + 5 features + faq ≈ 51° 间距
+    // 7 面：intro + 5 features + faq ≈ 51° 间距（用户 v25 整体下移）
     panels: [
       {
-        y: 0.4,
+        y: 0.1,
         title: opts.intro.headline,
         eyebrow: opts.intro.eyebrow || "AceCrush Craft",
         body: opts.intro.subtext,
       },
       {
-        y: 0.2,
+        y: 0,
         title: opts.features.item1Title,
         body: opts.features.item1Body,
       },
       {
-        y: 0,
+        y: -0.1,
         title: opts.features.item2Title,
         body: opts.features.item2Body,
       },
       {
-        y: -0.1,
+        y: -0.2,
         title: opts.features.item3Title,
         body: opts.features.item3Body,
       },
       {
-        y: -0.2,
+        y: -0.3,
         title: opts.features.item4Title,
         body: opts.features.item4Body,
       },
       {
-        y: -0.3,
+        y: -0.4,
         title: opts.features.item5Title,
         body: opts.features.item5Body,
       },
       {
-        y: -0.5,
+        y: -0.3,
         title: "FAQ",
         qaList: [
           { q: opts.faq.q1, a: opts.faq.a1 },
@@ -93,31 +93,31 @@ export function buildSwingConfig(opts: {
     id: "swing",
     accent: "#DC2626",
     buttonLabels: opts.buttonLabels,
-    // 5 面：intro + 3 features + faq ≈ 72° 间距
+    // 5 面：intro + 3 features + faq ≈ 72° 间距（用户 v25 整体下移）
     panels: [
       {
-        y: 0.3,
+        y: 0.1,
         title: opts.intro.headline,
         eyebrow: "Swing Analysis",
         body: opts.intro.subtext,
       },
       {
-        y: 0.15,
+        y: 0,
         title: opts.features.item1Title,
         body: opts.features.item1Body,
       },
       {
-        y: 0,
+        y: -0.1,
         title: opts.features.item2Title,
         body: opts.features.item2Body,
       },
       {
-        y: -0.15,
+        y: -0.2,
         title: opts.features.item3Title,
         body: opts.features.item3Body,
       },
       {
-        y: -0.4,
+        y: -0.3,
         title: "FAQ",
         qaList: [
           { q: opts.faq.q1, a: opts.faq.a1 },
