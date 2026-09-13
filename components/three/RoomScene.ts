@@ -28,6 +28,7 @@ import {
   disposeTexture,
   drawTextLabel,
 } from "./panelTexture";
+import { easeInOutCubic } from "./tween";
 
 export type RoomId = "craft" | "swing";
 
@@ -60,6 +61,12 @@ export type RoomConfig = {
   accent: string;
   /** 用户 v47：产品名（用于在多面体上方展示 3D 文字），i18n */
   productName: string;
+  /**
+   * 用户 v68：多面体排布样式（两个 scene 共用 RoomScene.ts，需用参数区分）。
+   * - 'no-overlap'：面与面不重叠（panelW ≤ arc_length，留 5% gap）= craft 7 面
+   * - 'overlap-ok'：面与面重叠（panel_angular_size > gap，邻面可见）= swing 5 面
+   */
+  polyhedronStyle: "no-overlap" | "overlap-ok";
 };
 
 export type RoomSceneOpts = {
@@ -118,6 +125,8 @@ export class RoomScene {
   private imageCache = new Map<string, HTMLImageElement>();
   /** 用户 v32：detail popup 打开时强制 active 的面板索引（覆盖几何检测） */
   private detailActiveIndex: number | null = null;
+  /** 用户 v65：detail popup 翻页时，背景相机自动转到 highlight 面板（yaw tween） */
+  private yawTween: { fromTheta: number; toTheta: number; elapsed: number; duration: number } | null = null;
   private hovered = -1;
   private raycaster = new THREE.Raycaster();
   private ndc = new THREE.Vector2();
@@ -331,9 +340,7 @@ export class RoomScene {
         mesh.scale.set(scale, scale, 1);
         (mesh.material as THREE.MeshBasicMaterial).opacity = opacity;
       }
-      return;
-    }
-
+    } else {
     // 更新 panel 显隐 / scale（基于与相机的朝向）
     this.camera.getWorldDirection(this.cameraDir);
     let bestIndex = -1;
@@ -390,6 +397,37 @@ export class RoomScene {
       if (bestIndex >= 0 && bestIndex < this.panelMeshes.length) {
         this.rebuildPanelTexture(bestIndex, true);
       }
+    }
+    } // close else (detailActiveIndex === null)
+
+    // 用户 v65：popup 翻页 → 背景相机自动转到 highlight 面板（yaw tween）
+    //   - 每帧从 yawTween.from/to 插值出 theta，写到 camera.position
+    //   - 同步清空 OrbitControls._sphericalDelta，避免 damping 残留与之对抗
+    //   - 写在 update() 末尾，下一帧 controls.update() 会从这个位置重新算出 spherical
+    if (this.yawTween) {
+      this.yawTween.elapsed += _dt;
+      const t = Math.min(1, this.yawTween.elapsed / this.yawTween.duration);
+      const eased = easeInOutCubic(t);
+      const theta =
+        this.yawTween.fromTheta +
+        (this.yawTween.toTheta - this.yawTween.fromTheta) * eased;
+      // camera 距 target = 0.01（被 min/maxDistance 锁住），polar = π/2（被锁定）
+      // → camera.position 由 azimuth 唯一决定
+      const r = 0.01;
+      this.camera.position.set(
+        r * Math.sin(theta),
+        PANEL_Y,
+        r * Math.cos(theta)
+      );
+      // 清空 sphericalDelta，防止之前累积的 damping 把我们拉回去
+      const ctrlAny = this.controls as unknown as {
+        _sphericalDelta?: { theta: number; phi: number };
+      };
+      if (ctrlAny._sphericalDelta) {
+        ctrlAny._sphericalDelta.theta = 0;
+        ctrlAny._sphericalDelta.phi = 0;
+      }
+      if (t >= 1) this.yawTween = null;
     }
   }
 
@@ -587,23 +625,39 @@ export class RoomScene {
    *  - panel 高度固定 ≈ target_ratio * screen_H_world（不让 panel 上下撑出）
    *  - panel 宽度 = panel_H * viewport_aspect（让 panel 形状跟 viewport 形状一致）
    *  - ring 半径 ≈ panel_W * 1.15 / angleStep（保证面与面不重叠、不太开）
+   *  - 用户 v68：用 polyhedronStyle 参数区分两个 scene（craft/swing 共用此文件）
+   *    - 'no-overlap' (craft 7 面): targetRatio = justTouchRatio × 0.95（panelW < arc，5% gap）
+   *      → 面与面绝对不重叠，保留 v55 之前的紧凑不交叠观感
+   *    - 'overlap-ok' (swing 5 面): targetRatio = max(0.5, justTouchRatio × 1.2)
+   *      → panel_angular_size > gap（72°），邻面可见（之前只能看到 1 面）
+   *    - justTouchRatio = π / (N × tanHalfFov × aspect)
+   *      → panelW = arc_length 的临界 targetRatio（R cancels out）
    */
   private recomputePanelShape() {
+    const N = this.config.panels.length;
     const aspect = this.width / Math.max(1, this.height);
     const tanHalfFov = Math.tan((CAMERA_FOV_DEG * Math.PI / 180) / 2);
-    // 在 ring 距离上，camera 能看到的 world 高度（v62：用缩小的 ring_R）
-    const PANEL_RING_R_V62 = 2.0; // v62：从 3.0 缩到 2.0（用户：要缩小面于面间距）
-    const screenHeightWorld = 2 * PANEL_RING_R_V62 * tanHalfFov;
-    // target ratio：panel 高度占屏幕高度的 ~50%（移动 / 桌面都用同一个）
-    const targetRatio = 0.5; // v54：0.6 → 0.5，content 上下左右各留 ~25% 空
-    this.panelH = targetRatio * screenHeightWorld;
+
+    // 用户 v68：根据 polyhedronStyle 选 targetRatio
+    //   justTouchRatio = 让 panelW 恰好等于 arc_length 的临界 targetRatio
+    const justTouchRatio = Math.PI / (N * tanHalfFov * aspect);
+    let targetRatio: number;
+    if (this.config.polyhedronStyle === "no-overlap") {
+      // craft：略低于临界（95% × justTouchRatio）→ 留 5% gap，面与面绝对不重叠
+      targetRatio = justTouchRatio * 0.95;
+    } else {
+      // swing：高于临界 1.2×（20% overlap margin）→ panel 角大小 > gap，邻面可见
+      //   下限 0.5：与 v54-v64 保持一致的最小 panel 尺寸（防止手机 portrait 太小）
+      targetRatio = Math.max(0.5, justTouchRatio * 1.2);
+    }
+
+    // ring 半径固定 2.0（v62 统一值）：ringR 不影响 overlap 比例（panelW 与 arc 同比例缩放）
+    const ringR = 2.0;
+    this.panelH = targetRatio * 2 * ringR * tanHalfFov;
     // panel 宽度跟 viewport 一致：宽屏 = 宽面板，手机竖屏 = 窄长方
     this.panelW = this.panelH * aspect;
-    // 用户 v55+v62：ring 半径统一 + 缩小 → 所有 polyhedron 视觉尺寸一致 + 紧凑
-    //   之前：ring = panel_W * 1.15 / angleStep → 5 面 swing ring 小 → 看起来大
-    //   现在：固定 ring = 2.0（v55 统一 + v62 缩小），swing/craft 大小 + 间距一致
-    this.ringRZ = PANEL_RING_R_V62;
-    this.ringRX = PANEL_RING_R_V62;
+    this.ringRX = ringR;
+    this.ringRZ = ringR;
   }
 
   getScene() {
@@ -626,19 +680,60 @@ export class RoomScene {
     this.applyLocale(this.config.buttonLabels);
   }
 
-  /** 用户 v32：detail popup 打开时强制 active 面板（覆盖几何检测） */
+  /** 用户 v32：detail popup 打开时强制 active 面板（覆盖几何检测）
+   *  用户 v66：idx 走 viewStore 原始 panelIndex（可超出 [0, N)），先归一化再判断，
+   *    否则 popup 从最后一页翻到第一页（wrap）时 idx=N 被早 return，bg 永远不联动。 */
   setDetailActive(idx: number | null) {
-    if (this.detailActiveIndex === idx) return;
+    const N = this.panelMeshes.length;
+    const safeIdx = idx == null ? null : ((idx % N) + N) % N;
+    if (this.detailActiveIndex === safeIdx) return;
     const prev = this.detailActiveIndex;
-    this.detailActiveIndex = idx;
-    if (prev != null && prev >= 0 && prev < this.panelMeshes.length) {
+    this.detailActiveIndex = safeIdx;
+    if (prev != null && prev >= 0 && prev < N) {
       this.rebuildPanelTexture(prev, false);
     }
-    if (idx != null && idx >= 0 && idx < this.panelMeshes.length) {
-      this.rebuildPanelTexture(idx, true);
+    if (safeIdx != null && safeIdx >= 0 && safeIdx < N) {
+      this.rebuildPanelTexture(safeIdx, true);
       // 重置几何检测的 active index 以避免视觉跳变
-      this.activePanelIndex = idx;
+      this.activePanelIndex = safeIdx;
     }
+  }
+
+  /**
+   * 用户 v65：popup 翻页时背景自动旋转到 highlight 面板（居中位置）。
+   * 用户 v66：idx 先归一化到 [0, N)（处理 popup 循环翻页），
+   *   否则翻到 wrap 后 idx 超出范围会被早 return，bg 不再联动。
+   * 1) 高亮面板（沿用 setDetailActive，内部已归一化）
+   * 2) 启动 yaw tween：相机 OrbitControls 的 azimuth 从当前值过渡到 -idx*2π/N
+   *    - 面板 i 在 ring 上的角度 α_i = (2π * i) / N
+   *    - 相机要看面板 i，azimuth（theta）需为 -α_i（相机在对面看向面板）
+   *    - 用 delta normalization（target - current ∈ [-π, π]）取最短路径，避免长圈旋转
+   *    - 旋转时长 500ms + easeInOutCubic，与 popup 翻页动画同步
+   */
+  setDetailActiveCenter(idx: number | null) {
+    const N = this.config.panels.length;
+    const safeIdx = idx == null ? null : ((idx % N) + N) % N;
+    this.setDetailActive(idx);
+    if (safeIdx == null) {
+      return;
+    }
+    const targetTheta = -(safeIdx * (2 * Math.PI)) / N;
+    const currentTheta = this.controls.getAzimuthalAngle();
+    // 归一化 target 到 currentTheta 邻域 ±π，避免长圈旋转
+    let toTheta = targetTheta;
+    while (toTheta - currentTheta > Math.PI) toTheta -= 2 * Math.PI;
+    while (toTheta - currentTheta < -Math.PI) toTheta += 2 * Math.PI;
+    // 同一角度不重新启动 tween（防止 setDetailActiveCenter 重复触发）
+    if (Math.abs(toTheta - currentTheta) < 1e-4) {
+      this.yawTween = null;
+      return;
+    }
+    this.yawTween = {
+      fromTheta: currentTheta,
+      toTheta,
+      elapsed: 0,
+      duration: 0.5,
+    };
   }
 
   dispose() {

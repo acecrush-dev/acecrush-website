@@ -159,12 +159,13 @@ export class SceneManager {
         this.activateScene(v);
       }
       // 用户 v32：detail popup 打开时同步背景几面体的 active 面板
+      // 用户 v65：popup 翻页时背景相机自动转到 highlight 面板（居中位置）
       const dv = getDetailView();
       const targetIdx = dv ? dv.panelIndex : null;
       if (targetIdx !== this.detailActiveIdx) {
         this.detailActiveIdx = targetIdx;
         if (this.activeScene instanceof RoomScene) {
-          this.activeScene.setDetailActive(targetIdx);
+          this.activeScene.setDetailActiveCenter(targetIdx);
         }
       }
     }, 100);
