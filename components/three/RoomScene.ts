@@ -87,7 +87,7 @@ const PANEL_RING_R_X = 3.0; // polyhedron X 半径（panels 横向距离）
 const PANEL_RING_R_Z = 3.0; // polyhedron Z 半径（panels 纵深距离）
 const PANEL_W_NATIVE = 2.8; // 面板原始宽度
 const PANEL_H_NATIVE = 1.8; // 面板原始高度
-const CAMERA_FOV_DEG = 45;
+const CAMERA_FOV_DEG = 70; // v64：60 → 70（与 SceneManager camera FOV 保持一致）
 // 用户 v38：所有面共享同一个 y（同一个水平高度），多面体作为整圈在同一水平面
 // 之前每面 y 不同（0.1 / 0 / -0.1 / ...）→ 转过去时面板上下飘；现在锁住单一高度。
 const PANEL_Y = 0.1;       // polyhedron 各面板共享 y（略高于视线中心，留出底部按钮区）
@@ -591,20 +591,19 @@ export class RoomScene {
   private recomputePanelShape() {
     const aspect = this.width / Math.max(1, this.height);
     const tanHalfFov = Math.tan((CAMERA_FOV_DEG * Math.PI / 180) / 2);
-    // 在 ring 距离上，camera 能看到的 world 高度（恒定）
-    const screenHeightWorld = 2 * PANEL_RING_R_Z * tanHalfFov;
-    // target ratio：panel 高度占屏幕高度的 ~60%（移动 / 桌面都用同一个）
+    // 在 ring 距离上，camera 能看到的 world 高度（v62：用缩小的 ring_R）
+    const PANEL_RING_R_V62 = 2.0; // v62：从 3.0 缩到 2.0（用户：要缩小面于面间距）
+    const screenHeightWorld = 2 * PANEL_RING_R_V62 * tanHalfFov;
+    // target ratio：panel 高度占屏幕高度的 ~50%（移动 / 桌面都用同一个）
     const targetRatio = 0.5; // v54：0.6 → 0.5，content 上下左右各留 ~25% 空
     this.panelH = targetRatio * screenHeightWorld;
     // panel 宽度跟 viewport 一致：宽屏 = 宽面板，手机竖屏 = 窄长方
-    // panel 自己的 W/H = viewport aspect
     this.panelW = this.panelH * aspect;
-    // 用户 v55：ring 半径统一（不按 N 变）→ 所有 polyhedron 视觉尺寸一致
+    // 用户 v55+v62：ring 半径统一 + 缩小 → 所有 polyhedron 视觉尺寸一致 + 紧凑
     //   之前：ring = panel_W * 1.15 / angleStep → 5 面 swing ring 小 → 看起来大
-    //   现在：固定 ring = PANEL_RING_R_Z（=3.0），swing/craft 大小完全一致
-    //   trade-off：swing 5 面的相邻间距会比 craft 大一些（用户接受）
-    this.ringRZ = PANEL_RING_R_Z;
-    this.ringRX = PANEL_RING_R_Z;
+    //   现在：固定 ring = 2.0（v55 统一 + v62 缩小），swing/craft 大小 + 间距一致
+    this.ringRZ = PANEL_RING_R_V62;
+    this.ringRX = PANEL_RING_R_V62;
   }
 
   getScene() {

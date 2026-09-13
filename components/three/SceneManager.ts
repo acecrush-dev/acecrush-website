@@ -81,7 +81,12 @@ export class SceneManager {
     this.renderer.domElement.setAttribute("aria-label", "3D hub");
 
     this.camera = new THREE.PerspectiveCamera(
-      45,
+      // 用户 v63：45 → 60 FOV
+      // 用户 v64：60 → 70 FOV（"可以再缩小间距"）
+      //   FOV 增大 → panel 视角角大小更大 → 相邻面间距（gap）更小 → polyhedron 更紧凑
+      //   FOV=70° → 5 面 swing gap 从 17.7° → 8.8°
+      //   FOV=70° → 7 面 craft 从 overlap 3.3° → overlap 11.8°（更多拼接感）
+      70,
       (this.mount.clientWidth || window.innerWidth) /
         (this.mount.clientHeight || window.innerHeight),
       0.01,
