@@ -53,15 +53,37 @@ export type PanelOpts = {
   active?: boolean;
   /** 房间 accent 色（active 时背景用） */
   accent?: string;
+  /** 用户 v39：可选缩略图路径（URL），绘制在 eyebrow 上方；面板只放图+标题，详细内容走 popup */
+  image?: string;
+  /** 用户 v39：缩略图 alt 文本（accessibility / tooltip，不绘制到 canvas） */
+  imageLabel?: string;
+  /** 用户 v50：thumbnail 透明度（0-1），可用于虚化（默认 1）；
+   *   位置统一：紧挨着最后一排文字下一行 + 居中（v50 用户反馈"为何那么随机"） */
+  thumbnailOpacity?: number;
+  /** 用户 v39：预加载好的 HTMLImageElement（RoomScene 在 image 加载完后传回用于重绘） */
+  _imageEl?: HTMLImageElement;
+  /** 用户 v54：当前 panel 世界尺寸（w / h）。canvas 比例 = panel 比例，
+   *   避免文字拉伸变形。 */
+  panelW?: number;
+  panelH?: number;
 };
 
 /**
  * 渲染内容卡纹理（房间面板）。返回 CanvasTexture。
- * 尺寸 1024 x 576（接近 16:9，便于在面板 plane 上 lookAt(0,0,0)）。
+ * 用户 v54：canvas 像素比例 = panel 世界比例（避免拉伸变形）；
+ *   panel_H 一定，panel_W 随 viewport 变 → canvas 高度 H_PX 固定，
+ *   canvas 宽度 W_PX = H_PX * (panelW / panelH)。
+ *   字体大小按 H_PX 缩放（高度恒定 → 字号恒定 → 不拉伸）。
  */
 export function drawPanel(opts: PanelOpts): THREE.CanvasTexture {
-  const W = 1024;
-  const H = 576;
+  const H_PX = 576; // canvas 像素高度（恒定）
+  const aspect =
+    opts.panelW && opts.panelH
+      ? opts.panelW / opts.panelH
+      : 2.8 / 1.8; // 默认 16:10（原始 panel 长宽比）
+  const W_PX = Math.max(160, Math.round(H_PX * aspect));
+  const W = W_PX;
+  const H = H_PX;
   const { c, ctx } = setupCanvas(W, H);
   const isDark = opts.isDark ?? true;
   const active = opts.active ?? false;
@@ -95,47 +117,134 @@ export function drawPanel(opts: PanelOpts): THREE.CanvasTexture {
   ctx.lineWidth = active ? 2.5 : 2;
   ctx.stroke();
 
-  // eyebrow（小字、accent 蓝/红）：避用 smoke 禁用的科技绿 hex
-  let cursorY = 64;
-  if (opts.eyebrow) {
-    ctx.fillStyle = isDark ? "#60A5FA" : "#1D4ED8";
-    ctx.font = `600 22px ${FONT_FAMILY}`;
-    ctx.textBaseline = "top";
-    ctx.fillText(opts.eyebrow, 48, cursorY);
-    cursorY += 36;
-  }
+  // 用户 v51：面板 padding + 居中
+  //   用户反馈"留足够多的padding content整体放在中间一些"
+  //   → padX 加大 + 内容块整体垂直居中（不只 top-anchor）
+  //   → 标题稍小一点让块更紧凑
+  // 用户 v54：padX 按 canvas 宽度比例缩放（窄 canvas 不留太多 padding）
+  //   desktop W=1024 → padX=80；mobile W=207 → padX=16
+  const padX = Math.max(16, Math.round(80 * (W / 1024)));
+  const titleFontSize = 48; // v51：标题 52→48，让整体更平衡
+  const titleLineH = 56; // v51：行高 60→56
+  const eyebrowGap = 16;
+  const eyebrowH = 24;
+  const bodyLineH = 32;
+  const imageGap = 16;
+  const imageH = 60;
 
-  // 标题
+  // 计算每个块的高度，先估算实际渲染行数
+  ctx.save();
+  ctx.font = `700 ${titleFontSize}px ${FONT_FAMILY}`;
+  const titleLinesEst = estimateWrapLines(
+    ctx,
+    opts.title,
+    W - padX * 2
+  );
+  ctx.restore();
+  const titleBlockH = titleLinesEst * titleLineH;
+
+  ctx.save();
+  ctx.font = `400 24px ${FONT_FAMILY}`;
+  const bodyLinesEst = opts.body
+    ? estimateWrapLines(ctx, opts.body, W - padX * 2)
+    : 0;
+  ctx.restore();
+  const bodyBlockH = bodyLinesEst * bodyLineH;
+
+  const hasEyebrow = !!opts.eyebrow;
+  const hasImage = !!opts.image;
+  // 总内容块高度：title + eyebrowGap + eyebrow + bodyGap + body + imageGap + image
+  const innerGap = 8;
+  let blockH =
+    titleBlockH +
+    (hasEyebrow ? eyebrowGap + eyebrowH : 0) +
+    (bodyBlockH > 0 ? innerGap + bodyBlockH : 0) +
+    (hasImage ? imageGap + imageH : 0);
+  // v51：垂直居中（top + bottom padding 各 (H - blockH) / 2，但至少 60 / 60）
+  const topPad = Math.max(60, Math.floor((H - blockH) / 2));
+
+  // 1) 标题
   ctx.fillStyle = isDark ? "#F5F5F0" : "#14181A";
-  ctx.font = `700 56px ${FONT_FAMILY}`;
-  const titleLines = wrapText(ctx, opts.title, 48, cursorY, W - 96, 64);
-  cursorY += titleLines * 64 + 28;
+  ctx.font = `700 ${titleFontSize}px ${FONT_FAMILY}`;
+  ctx.textBaseline = "top";
+  let cursorY = topPad;
+  const titleLines = wrapText(ctx, opts.title, padX, cursorY, W - padX * 2, titleLineH);
+  cursorY += titleLines * titleLineH;
 
-  // body
-  if (opts.body) {
-    ctx.fillStyle = isDark ? "rgba(245,245,240,0.78)" : "rgba(20,24,26,0.78)";
-    ctx.font = `400 28px ${FONT_FAMILY}`;
-    const bodyLines = wrapText(ctx, opts.body, 48, cursorY, W - 96, 40);
-    cursorY += bodyLines * 40 + 24;
+  // 2) eyebrow
+  if (opts.eyebrow) {
+    cursorY += eyebrowGap;
+    ctx.fillStyle = isDark ? "#60A5FA" : "#1D4ED8";
+    ctx.font = `500 20px ${FONT_FAMILY}`;
+    ctx.fillText(opts.eyebrow, padX, cursorY);
+    cursorY += eyebrowH;
   }
 
-  // FAQ 列表
-  if (opts.qaList?.length) {
-    ctx.fillStyle = isDark ? "rgba(245,245,240,0.55)" : "rgba(20,24,26,0.55)";
-    ctx.font = `600 22px ${FONT_FAMILY}`;
-    ctx.fillText("FAQ", 48, cursorY);
-    cursorY += 32;
-    ctx.font = `500 22px ${FONT_FAMILY}`;
-    for (const { q, a } of opts.qaList) {
-      ctx.fillStyle = isDark ? "#F5F5F0" : "#14181A";
-      ctx.fillText("Q. " + q, 48, cursorY);
-      cursorY += 30;
-      ctx.fillStyle = isDark ? "rgba(245,245,240,0.7)" : "rgba(20,24,26,0.7)";
-      ctx.font = `400 20px ${FONT_FAMILY}`;
-      const lines = wrapText(ctx, "A. " + a, 48, cursorY, W - 96, 28);
-      cursorY += lines * 28 + 12;
-      ctx.font = `500 22px ${FONT_FAMILY}`;
+  // 3) short body
+  if (opts.body) {
+    cursorY += innerGap;
+    ctx.fillStyle = isDark ? "rgba(245,245,240,0.78)" : "rgba(20,24,26,0.78)";
+    ctx.font = `400 24px ${FONT_FAMILY}`;
+    const bodyLines = wrapText(ctx, opts.body, padX, cursorY, W - padX * 2, bodyLineH);
+    cursorY += bodyLines * bodyLineH;
+  }
+
+  // 4) 缩略图（v58：自适应每个面板的剩余空间，不是固定大小）
+  //   - 用户反馈："thumbnail再大一些 和下面空间大小成比例"
+  //   - imgH 占满剩余可用高度（文字结束 → 面板底部）的大部分
+  //   - imgW 按比例（aspect 1.6），不超 canvas 宽度
+  //   - 不同 panel 文字长度不同 → 剩余空间不同 → thumbnail 大小自适应
+  if (opts.image) {
+    cursorY += imageGap;
+    const bottomPad = Math.max(40, Math.round(40 * (W / 1024)));
+    const availableH = H - cursorY - bottomPad;
+    // target 高度：占剩余空间的 80%，但不超过 220，最小 60
+    const targetH = Math.max(60, Math.min(availableH * 0.8, 220));
+    // 维持 1.6 长宽比
+    const THUMB_ASPECT = 1.6;
+    let imgH = targetH;
+    let imgW = imgH * THUMB_ASPECT;
+    const maxW = W - padX * 2;
+    // 限制：宽度不能超 canvas
+    if (imgW > maxW) {
+      imgW = maxW;
+      imgH = imgW / THUMB_ASPECT;
     }
+    // 限制：高度不能超 availableH（理论上不会，但保险）
+    if (imgH > availableH) {
+      imgH = availableH;
+      imgW = imgH * THUMB_ASPECT;
+      if (imgW > maxW) {
+        imgW = maxW;
+        imgH = imgW / THUMB_ASPECT;
+      }
+    }
+    const thumbOpacity = opts.thumbnailOpacity ?? 1;
+    const imgX = (W - imgW) / 2;
+    const imgY = cursorY;
+    ctx.globalAlpha = thumbOpacity;
+    ctx.fillStyle = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
+    roundedRect(ctx, imgX - 4, imgY - 4, imgW + 8, imgH + 8, 10);
+    ctx.fill();
+    if (opts._imageEl && opts._imageEl.complete && opts._imageEl.naturalWidth > 0) {
+      const iw = opts._imageEl.naturalWidth;
+      const ih = opts._imageEl.naturalHeight;
+      const ratio = Math.min(imgW / iw, imgH / ih);
+      const dw = iw * ratio;
+      const dh = ih * ratio;
+      const dx = imgX + (imgW - dw) / 2;
+      const dy = imgY + (imgH - dh) / 2;
+      ctx.drawImage(opts._imageEl, dx, dy, dw, dh);
+    } else {
+      ctx.fillStyle = isDark ? "rgba(245,245,240,0.45)" : "rgba(20,24,26,0.45)";
+      ctx.font = `500 16px ${FONT_FAMILY}`;
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      ctx.fillText(opts.imageLabel || "preview", imgX + imgW / 2, imgY + imgH / 2);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+    }
+    ctx.globalAlpha = 1;
   }
 
   const tex = new THREE.CanvasTexture(c);
@@ -241,6 +350,47 @@ export function drawFelt(): THREE.CanvasTexture {
  */
 const PIXEL_RES = 1024;
 
+/**
+ * 用户 v47：在多面体上方画产品名（3D 文字效果）。
+ * 返回一张透明背景的文字纹理，用 CanvasTexture 作为 plane mesh 贴在多面体上方。
+ * 不引入字体依赖（用系统字体栈），适合产品名这种 1-2 行大字的展示。
+ */
+export type TextLabelOpts = {
+  text: string;
+  isDark?: boolean;
+  /** 字号 px（默认 96） */
+  fontSize?: number;
+  /** 字色（默认浅/深） */
+  color?: string;
+};
+
+export function drawTextLabel(opts: TextLabelOpts): THREE.CanvasTexture {
+  const fontSize = opts.fontSize ?? 96;
+  const isDark = opts.isDark ?? true;
+  const text = opts.text;
+  // 尺寸：按文字长度动态估算（每字 ~ fontSize * 0.6 宽度，加 padding）
+  const padding = 48;
+  const W = Math.max(512, text.length * fontSize * 0.6 + padding * 2);
+  const H = fontSize + padding * 2;
+  const { c, ctx } = setupCanvas(W, H);
+
+  // 透明背景（不画底）
+  ctx.clearRect(0, 0, W, H);
+
+  // 文字（粗体，居中）
+  ctx.fillStyle = opts.color ?? (isDark ? "#F5F5F0" : "#14181A");
+  ctx.font = `700 ${fontSize}px ${FONT_FAMILY}`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  ctx.fillText(text, W / 2, H / 2);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 16;
+  tex.needsUpdate = true;
+  return tex;
+}
+
 export type HighlightBorderOpts = {
   /** mesh 宽（world units），仅用于计算 canvas 像素长宽比 */
   width: number;
@@ -315,13 +465,40 @@ export function disposeTexture(tex: THREE.Texture | undefined | null) {
  * 多行文本换行（返回行数）。支持 \n 强制换行 + 自动按 maxW 折行。
  * 用 ctx.font 测量文字宽度（调用方负责设 font）。
  */
+/** 用户 v51：估算文字按 maxW 换行后的行数（不动 ctx，只 measureText） */
+function estimateWrapLines(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxW: number
+): number {
+  const paras = text.split(/\n/);
+  let count = 0;
+  for (const para of paras) {
+    const words = para.split(/(\s+)/);
+    let line = "";
+    for (const w of words) {
+      const test = line + w;
+      const m = ctx.measureText(test);
+      if (m.width > maxW && line) {
+        count++;
+        line = w.trimStart();
+      } else {
+        line = test;
+      }
+    }
+    if (line) count++;
+  }
+  return count;
+}
+
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
   x: number,
   y: number,
   maxW: number,
-  lineH: number
+  lineH: number,
+  maxLines?: number
 ): number {
   const paras = text.split(/\n/);
   let cursorY = y;
@@ -333,19 +510,26 @@ function wrapText(
       const test = line + w;
       const m = ctx.measureText(test);
       if (m.width > maxW && line) {
+        if (maxLines != null && lineCount >= maxLines) break;
         ctx.fillText(line, x, cursorY);
         line = w.trimStart();
         cursorY += lineH;
         lineCount++;
+        if (maxLines != null && lineCount >= maxLines) break;
       } else {
         line = test;
       }
     }
     if (line) {
-      ctx.fillText(line, x, cursorY);
-      cursorY += lineH;
-      lineCount++;
+      if (maxLines != null && lineCount >= maxLines) {
+        // 已经达到最大行数，不再绘制
+      } else {
+        ctx.fillText(line, x, cursorY);
+        cursorY += lineH;
+        lineCount++;
+      }
     }
+    if (maxLines != null && lineCount >= maxLines) break;
   }
   return lineCount;
 }

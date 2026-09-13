@@ -6,6 +6,10 @@
  * 用户 v20：双击每个面 → popup 展示该板块全部内容和图，左翻/右翻前后页。
  * 立体变平面：完整内容用 HTML 渲染，左右按钮翻页。
  *
+ * 用户 v41：之前 CRAFT_PANELS / SWING_PANELS 是硬编码英文，用户切到中文后 popup 仍是英文。
+ * 现在全部走 i18n translators（tCraft / tSwing），从 products.craft.* / products.swing.*
+ * 取数；面板只放图+短标题，详细内容（含 FAQ）都从 popup 展示。
+ *
  * 内容来源：
  *   - craft 房间 7 面：intro + 5 features + faq
  *   - swing 房间 5 面：intro + 3 features + faq
@@ -37,109 +41,84 @@ type PanelContent = {
   qaList?: { q: string; a: string }[];
 };
 
-const CRAFT_PANELS: PanelContent[] = [
-  {
-    eyebrow: "AceCrush Craft",
-    title: "Perfect Photo,\nPerfect Grip",
-    body:
-      "On-device AI measures hand size via an A4 reference, recommends your optimal grip, and tracks your next string job.",
-    image: "/img/craft/measurement_result.jpg",
-    imageLabel: "Measurement result preview",
-  },
-  {
-    title: "AI grip size measurement",
-    body:
-      "On-device MediaPipe inference maps your palm to Yonex, Wilson and Head-Prince-Babolat sizing standards.",
-  },
-  {
-    title: "Manual calc + grip wrap offset",
-    body:
-      "Enter palm length and ring finger length to get a recommended size and a wrap-driven adjustment.",
-  },
-  {
-    title: "Racket profiles",
-    body:
-      "Log multiple rackets with specs and notes. Stored locally in SQLite, backup whenever you want.",
-  },
-  {
-    title: "Restring log + expiry alerts",
-    body:
-      "Default restring cycles per material (polyester, multifilament, natural gut). Local notification when due.",
-  },
-  {
-    title: "Tension conversion",
-    body:
-      "Convert DT, RT, lbs and kg in one place, then tap once to write the result straight into a restring record.",
-  },
-  {
-    title: "FAQ",
-    qaList: [
-      {
-        q: "How accurate is the AI measurement?",
-        a: "We return a recommended size plus or minus one adjacent size with a confidence hint. Manual adjust is always available.",
-      },
-      {
-        q: "Do I have to use A4 paper?",
-        a: "We strongly recommend it. A4 is a reference of known size used to convert pixels to centimeters with one consistent ratio.",
-      },
-      {
-        q: "What if my photo is taken at an angle?",
-        a: "Try to shoot straight down. If the angle is off, the confidence drops to medium and we suggest manual entry.",
-      },
-      {
-        q: "Can I skip the camera and measure manually?",
-        a: "Yes. Manual entry accepts palm length and ring finger length without needing a photo at all.",
-      },
-    ],
-  },
-];
+/** 用户 v41：从 i18n 构建 craft 详细面板（intro + 5 features + faq） */
+/** 用户 v44：popup 必须有文字不能只有图 → 只有 intro 第一页保留 preview 图，
+ *   features 和 faq 全部走纯文字（title + body / qaList）。 */
+function buildCraftPanels(t: ReturnType<typeof useTranslations>): PanelContent[] {
+  return [
+    {
+      eyebrow: t("name"),
+      title: t("intro.headline"),
+      body: t("intro.subtext"),
+      image: "/img/craft/measurement_result.jpg",
+      imageLabel: t("intro.previewLabel"),
+    },
+    {
+      title: t("features.item1Title"),
+      body: t("features.item1Body"),
+    },
+    {
+      title: t("features.item2Title"),
+      body: t("features.item2Body"),
+    },
+    {
+      title: t("features.item3Title"),
+      body: t("features.item3Body"),
+    },
+    {
+      title: t("features.item4Title"),
+      body: t("features.item4Body"),
+    },
+    {
+      title: t("features.item5Title"),
+      body: t("features.item5Body"),
+    },
+    {
+      title: t("faq.heading"),
+      qaList: [
+        { q: t("faq.q1"), a: t("faq.a1") },
+        { q: t("faq.q2"), a: t("faq.a2") },
+        { q: t("faq.q3"), a: t("faq.a3") },
+        { q: t("faq.q4"), a: t("faq.a4") },
+      ],
+    },
+  ];
+}
 
-const SWING_PANELS: PanelContent[] = [
-  {
-    eyebrow: "Swing Analysis",
-    title: "Every swing, cut and timecoded.",
-    body:
-      "Feed in a match video. The two-pass pipeline tracks a single right-wrist signal, segments every swing, and labels each one.",
-    image: "/img/swing/clip_play.png",
-    imageLabel: "Clip playback preview",
-  },
-  {
-    title: "Two-pass swing segmentation",
-    body:
-      "Reads one right-wrist signal to find swing boundaries, then re-renders each clip with refined timestamps and labels.",
-  },
-  {
-    title: "Streaming results in pass 1",
-    body:
-      "Segments appear while pass 1 is still running, so you can start reviewing before the full video finishes processing.",
-  },
-  {
-    title: "Skeleton and bbox overlays",
-    body:
-      "Want to see the body lines on each clip? Two passes to choose from. Fast pass paints the skeleton inline; polish pass re-renders each clip afterward with steadier person boxes and smoother skeleton lines.",
-  },
-  {
-    title: "FAQ",
-    qaList: [
-      {
-        q: "Does my video get uploaded anywhere?",
-        a: "No. Everything runs on your own machine. The local service binds to 127.0.0.1 only.",
-      },
-      {
-        q: "How does it decide where a swing starts?",
-        a: "The pipeline uses a single right-wrist signal tracked by MediaPipe pose, plus a swing-window classifier.",
-      },
-      {
-        q: "Do I need a GPU?",
-        a: "No. It runs on CPU. The skeleton overlay is the heaviest step but still well within modern laptop performance.",
-      },
-      {
-        q: "Can I use it without the desktop GUI?",
-        a: "Yes. The CLI drives the same pipeline, and the local REST plus WebSocket servers expose hooks for scripting.",
-      },
-    ],
-  },
-];
+/** 用户 v41：从 i18n 构建 swing 详细面板（intro + 3 features + faq） */
+/** 用户 v44：popup 必须有文字不能只有图 → 只有 intro 第一页保留 preview 图。 */
+function buildSwingPanels(t: ReturnType<typeof useTranslations>): PanelContent[] {
+  return [
+    {
+      eyebrow: t("name"),
+      title: t("intro.headline"),
+      body: t("intro.subtext"),
+      image: "/img/swing/clip_play.png",
+      imageLabel: t("intro.previewLabel"),
+    },
+    {
+      title: t("features.item1Title"),
+      body: t("features.item1Body"),
+    },
+    {
+      title: t("features.item2Title"),
+      body: t("features.item2Body"),
+    },
+    {
+      title: t("features.item3Title"),
+      body: t("features.item3Body"),
+    },
+    {
+      title: t("faq.heading"),
+      qaList: [
+        { q: t("faq.q1"), a: t("faq.a1") },
+        { q: t("faq.q2"), a: t("faq.a2") },
+        { q: t("faq.q3"), a: t("faq.a3") },
+        { q: t("faq.q4"), a: t("faq.a4") },
+      ],
+    },
+  ];
+}
 
 export function DetailPopup({ product, panelIndex, onClose, tCraft, tSwing }: Props) {
   const t = useTranslations("three3d");
@@ -168,7 +147,8 @@ export function DetailPopup({ product, panelIndex, onClose, tCraft, tSwing }: Pr
     setRenderedIndex(panelIndex);
   }, [panelIndex]);
 
-  const panels = product === "craft" ? CRAFT_PANELS : SWING_PANELS;
+  // 用户 v41：从 i18n translators 构建议题面板数组（不再使用硬编码英文数组）
+  const panels = product === "craft" ? buildCraftPanels(tCraft) : buildSwingPanels(tSwing);
   const total = panels.length;
   // 循环索引（超出范围就 wrap）
   const safeIndex = ((renderedIndex % total) + total) % total;
@@ -176,9 +156,7 @@ export function DetailPopup({ product, panelIndex, onClose, tCraft, tSwing }: Pr
   const isFirst = safeIndex === 0;
   const isFAQ = panel.qaList != null;
 
-  // 优先使用 i18n key 翻译（用户 locale 切换时内容跟随）
-  // 这里因为 panelContent 是硬编码的英文，作为 fallback；理想是用 messages 文件
-  // 但为了 v20 快速 ship，先用硬编码 + i18n fallback for some keys
+  // i18n：popup 内容全部走 tCraft / tSwing（locale 切换时内容跟随）
   const productName = product === "craft" ? tCraft("name") : tSwing("name");
   const eyebrow = panel.eyebrow || productName;
   const title = panel.title;
@@ -204,25 +182,78 @@ export function DetailPopup({ product, panelIndex, onClose, tCraft, tSwing }: Pr
   }, [onClose]);
 
   // 用户 v23：触摸滑动翻页（移动端）
-  const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    touchStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const start = touchStartRef.current;
-    touchStartRef.current = null;
-    if (!start || e.changedTouches.length !== 1) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    const dt = Date.now() - start.t;
-    // 横向滑动 > 50px 且 |dx| > |dy| * 2 且 < 800ms
+  // 用户 v38：桌面鼠标拖拽翻页（左右滑动 popup 内容翻页），共享同一套 ref/判定
+  const dragStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  // 鼠标拖拽后，标志是否刚发生过 drag：防止 drag 后的 click 事件被误判为「点击空白处」
+  const draggedRef = useRef(false);
+
+  // 用户 v38：判定是否触发翻页；返回 true 表示这是一次有效 drag。
+  function tryFlip(x0: number, y0: number, t0: number, x1: number, y1: number, t1: number) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const dt = t1 - t0;
+    // 横向位移 > 50px 且明显横>纵（避免上下滚动触发误翻页）且 800ms 内
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 2 && dt < 800) {
       if (dx > 0) handlePrev();
       else handleNext();
+      return true;
     }
+    return false;
+  }
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    dragStartRef.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = dragStartRef.current;
+    dragStartRef.current = null;
+    if (!start || e.changedTouches.length !== 1) return;
+    const t = e.changedTouches[0];
+    if (tryFlip(start.x, start.y, start.t, t.clientX, t.clientY, Date.now())) {
+      draggedRef.current = true;
+    }
+  };
+  const onPointerDown = (e: React.PointerEvent) => {
+    // 仅响应鼠标/手写笔（touch 由 onTouchStart 接管，避免重复触发）
+    if (e.pointerType === "touch") return;
+    // 仅主键（左键）
+    if (e.button !== 0) return;
+    dragStartRef.current = { x: e.clientX, y: e.clientY, t: Date.now() };
+    // 注意：v48 不再 setPointerCapture（它会把后续 click 也派发到 overlay，
+    // 导致点击 prev/next/close btn 时被误判成「点击 overlay」而关掉 popup）。
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    const start = dragStartRef.current;
+    dragStartRef.current = null;
+    if (!start) return;
+    if (tryFlip(start.x, start.y, start.t, e.clientX, e.clientY, Date.now())) {
+      // drag 翻页后，标记：避免后续 click 被当成「点击空白处」而误关 popup
+      draggedRef.current = true;
+    }
+  };
+
+  // 用户 v38：传入给 portal，drag 后跳过 click-outside 关闭
+  // 用户 v48：明确「空白区域」= overlay 自身（不包含 content / nav / close btn）。
+  //   用 closest() 反向排除：若事件源在 content/nav/close 里就不关。
+  const onOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (draggedRef.current) {
+      draggedRef.current = false;
+      return;
+    }
+    const t = e.target as Element | null;
+    if (t && typeof t.closest === "function") {
+      if (
+        t.closest(".detail-popup-content") ||
+        t.closest(".detail-popup-nav") ||
+        t.closest(".detail-popup-close")
+      ) {
+        return;
+      }
+    }
+    if (e.target === e.currentTarget) onClose();
   };
 
   return (
@@ -243,6 +274,9 @@ export function DetailPopup({ product, panelIndex, onClose, tCraft, tSwing }: Pr
       onNext={handleNext}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onOverlayClick={onOverlayClick}
     />
   );
 }
@@ -264,16 +298,24 @@ type PortalProps = {
   onNext: () => void;
   onTouchStart: (e: React.TouchEvent) => void;
   onTouchEnd: (e: React.TouchEvent) => void;
+  // 用户 v38: 桌面鼠标拖拽翻页（共享 touch 判定）
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerUp: (e: React.PointerEvent) => void;
+  // 用户 v38: drag 后跳过 click-outside 关闭（与 v37 共用 handler 内部逻辑）
+  onOverlayClick: (e: React.MouseEvent<HTMLDivElement>) => void;
 };
 
 function DetailPopupPortal(props: PortalProps) {
   const {
     productName, title, body, panel, isFAQ, qaList, safeIndex, total, eyebrow, flipDir, mounted,
-    onClose, onPrev, onNext, onTouchStart, onTouchEnd,
+    onClose, onPrev, onNext, onTouchStart, onTouchEnd, onPointerDown, onPointerUp, onOverlayClick,
   } = props;
   const node = (
     <div
       className="detail-popup-overlay"
+      onClick={onOverlayClick}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       role="dialog"

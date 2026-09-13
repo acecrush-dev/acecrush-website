@@ -7,7 +7,7 @@ import { ArrowUpRight, List } from "@phosphor-icons/react/dist/ssr";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { requestEnter, requestExit } from "@/lib/three/viewStore";
+import { requestEnter, requestExit, useThreeView } from "@/lib/three/viewStore";
 
 /** 用户 2026-09-05：联系入口从 footer 搬到导航右上角，footer 整块移除。 */
 const CONTACT_MAILTO = "mailto:acecrushdev@gmail.com";
@@ -27,6 +27,8 @@ export function AppNav() {
   const tFooter = useTranslations("footer");
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  // 用户 v38：进入对应产品 3D 房间后，nav 上对应 btn 要有 3D highlight（持续抬起+发光）
+  const view = useThreeView();
 
   const closeMenu = useCallback(() => {
     const el = detailsRef.current;
@@ -102,7 +104,7 @@ export function AppNav() {
         <div className="hidden lg:flex items-center gap-2">
           <a
             href="/#craft"
-            className="nav-btn-3d nav-btn-product"
+            className={`nav-btn-3d nav-btn-product${view === "craft" ? " is-active" : ""}`}
             style={{ "--btn-accent": "#2563EB" } as React.CSSProperties}
             onClick={(e) => handleProductClick(e, "craft")}
           >
@@ -110,7 +112,7 @@ export function AppNav() {
           </a>
           <a
             href="/#swing"
-            className="nav-btn-3d nav-btn-product"
+            className={`nav-btn-3d nav-btn-product${view === "swing" ? " is-active" : ""}`}
             style={{ "--btn-accent": "#DC2626" } as React.CSSProperties}
             onClick={(e) => handleProductClick(e, "swing")}
           >
@@ -160,14 +162,14 @@ export function AppNav() {
             </Link>
             <a
               href="/#craft"
-              className="nav-menu-link"
+              className={`nav-menu-link${view === "craft" ? " is-active" : ""}`}
               onClick={(e) => handleProductClick(e, "craft")}
             >
               {t("productCraft")}
             </a>
             <a
               href="/#swing"
-              className="nav-menu-link"
+              className={`nav-menu-link${view === "swing" ? " is-active" : ""}`}
               onClick={(e) => handleProductClick(e, "swing")}
             >
               {t("productSwing")}

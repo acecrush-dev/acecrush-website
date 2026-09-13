@@ -6,68 +6,90 @@
  *
  * craft 内容更多（5 features）→ 7 面（51° 间距）。
  * swing 内容较少（3 features）→ 5 面（72° 间距）。
+ *
+ * 用户 v38：所有面板共享同一水平高度（y 由 RoomScene 内的 PANEL_Y 统一决定），
+ * 这里不再写 per-panel y，多面体作为整圈在同一水平面；转动时面与面平移切换，
+ * 不再有上下飘。
  */
 
 import * as THREE from "three";
 import type { RoomConfig } from "./RoomScene";
 
 export function buildCraftConfig(opts: {
-  intro: { eyebrow: string; headline: string; subtext: string };
+  productName: string;
+  intro: {
+    eyebrow: string;
+    headline: string;
+    subtext: string;
+    shortSubtext: string;
+  };
   features: {
-    item1Title: string; item1Body: string;
-    item2Title: string; item2Body: string;
-    item3Title: string; item3Body: string;
-    item4Title: string; item4Body: string;
-    item5Title: string; item5Body: string;
+    item1Title: string; item1Body: string; item1Short: string;
+    item2Title: string; item2Body: string; item2Short: string;
+    item3Title: string; item3Body: string; item3Short: string;
+    item4Title: string; item4Body: string; item4Short: string;
+    item5Title: string; item5Body: string; item5Short: string;
   };
   faq: { q1: string; a1: string; q2: string; a2: string; q3: string; a3: string };
   buttonLabels: { back: string; switch: string; download: string; docs: string };
 }): RoomConfig {
   return {
     id: "craft",
+    productName: opts.productName,
     accent: "#2563EB",
     buttonLabels: opts.buttonLabels,
-    // 7 面：intro + 5 features + faq ≈ 51° 间距（用户 v25 整体下移）
+    // 7 面：intro + 5 features + faq ≈ 51° 间距（用户 v38/v39/v45/v50 全部同高 PANEL_Y）
+    // v45：每个 panel 都有简化的 i18n shortSubtext；FAQ 没有图
+    // v47：intro 第一个面板去掉 eyebrow（产品名放到多面体上方 3D 文字）
+    // v50：缩略图统一位置（紧挨着最后一排文字下一行 + 居中），不再每面板随机
+    //   → 不同 panel 通过 thumbnailOpacity 区分（清晰 vs 虚化）
     panels: [
       {
-        y: 0.1,
         title: opts.intro.headline,
-        eyebrow: opts.intro.eyebrow || "AceCrush Craft",
-        body: opts.intro.subtext,
+        body: opts.intro.shortSubtext,
+        image: "/img/craft/measurement_result.jpg",
+        imageLabel: opts.intro.headline,
+        thumbnailOpacity: 0.95,
       },
       {
-        y: 0,
         title: opts.features.item1Title,
-        body: opts.features.item1Body,
+        body: opts.features.item1Short,
+        image: "/img/craft/grip_measurement.jpg",
+        imageLabel: opts.features.item1Title,
+        thumbnailOpacity: 0.9,
       },
       {
-        y: -0.1,
         title: opts.features.item2Title,
-        body: opts.features.item2Body,
+        body: opts.features.item2Short,
+        image: "/img/craft/adjustment.jpg",
+        imageLabel: opts.features.item2Title,
+        thumbnailOpacity: 0.85,
       },
       {
-        y: -0.2,
         title: opts.features.item3Title,
-        body: opts.features.item3Body,
+        body: opts.features.item3Short,
+        image: "/img/craft/racquet_list.jpg",
+        imageLabel: opts.features.item3Title,
+        thumbnailOpacity: 0.8,
       },
       {
-        y: -0.3,
         title: opts.features.item4Title,
-        body: opts.features.item4Body,
+        body: opts.features.item4Short,
+        image: "/img/craft/string_job.jpg",
+        imageLabel: opts.features.item4Title,
+        thumbnailOpacity: 0.75,
       },
       {
-        y: -0.4,
         title: opts.features.item5Title,
-        body: opts.features.item5Body,
+        body: opts.features.item5Short,
+        image: "/img/craft/dt_rt.jpg",
+        imageLabel: opts.features.item5Title,
+        thumbnailOpacity: 0.7,
       },
       {
-        y: -0.3,
+        // v45：FAQ 面板：只放标题，不配图
         title: "FAQ",
-        qaList: [
-          { q: opts.faq.q1, a: opts.faq.a1 },
-          { q: opts.faq.q2, a: opts.faq.a2 },
-          { q: opts.faq.q3, a: opts.faq.a3 },
-        ],
+        body: "",
       },
     ],
     buttons: [
@@ -80,50 +102,56 @@ export function buildCraftConfig(opts: {
 }
 
 export function buildSwingConfig(opts: {
-  intro: { headline: string; subtext: string };
+  productName: string;
+  intro: {
+    headline: string;
+    subtext: string;
+    shortSubtext: string;
+  };
   features: {
-    item1Title: string; item1Body: string;
-    item2Title: string; item2Body: string;
-    item3Title: string; item3Body: string;
+    item1Title: string; item1Body: string; item1Short: string;
+    item2Title: string; item2Body: string; item2Short: string;
+    item3Title: string; item3Body: string; item3Short: string;
   };
   faq: { q1: string; a1: string; q2: string; a2: string; q3: string; a3: string };
   buttonLabels: { back: string; switch: string; download: string; docs: string };
 }): RoomConfig {
   return {
     id: "swing",
+    productName: opts.productName,
     accent: "#DC2626",
     buttonLabels: opts.buttonLabels,
-    // 5 面：intro + 3 features + faq ≈ 72° 间距（用户 v25 整体下移）
+    // 5 面：intro + 3 features + faq ≈ 72° 间距（用户 v38/v39/v45）
     panels: [
       {
-        y: 0.1,
         title: opts.intro.headline,
         eyebrow: "Swing Analysis",
-        body: opts.intro.subtext,
+        body: opts.intro.shortSubtext,
+        image: "/img/swing/clip_play.png",
+        imageLabel: opts.intro.headline,
       },
       {
-        y: 0,
         title: opts.features.item1Title,
-        body: opts.features.item1Body,
+        body: opts.features.item1Short,
+        image: "/img/swing/load_video.png",
+        imageLabel: opts.features.item1Title,
       },
       {
-        y: -0.1,
         title: opts.features.item2Title,
-        body: opts.features.item2Body,
+        body: opts.features.item2Short,
+        image: "/img/swing/load_video.png",
+        imageLabel: opts.features.item2Title,
       },
       {
-        y: -0.2,
         title: opts.features.item3Title,
-        body: opts.features.item3Body,
+        body: opts.features.item3Short,
+        image: "/img/swing/clip_play.png",
+        imageLabel: opts.features.item3Title,
       },
       {
-        y: -0.3,
+        // v45：FAQ 面板：只放标题，不配图
         title: "FAQ",
-        qaList: [
-          { q: opts.faq.q1, a: opts.faq.a1 },
-          { q: opts.faq.q2, a: opts.faq.a2 },
-          { q: opts.faq.q3, a: opts.faq.a3 },
-        ],
+        body: "",
       },
     ],
     buttons: [

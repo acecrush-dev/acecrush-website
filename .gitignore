@@ -20,14 +20,12 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
-.env.example         # .env.example 是模板，会入库
 
 # plan 011: APK 不入库（走 GitHub Releases 分发）；README 留作说明占位
 *.apk
 
 # 其他
 .vercel
-.env*
 .npmrc
 tsconfig.tsbuildinfo
 .cc-delivery/

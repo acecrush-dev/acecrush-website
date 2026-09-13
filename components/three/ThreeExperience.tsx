@@ -68,22 +68,29 @@ export function ThreeExperience() {
     };
     const roomConfigs = {
       craft: buildCraftConfig({
+        productName: tCraft("name"),
         intro: {
           eyebrow: tCraft("intro.eyebrow"),
           headline: tCraft("intro.headline"),
           subtext: tCraft("intro.subtext"),
+          shortSubtext: tCraft("intro.shortSubtext"),
         },
         features: {
           item1Title: tCraft("features.item1Title"),
           item1Body: tCraft("features.item1Body"),
+          item1Short: tCraft("features.item1Short"),
           item2Title: tCraft("features.item2Title"),
           item2Body: tCraft("features.item2Body"),
+          item2Short: tCraft("features.item2Short"),
           item3Title: tCraft("features.item3Title"),
           item3Body: tCraft("features.item3Body"),
+          item3Short: tCraft("features.item3Short"),
           item4Title: tCraft("features.item4Title"),
           item4Body: tCraft("features.item4Body"),
+          item4Short: tCraft("features.item4Short"),
           item5Title: tCraft("features.item5Title"),
           item5Body: tCraft("features.item5Body"),
+          item5Short: tCraft("features.item5Short"),
         },
         faq: {
           q1: tCraft("faq.q1"),
@@ -96,17 +103,22 @@ export function ThreeExperience() {
         buttonLabels,
       }),
       swing: buildSwingConfig({
+        productName: tSwing("name"),
         intro: {
           headline: tSwing("intro.headline"),
           subtext: tSwing("intro.subtext"),
+          shortSubtext: tSwing("intro.shortSubtext"),
         },
         features: {
           item1Title: tSwing("features.item1Title"),
           item1Body: tSwing("features.item1Body"),
+          item1Short: tSwing("features.item1Short"),
           item2Title: tSwing("features.item2Title"),
           item2Body: tSwing("features.item2Body"),
+          item2Short: tSwing("features.item2Short"),
           item3Title: tSwing("features.item3Title"),
           item3Body: tSwing("features.item3Body"),
+          item3Short: tSwing("features.item3Short"),
         },
         faq: {
           q1: tSwing("faq.q1"),

@@ -41,6 +41,7 @@
         "eyebrow": "",
         "headline": "一拍即合，\n完美把握",
         "subtext": "依托 A4 参照，本地 AI 精准估算手掌大小，匹配最优握把档位，穿线到期智能提醒。",
+        "shortSubtext": "拍掌 → 测握把。",
         "primaryCta": "下载 APK",
         "secondaryCta": "了解测量原理",
         "previewLabel": "测量结果预览",
@@ -67,14 +68,19 @@
         "subheading": "五个工具，一次下载，全部离线可用。",
         "item1Title": "AI 拍照测握把尺寸",
         "item1Body": "端侧 MediaPipe 推理，把掌型换算成 Yonex、Wilson、Head-Prince-Babolat 三套制式档位。照片处理完即丢弃，不上传任何服务器。",
+        "item1Short": "拍照 + A4 = 握把尺寸。",
         "item2Title": "手动测算 + 手胶补偿",
         "item2Body": "支持掌长与无名指长输入，自动给出推荐档位与手胶跨档提示。",
+        "item2Short": "掌长 + 手指 = 尺寸 + 补偿。",
         "item3Title": "球拍档案",
         "item3Body": "记录多支球拍的规格与备注，数据存本地 SQLite，随时备份。",
+        "item3Short": "多支球拍，规格备注全留。",
         "item4Title": "穿线记录 + 到期提醒",
         "item4Body": "按聚酯、复丝、肠线等材质给出默认换线周期，到期本地通知。",
+        "item4Short": "记穿线，到期自动提醒。",
         "item5Title": "磅数换算",
-        "item5Body": "DT ⇄ RT ⇄ lbs ⇄ kg 一处互转，算完一键写入穿线记录。"
+        "item5Body": "DT ⇄ RT ⇄ lbs ⇄ kg 一处互转，算完一键写入穿线记录。",
+        "item5Short": "DT、RT、lbs、kg 一处搞定。"
       },
       "privacyStrip": {
         "heading": "你的照片，只在你手机里。",
@@ -106,8 +112,9 @@
       "tagline": "桌面端挥拍自动切分",
       "intro": {
         "eyebrow": "桌面端 · Python + Electron",
-        "headline": "每一次挥拍，都切好并打上时间码。",
+        "headline": "每一次挥拍，\n都自动切好片段并打上时间戳",
         "subtext": "丢进一段比赛视频。两阶段管线只跟一路右手腕信号，把每次挥拍切成独立片段，并标注 ready、windup、contact、follow-through 四相位与精确时间码。",
+        "shortSubtext": "丢比赛视频 → 切好每次挥拍。",
         "previewLabel": "Clip 回放预览",
         "docsCta": "查看文档",
         "downloadCta": "获取"
@@ -117,10 +124,13 @@
         "subheading": "三件手动拖进度条做不到的事。",
         "item1Title": "两阶段挥拍切分",
         "item1Body": "v2.1 管线用单一右手腕信号定位挥拍边界，再离线精修。每一段都带 ready、windup、contact、follow-through 四相位与时间码。",
+        "item1Short": "右手腕 → 每次挥拍。",
         "item2Title": "Pass 1 流式出段",
         "item2Body": "第一遍还在跑，切好的段就已经陆续出现，不用等整段视频处理完才能开始看。",
+        "item2Short": "边切边看，不用等全部跑完。",
         "item3Title": "骨架与人物框叠加",
-        "item3Body": "想看清动作姿态？两档可选。**快档**切分时顺手画骨架，出图快、骨架稍糙；**精档**切完用更稳的人物框 + 骨架重画一遍，适合做教学切片。两档都直接合进导出的视频，选哪档都不会留半成品。"
+        "item3Body": "想看清动作姿态？两档可选。**快档**切分时顺手画骨架，出图快、骨架稍糙；**精档**切完用更稳的人物框 + 骨架重画一遍，适合做教学切片。两档都直接合进导出的视频，选哪档都不会留半成品。",
+        "item3Short": "骨架 / 人物框，直接叠进视频。"
       },
       "download": {
         "productHeading": "Swing Analysis",

@@ -590,6 +590,23 @@ html:not([data-view]) header {
   background: var(--btn-accent, var(--color-accent));
   box-shadow: 0 0 8px var(--btn-accent, var(--color-accent));
 }
+/* 用户 v38: 进入对应 3D 房间后，nav 上对应产品 btn 持续 3D 高亮（抬起 + 发光）
+   用户 v40: 不要分红/蓝产品色 — 用中性高亮（白/浅发光），保持一致 */
+.nav-btn-product.is-active {
+  transform: translateZ(6px) rotateX(6deg);
+  border-color: var(--color-fg);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 8px 22px rgba(255, 255, 255, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.22);
+  background: color-mix(in oklab, var(--color-fg) 8%, var(--color-bg-elevated));
+}
+.nav-btn-product.is-active::before {
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--color-fg) 25%, transparent),
+    0 0 12px color-mix(in oklab, var(--color-fg) 50%, transparent);
+  transform: translateY(-50%) scale(1.15);
+}
 
 .nav-btn-brand {
   font-weight: 700;
@@ -619,6 +636,11 @@ html:not([data-view]) header {
 }
 .nav-menu-link:hover {
   background: var(--color-surface-tint);
+}
+/* 用户 v38: 移动端汉堡菜单：当前 3D 房间对应 link 也高亮 */
+.nav-menu-link.is-active {
+  background: color-mix(in oklab, var(--btn-accent, var(--color-accent)) 14%, transparent);
+  font-weight: 600;
 }
 
 /* LocaleSwitcher 3D 立方体 */
