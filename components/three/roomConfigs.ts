@@ -130,11 +130,15 @@ export function buildSwingConfig(opts: {
     productName: opts.productName,
     accent: "#DC2626",
     buttonLabels: opts.buttonLabels,
-    // 用户 v69：swing 多面体参数（per-scene 独立布置，5 面 72° 间距）
-    //   - touchScale 1.2：panelW = 120% arc → 20% overlap，邻面可见
-    //   - minRatio 0.5：下限（手机 portrait 防止 panel 过小，与 v68 行为一致）
+    // 用户 v71：swing 独立 FOV = 95（用户 v70 反馈"面还是显大 间距过大 看不到两侧面 没有3d效果"）。
+    //   固定 70 下面等大与间距一致不可兼得；FOV 95 时：
+    //   - 面屏幕占比 = ratio（与 FOV 无关）：ratio = 1.0575 × justTouch(95) = 0.342
+    //     与 craft（70, touchScale 0.95 → 0.342）完全等大
+    //   - 面角宽 = 67.2° → 间距 4.8°（craft 5.2°），两侧邻面可见带 24.4°（craft 23.0°）
+    //   - 世界物体（产品名/按钮/光带粗细）由 RoomScene 按 tan(47.5°)/tan(35°) ≈ 1.56 自动补偿
+    //   - minRatio 0（v70：0.5 下限会在桌面钉死 ratio，必须放开）
     //   - ringRadius 2.0：面板环半径
-    polyhedron: { touchScale: 1.2, minRatio: 0.5, ringRadius: 2.0 },
+    polyhedron: { touchScale: 1.0575, minRatio: 0, ringRadius: 2.0, fov: 95 },
     // 5 面：intro + 3 features + faq ≈ 72° 间距（用户 v38/v39/v45）
     panels: [
       {

@@ -42,6 +42,9 @@ export type SceneManagerOpts = {
 };
 
 export class SceneManager {
+  /** v71：hub 基础 FOV（房间场景由 RoomScene.build 按 config.polyhedron.fov 覆写） */
+  private static readonly BASE_FOV = 70;
+
   private mount: HTMLElement;
   private renderer: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
@@ -83,10 +86,8 @@ export class SceneManager {
     this.camera = new THREE.PerspectiveCamera(
       // 用户 v63：45 → 60 FOV
       // 用户 v64：60 → 70 FOV（"可以再缩小间距"）
-      //   FOV 增大 → panel 视角角大小更大 → 相邻面间距（gap）更小 → polyhedron 更紧凑
-      //   FOV=70° → 5 面 swing gap 从 17.7° → 8.8°
-      //   FOV=70° → 7 面 craft 从 overlap 3.3° → overlap 11.8°（更多拼接感）
-      70,
+      // 用户 v71：抽成 BASE_FOV 常量（房间可按 config.polyhedron.fov 覆写，切回 hub 还原）
+      SceneManager.BASE_FOV,
       (this.mount.clientWidth || window.innerWidth) /
         (this.mount.clientHeight || window.innerHeight),
       0.01,
@@ -178,6 +179,11 @@ export class SceneManager {
     // 先 dispose 旧场景
     this.activeScene?.dispose();
     this.activeView = view;
+
+    // 用户 v71：先还原基础 FOV（每个场景激活时统一定起点；
+    // 房间场景在 RoomScene.build 里按 config.polyhedron.fov 再覆写）
+    this.camera.fov = SceneManager.BASE_FOV;
+    this.camera.updateProjectionMatrix();
 
     if (view === "globe") {
       this.activeScene = new GlobeScene({

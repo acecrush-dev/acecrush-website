@@ -5,6 +5,12 @@
  * minRatio / ringRadius），craft 与 swing 面数不同（7 vs 5），形状与面夹角天然不同，
  * 各页在 roomConfigs.ts 独立布置参数，本文件不再硬编码任何 scene 专属数值。
  *
+ * 用户 2026-09-14 v71：per-scene FOV（config.polyhedron.fov，缺省 70）。固定 70 下
+ * 面等大与间距一致不可兼得（面缩小必然间距拉大）；提高房间 FOV → 世界里面板放大、
+ * 面间隙闭合，而面板屏幕占比（= targetRatio）与 FOV 无关 → 面等大 + 间距一致 + 邻面
+ * 可见三者同时成立。房间内其他世界物体（产品名 / 按钮 / 接缝光带粗细）按
+ * tan(fov/2)/tan(35°) 等比补偿，与 70 房间同屏观感一致；切回 hub 由 SceneManager 还原。
+ *
  * 用户 2026-09-11 转向：
  *   - "这个几面体相当于还是包在一个球体内"
  *   - 内容分 N 块 → N 面体（polyhedron）
@@ -70,6 +76,12 @@ export type PolyhedronParams = {
   touchScale: number;
   minRatio: number;
   ringRadius: number;
+  /**
+   * 用户 v71：本房间相机 FOV（度），缺省 70。提高 FOV → 世界里面板放大、面间隙闭合，
+   * 屏幕占比不变 → 面等大与间距一致同时成立（swing 95）。
+   * 世界物体补偿与相机还原见文件头 v71 说明。
+   */
+  fov?: number;
 };
 
 export type RoomConfig = {
@@ -112,7 +124,7 @@ const PANEL_RING_R_X = 3.0; // polyhedron X 半径（panels 横向距离）
 const PANEL_RING_R_Z = 3.0; // polyhedron Z 半径（panels 纵深距离）
 const PANEL_W_NATIVE = 2.8; // 面板原始宽度
 const PANEL_H_NATIVE = 1.8; // 面板原始高度
-const CAMERA_FOV_DEG = 70; // v64：60 → 70（与 SceneManager camera FOV 保持一致）
+const CAMERA_FOV_DEG = 70; // 默认 FOV（v64 定为 70）；v71 起 per-scene 可被 config.polyhedron.fov 覆写
 // 用户 v38：所有面共享同一个 y（同一个水平高度），多面体作为整圈在同一水平面
 // 之前每面 y 不同（0.1 / 0 / -0.1 / ...）→ 转过去时面板上下飘；现在锁住单一高度。
 const PANEL_Y = 0.1;       // polyhedron 各面板共享 y（略高于视线中心，留出底部按钮区）
@@ -129,6 +141,9 @@ export class RoomScene {
   private reduce: boolean;
   private width: number;
   private height: number;
+  /** 用户 v71：本房间生效的相机 FOV（度），以及世界物体补偿系数（fov 70 时 = 1） */
+  private fovDeg: number = CAMERA_FOV_DEG;
+  private fovWorldScale: number = 1;
   /** 用户 v53：当前 panel 形状（自适应 viewport aspect） */
   private panelW: number = PANEL_W_NATIVE;
   private panelH: number = PANEL_H_NATIVE;
@@ -156,6 +171,12 @@ export class RoomScene {
     this.camera = opts.camera;
     this.renderer = opts.renderer;
     this.config = opts.config;
+    // 用户 v71：per-scene FOV（缺省 70）。fovWorldScale = tan(fov/2)/tan(35°)：
+    //   FOV 越大同样世界尺寸显得越小 → 世界尺寸按该系数放大，与 70 房间同屏观感一致
+    this.fovDeg = opts.config.polyhedron.fov ?? CAMERA_FOV_DEG;
+    this.fovWorldScale =
+      Math.tan(((this.fovDeg / 2) * Math.PI) / 180) /
+      Math.tan(((CAMERA_FOV_DEG / 2) * Math.PI) / 180);
     this.onAction = opts.onAction;
     this.onPanelActivate = opts.onPanelActivate;
     this.reduce = opts.reduced;
@@ -170,6 +191,10 @@ export class RoomScene {
   }
 
   private build() {
+    // 用户 v71：应用 per-scene FOV（切回 hub 由 SceneManager 还原基础 FOV）
+    this.camera.fov = this.fovDeg;
+    this.camera.updateProjectionMatrix();
+
     // 1) 内壁球壳（felt 噪点纹理）
     const innerGeo = new THREE.SphereGeometry(ROOM_R, 64, 48);
     const feltTex = drawFelt();
@@ -200,7 +225,14 @@ export class RoomScene {
     }
     for (const p of pts) p.multiplyScalar(0.97);
     const curve = new THREE.CatmullRomCurve3(pts, true);
-    const tubeGeo = new THREE.TubeGeometry(curve, SEGMENTS, 0.035, 8, true);
+    // v71：光带粗细按 FOV 补偿（世界尺寸 × fovWorldScale，屏幕粗细与 70 房间一致）
+    const tubeGeo = new THREE.TubeGeometry(
+      curve,
+      SEGMENTS,
+      0.035 * this.fovWorldScale,
+      8,
+      true
+    );
     const tubeMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       transparent: true,
@@ -290,6 +322,8 @@ export class RoomScene {
       });
       const mesh = new THREE.Mesh(buttonGeo, mat);
       mesh.position.copy(btn.position);
+      // v71：按钮尺寸按 FOV 补偿（与产品名/光带同一系数）
+      mesh.scale.setScalar(this.fovWorldScale);
       mesh.userData.action = btn.action;
       mesh.userData.index = this.buttonMeshes.length;
       this.buttonMeshes.push(mesh);
@@ -520,7 +554,8 @@ export class RoomScene {
     });
     // mesh 尺寸：根据 text 长度估算。aspect = text.length * 0.6 / 1
     const aspect = Math.max(2.0, name.length * 0.6);
-    const titleH = 0.5;
+    // v71：基准高度按 FOV 补偿（fovWorldScale，70 房间 = 1）
+    const titleH = 0.5 * this.fovWorldScale;
     const titleW = titleH * aspect;
     const geo = new THREE.PlaneGeometry(titleW, titleH);
     const mesh = new THREE.Mesh(geo, mat);
@@ -626,8 +661,8 @@ export class RoomScene {
     }
     // 产品名 3D 文字（v47）跟随 panel 宽度缩放
     if (this.productTitleMesh) {
-      // title 跟 panel W 等比缩放（保持视觉协调）
-      const titleScale = this.panelW / PANEL_W_NATIVE;
+      // title 跟 panel W 等比缩放（保持视觉协调）；v71：叠加 FOV 世界补偿
+      const titleScale = (this.panelW / PANEL_W_NATIVE) * this.fovWorldScale;
       this.productTitleMesh.scale.setScalar(titleScale);
     }
     // 同步 camera aspect
@@ -653,7 +688,9 @@ export class RoomScene {
   private recomputePanelShape() {
     const N = this.config.panels.length;
     const aspect = this.width / Math.max(1, this.height);
-    const tanHalfFov = Math.tan((CAMERA_FOV_DEG * Math.PI / 180) / 2);
+    // v71：用本房间生效的 FOV（面板屏幕占比 = targetRatio，与 FOV 无关；
+    // FOV 只改变面板世界尺寸 → 面间隙角）
+    const tanHalfFov = Math.tan((this.fovDeg * Math.PI / 180) / 2);
 
     // 用户 v69：per-scene 参数驱动（touchScale / minRatio / ringRadius 来自 roomConfigs）
     const p = this.config.polyhedron;
