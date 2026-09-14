@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useLocaleStore, type Locale } from "@/lib/i18n/store";
 
@@ -74,34 +75,45 @@ export function LocaleSwitcher() {
         >
           {currentLabel}
         </button>
-        {open && (
-          <div className="popup-overlay" role="presentation">
+        {open &&
+          createPortal(
             <div
-              className="popup-card popup-card-locale"
-              role="dialog"
-              aria-modal="true"
-              aria-label={t("localeLabel")}
+              className="popup-overlay"
+              role="presentation"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setOpen(false);
+              }}
             >
-              <h3 className="popup-title">{t("localeLabel")}</h3>
-              <div className="popup-options">
-                {OPTIONS.map((o) => (
-                  <button
-                    key={o.code}
-                    type="button"
-                    className="popup-option"
-                    aria-pressed={o.code === locale}
-                    onClick={() => {
-                      setLocale(o.code);
-                      setOpen(false);
-                    }}
-                  >
-                    {o.label}
-                  </button>
-                ))}
+              <div
+                className="popup-card popup-card-locale"
+                role="dialog"
+                aria-modal="true"
+                aria-label={t("localeLabel")}
+              >
+                <h3 className="popup-title">{t("localeLabel")}</h3>
+                <div className="popup-options">
+                  {OPTIONS.map((o) => (
+                    <button
+                      key={o.code}
+                      type="button"
+                      className="popup-option"
+                      aria-pressed={o.code === locale}
+                      onClick={() => {
+                        setLocale(o.code);
+                        setOpen(false);
+                      }}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </div>,
+            // v81：portal 到 body。nav 有 perspective:1200px（.app-nav-flat），
+            //   perspective 会让 fixed 后代以 nav 为包含块，popup 被困在 64px 导航栏里
+            //   （移动端"popup layout 错误"根因）；挂到 body 后真正视口居中
+            document.body
+          )}
       </>
     );
   }

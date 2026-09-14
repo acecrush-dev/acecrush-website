@@ -73,7 +73,8 @@ export type PanelOpts = {
  * 用户 v54：canvas 像素比例 = panel 世界比例（避免拉伸变形）；
  *   panel_H 一定，panel_W 随 viewport 变 → canvas 高度 H_PX 固定，
  *   canvas 宽度 W_PX = H_PX * (panelW / panelH)。
- *   字体大小按 H_PX 缩放（高度恒定 → 字号恒定 → 不拉伸）。
+ *   字体大小按 canvas 宽度缩放（v79：桌面 k=1 与原值一致，窄 canvas 相应缩小，
+ *   配合 layoutLines 的字符强切，任何面板上文字都不被截断）。
  */
 export function drawPanel(opts: PanelOpts): THREE.CanvasTexture {
   const H_PX = 576; // canvas 像素高度（恒定）
@@ -124,42 +125,59 @@ export function drawPanel(opts: PanelOpts): THREE.CanvasTexture {
   // 用户 v54：padX 按 canvas 宽度比例缩放（窄 canvas 不留太多 padding）
   //   desktop W=1024 → padX=80；mobile W=207 → padX=16
   const padX = Math.max(16, Math.round(80 * (W / 1024)));
-  const titleFontSize = 48; // v51：标题 52→48，让整体更平衡
-  const titleLineH = 56; // v51：行高 60→56
+  // 用户 v79：字号按 canvas 宽度缩放（手机竖屏面板 canvas 只有约 207px 宽，
+  //   固定 48px 标题一行都放不下；桌面 W 约 1024 → k=1 与原值完全一致）
+  const fontK = Math.max(0.5, Math.min(1, W / 640));
+  const titleFontSize = Math.max(24, Math.round(48 * fontK));
+  const titleLineH = Math.round((titleFontSize * 56) / 48);
+  const eyebrowFontSize = Math.max(12, Math.round(20 * fontK));
   const eyebrowGap = 16;
-  const eyebrowH = 24;
-  const bodyLineH = 32;
+  const eyebrowH = Math.round(eyebrowFontSize * 1.2);
+  const bodyFontSize = Math.max(14, Math.round(24 * fontK));
+  const bodyLineH = Math.round((bodyFontSize * 4) / 3);
   const imageGap = 16;
-  const imageH = 60;
 
-  // 计算每个块的高度，先估算实际渲染行数
+  // 计算每个块的高度，先按与绘制完全相同的布局器取行数（v79 统一实现）
   ctx.save();
   ctx.font = `700 ${titleFontSize}px ${FONT_FAMILY}`;
-  const titleLinesEst = estimateWrapLines(
-    ctx,
-    opts.title,
-    W - padX * 2
-  );
+  const titleBlockH = layoutLines(ctx, opts.title, W - padX * 2).length * titleLineH;
   ctx.restore();
-  const titleBlockH = titleLinesEst * titleLineH;
 
   ctx.save();
-  ctx.font = `400 24px ${FONT_FAMILY}`;
-  const bodyLinesEst = opts.body
-    ? estimateWrapLines(ctx, opts.body, W - padX * 2)
+  ctx.font = `400 ${bodyFontSize}px ${FONT_FAMILY}`;
+  const bodyBlockH = opts.body
+    ? layoutLines(ctx, opts.body, W - padX * 2).length * bodyLineH
     : 0;
   ctx.restore();
-  const bodyBlockH = bodyLinesEst * bodyLineH;
 
   const hasEyebrow = !!opts.eyebrow;
   const hasImage = !!opts.image;
-  // 总内容块高度：title + eyebrowGap + eyebrow + bodyGap + body + imageGap + image
   const innerGap = 8;
-  let blockH =
+  const textBlockH =
     titleBlockH +
     (hasEyebrow ? eyebrowGap + eyebrowH : 0) +
-    (bodyBlockH > 0 ? innerGap + bodyBlockH : 0) +
-    (hasImage ? imageGap + imageH : 0);
+    (bodyBlockH > 0 ? innerGap + bodyBlockH : 0);
+  // 用户 v80：缩略图高度在 topPad 之前定死（与实际绘制用同一值，不动点迭代 3 轮收敛）。
+  //   之前 blockH 里图片按固定 60 估算、实际绘制却是 60~220 自适应（v58）→ blockH 低估 →
+  //   topPad 偏大 → 内容整体下坠，看起来"上面 padding 太多 没有垂直居中"
+  //   （手机端字号变小后文字块更矮、缩略图相对更大，错位更明显）
+  const bottomPad = Math.max(40, Math.round(40 * (W / 1024)));
+  const THUMB_ASPECT = 1.6;
+  const maxImgW = W - padX * 2;
+  let imgH = 60;
+  if (hasImage) {
+    for (let i = 0; i < 3; i++) {
+      const topPadTry = Math.max(
+        60,
+        Math.floor((H - textBlockH - imageGap - imgH) / 2)
+      );
+      const availableH = H - topPadTry - textBlockH - imageGap - bottomPad;
+      const targetH = Math.max(60, Math.min(availableH * 0.8, 220));
+      const w = Math.min(targetH * THUMB_ASPECT, maxImgW);
+      imgH = w / THUMB_ASPECT;
+    }
+  }
+  const blockH = textBlockH + (hasImage ? imageGap + imgH : 0);
   // v51：垂直居中（top + bottom padding 各 (H - blockH) / 2，但至少 60 / 60）
   const topPad = Math.max(60, Math.floor((H - blockH) / 2));
 
@@ -168,14 +186,16 @@ export function drawPanel(opts: PanelOpts): THREE.CanvasTexture {
   ctx.font = `700 ${titleFontSize}px ${FONT_FAMILY}`;
   ctx.textBaseline = "top";
   let cursorY = topPad;
-  const titleLines = wrapText(ctx, opts.title, padX, cursorY, W - padX * 2, titleLineH);
-  cursorY += titleLines * titleLineH;
+  for (const ln of layoutLines(ctx, opts.title, W - padX * 2)) {
+    ctx.fillText(ln, padX, cursorY);
+    cursorY += titleLineH;
+  }
 
   // 2) eyebrow
   if (opts.eyebrow) {
     cursorY += eyebrowGap;
     ctx.fillStyle = isDark ? "#60A5FA" : "#1D4ED8";
-    ctx.font = `500 20px ${FONT_FAMILY}`;
+    ctx.font = `500 ${eyebrowFontSize}px ${FONT_FAMILY}`;
     ctx.fillText(opts.eyebrow, padX, cursorY);
     cursorY += eyebrowH;
   }
@@ -184,41 +204,17 @@ export function drawPanel(opts: PanelOpts): THREE.CanvasTexture {
   if (opts.body) {
     cursorY += innerGap;
     ctx.fillStyle = isDark ? "rgba(245,245,240,0.78)" : "rgba(20,24,26,0.78)";
-    ctx.font = `400 24px ${FONT_FAMILY}`;
-    const bodyLines = wrapText(ctx, opts.body, padX, cursorY, W - padX * 2, bodyLineH);
-    cursorY += bodyLines * bodyLineH;
+    ctx.font = `400 ${bodyFontSize}px ${FONT_FAMILY}`;
+    for (const ln of layoutLines(ctx, opts.body, W - padX * 2)) {
+      ctx.fillText(ln, padX, cursorY);
+      cursorY += bodyLineH;
+    }
   }
 
-  // 4) 缩略图（v58：自适应每个面板的剩余空间，不是固定大小）
-  //   - 用户反馈："thumbnail再大一些 和下面空间大小成比例"
-  //   - imgH 占满剩余可用高度（文字结束 → 面板底部）的大部分
-  //   - imgW 按比例（aspect 1.6），不超 canvas 宽度
-  //   - 不同 panel 文字长度不同 → 剩余空间不同 → thumbnail 大小自适应
+  // 4) 缩略图（v58：自适应剩余空间；v80：尺寸已在 topPad 前定死，这里直接绘制）
   if (opts.image) {
     cursorY += imageGap;
-    const bottomPad = Math.max(40, Math.round(40 * (W / 1024)));
-    const availableH = H - cursorY - bottomPad;
-    // target 高度：占剩余空间的 80%，但不超过 220，最小 60
-    const targetH = Math.max(60, Math.min(availableH * 0.8, 220));
-    // 维持 1.6 长宽比
-    const THUMB_ASPECT = 1.6;
-    let imgH = targetH;
-    let imgW = imgH * THUMB_ASPECT;
-    const maxW = W - padX * 2;
-    // 限制：宽度不能超 canvas
-    if (imgW > maxW) {
-      imgW = maxW;
-      imgH = imgW / THUMB_ASPECT;
-    }
-    // 限制：高度不能超 availableH（理论上不会，但保险）
-    if (imgH > availableH) {
-      imgH = availableH;
-      imgW = imgH * THUMB_ASPECT;
-      if (imgW > maxW) {
-        imgW = maxW;
-        imgH = imgW / THUMB_ASPECT;
-      }
-    }
+    const imgW = Math.min(imgH * THUMB_ASPECT, maxImgW);
     const thumbOpacity = opts.thumbnailOpacity ?? 1;
     const imgX = (W - imgW) / 2;
     const imgY = cursorY;
@@ -462,74 +458,47 @@ export function disposeTexture(tex: THREE.Texture | undefined | null) {
 }
 
 /**
- * 多行文本换行（返回行数）。支持 \n 强制换行 + 自动按 maxW 折行。
- * 用 ctx.font 测量文字宽度（调用方负责设 font）。
+ * 用户 v79：统一换行布局（取代原 estimateWrapLines + wrapText 双实现，
+ * 行数估算与绘制永远一致）。规则：
+ *   - \n 强制换行
+ *   - 按空白折行
+ *   - 单段超过 maxW 时按字符强切（无空格的中文连串 / 超长英文单词），
+ *     保证任何文字都不会画出 canvas 右缘被截断（手机窄面板"一行显示不完"）
+ * 用 ctx.font 测量（调用方负责先设 font）。返回行数组，调用方逐行 fillText。
  */
-/** 用户 v51：估算文字按 maxW 换行后的行数（不动 ctx，只 measureText） */
-function estimateWrapLines(
+function layoutLines(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxW: number
-): number {
-  const paras = text.split(/\n/);
-  let count = 0;
-  for (const para of paras) {
-    const words = para.split(/(\s+)/);
+): string[] {
+  const lines: string[] = [];
+  for (const para of text.split(/\n/)) {
     let line = "";
-    for (const w of words) {
-      const test = line + w;
-      const m = ctx.measureText(test);
-      if (m.width > maxW && line) {
-        count++;
-        line = w.trimStart();
-      } else {
-        line = test;
+    for (const seg of para.split(/(\s+)/)) {
+      let s = seg;
+      while (s.length > 0) {
+        if (line === "" && /^\s+$/.test(s)) break; // 行首空白丢弃
+        if (ctx.measureText(line + s).width <= maxW) {
+          line += s;
+          s = "";
+        } else if (line === "") {
+          // 整段连空行都放不下 → 按字符强切出一行
+          let take = 1;
+          while (
+            take < s.length &&
+            ctx.measureText(s.slice(0, take + 1)).width <= maxW
+          ) {
+            take++;
+          }
+          lines.push(s.slice(0, take));
+          s = s.slice(take);
+        } else {
+          lines.push(line);
+          line = "";
+        }
       }
     }
-    if (line) count++;
+    if (line !== "") lines.push(line);
   }
-  return count;
-}
-
-function wrapText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxW: number,
-  lineH: number,
-  maxLines?: number
-): number {
-  const paras = text.split(/\n/);
-  let cursorY = y;
-  let lineCount = 0;
-  for (const para of paras) {
-    const words = para.split(/(\s+)/);
-    let line = "";
-    for (const w of words) {
-      const test = line + w;
-      const m = ctx.measureText(test);
-      if (m.width > maxW && line) {
-        if (maxLines != null && lineCount >= maxLines) break;
-        ctx.fillText(line, x, cursorY);
-        line = w.trimStart();
-        cursorY += lineH;
-        lineCount++;
-        if (maxLines != null && lineCount >= maxLines) break;
-      } else {
-        line = test;
-      }
-    }
-    if (line) {
-      if (maxLines != null && lineCount >= maxLines) {
-        // 已经达到最大行数，不再绘制
-      } else {
-        ctx.fillText(line, x, cursorY);
-        cursorY += lineH;
-        lineCount++;
-      }
-    }
-    if (maxLines != null && lineCount >= maxLines) break;
-  }
-  return lineCount;
+  return lines;
 }

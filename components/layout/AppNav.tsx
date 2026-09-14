@@ -136,53 +136,54 @@ export function AppNav() {
           </div>
         </div>
 
-        {/* 移动端右：汉堡菜单 */}
-        <details
-          ref={detailsRef}
-          className="lg:hidden relative"
-          onToggle={(e) => setMenuOpen(e.currentTarget.open)}
-        >
-          <summary
-            className="cursor-pointer list-none p-2 rounded-full inline-flex items-center justify-center app-btn-flat"
-            aria-expanded={menuOpen}
-            aria-label={t("menuToggle")}
-          >
-            <List size={20} weight="bold" aria-hidden />
-          </summary>
-          <div className="absolute right-0 mt-2 w-64 p-3 space-y-2 rounded-2xl app-menu-popup">
-            <div
-              className="flex items-center justify-between gap-2 pb-2 mb-1"
-              style={{ borderBottom: "1px solid var(--color-divider)" }}
-            >
-              <LocaleSwitcher />
-              <ThemeSwitcher />
-            </div>
-            <Link href="/" className="nav-menu-link" onClick={closeMenu}>
-              {t("mobileHome")}
-            </Link>
-            <a
-              href="/#craft"
-              className={`nav-menu-link${view === "craft" ? " is-active" : ""}`}
-              onClick={(e) => handleProductClick(e, "craft")}
-            >
-              {t("productCraft")}
-            </a>
-            <a
-              href="/#swing"
-              className={`nav-menu-link${view === "swing" ? " is-active" : ""}`}
-              onClick={(e) => handleProductClick(e, "swing")}
-            >
-              {t("productSwing")}
-            </a>
-            <a
-              href={CONTACT_MAILTO}
-              className="nav-menu-link"
-              onClick={closeMenu}
-            >
-              {tFooter("contactLink")}
-            </a>
+        {/* 移动端右：语言/主题切换 + 汉堡菜单
+            用户 2026-09-14 v78：切换器移出汉堡菜单，直接并列放在菜单左边；
+            mini 触发按钮 + 居中弹层行为不变（M6），菜单弹层只留链接 */}
+        <div className="lg:hidden flex items-center gap-1">
+          <div className="flex items-center gap-0.5 switcher-group">
+            <LocaleSwitcher />
+            <ThemeSwitcher />
           </div>
-        </details>
+          <details
+            ref={detailsRef}
+            className="relative"
+            onToggle={(e) => setMenuOpen(e.currentTarget.open)}
+          >
+            <summary
+              className="cursor-pointer list-none p-2 rounded-full inline-flex items-center justify-center app-btn-flat"
+              aria-expanded={menuOpen}
+              aria-label={t("menuToggle")}
+            >
+              <List size={20} weight="bold" aria-hidden />
+            </summary>
+            <div className="absolute right-0 mt-2 w-64 p-3 space-y-2 rounded-2xl app-menu-popup">
+              <Link href="/" className="nav-menu-link" onClick={closeMenu}>
+                {t("mobileHome")}
+              </Link>
+              <a
+                href="/#craft"
+                className={`nav-menu-link${view === "craft" ? " is-active" : ""}`}
+                onClick={(e) => handleProductClick(e, "craft")}
+              >
+                {t("productCraft")}
+              </a>
+              <a
+                href="/#swing"
+                className={`nav-menu-link${view === "swing" ? " is-active" : ""}`}
+                onClick={(e) => handleProductClick(e, "swing")}
+              >
+                {t("productSwing")}
+              </a>
+              <a
+                href={CONTACT_MAILTO}
+                className="nav-menu-link"
+                onClick={closeMenu}
+              >
+                {tFooter("contactLink")}
+              </a>
+            </div>
+          </details>
+        </div>
       </div>
     </nav>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Moon, Sun, SunHorizon } from "@phosphor-icons/react/dist/ssr";
 import { useTranslations } from "next-intl";
 import { useTheme, type ThemeMode } from "@/lib/theme/ThemeProvider";
@@ -76,35 +77,44 @@ export function ThemeSwitcher() {
         >
           <CurrentIcon size={16} weight="fill" aria-hidden />
         </button>
-        {open && (
-          <div className="popup-overlay" role="presentation">
+        {open &&
+          createPortal(
             <div
-              className="popup-card popup-card-theme"
-              role="dialog"
-              aria-modal="true"
-              aria-label={tNav("themeLabel")}
+              className="popup-overlay"
+              role="presentation"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setOpen(false);
+              }}
             >
-              <h3 className="popup-title">{tNav("themeLabel")}</h3>
-              <div className="popup-options">
-                {OPTIONS.map(({ mode: m, Icon: I, labelKey }) => (
-                  <button
-                    key={m}
-                    type="button"
-                    className="popup-option"
-                    aria-pressed={m === mode}
-                    onClick={() => {
-                      setMode(m);
-                      setOpen(false);
-                    }}
-                  >
-                    <I size={20} weight={m === mode ? "fill" : "regular"} aria-hidden />
-                    <span>{t(labelKey)}</span>
-                  </button>
-                ))}
+              <div
+                className="popup-card popup-card-theme"
+                role="dialog"
+                aria-modal="true"
+                aria-label={tNav("themeLabel")}
+              >
+                <h3 className="popup-title">{tNav("themeLabel")}</h3>
+                <div className="popup-options">
+                  {OPTIONS.map(({ mode: m, Icon: I, labelKey }) => (
+                    <button
+                      key={m}
+                      type="button"
+                      className="popup-option"
+                      aria-pressed={m === mode}
+                      onClick={() => {
+                        setMode(m);
+                        setOpen(false);
+                      }}
+                    >
+                      <I size={20} weight={m === mode ? "fill" : "regular"} aria-hidden />
+                      <span>{t(labelKey)}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </div>,
+            // v81：portal 到 body，理由同 LocaleSwitcher（nav perspective 困住 fixed）
+            document.body
+          )}
       </>
     );
   }
