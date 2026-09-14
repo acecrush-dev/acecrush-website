@@ -1368,6 +1368,9 @@ html:not([data-view]) header {
   .detail-popup-nav { width: 44px; height: 44px; font-size: 24px; }
   .detail-popup-prev { left: 8px; }
   .detail-popup-next { right: 8px; }
+  /* 用户 2026-09-14 v77：移动端隐藏右上角关闭叉（太占地方）。
+     关闭路径保留：点空白遮罩区域关闭（v37/v48），Esc 为桌面路径 */
+  .detail-popup-close { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

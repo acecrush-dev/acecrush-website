@@ -75,6 +75,10 @@ export type RoomPanel = {
 export type PolyhedronParams = {
   touchScale: number;
   minRatio: number;
+  /** 用户 v76：targetRatio 上限（面板屏高占比上限）。手机竖屏 aspect 在 justTouch
+   *  分母 → ratio 爆到 1.7，面板角高 99.7° 超出视场（70/95）上下被切。
+   *  0.75 时面板角高 craft 52.3° < 70°、swing 80.3° < 95°，完整显示且留边。 */
+  maxRatio: number;
   ringRadius: number;
   /**
    * 用户 v71：本房间相机 FOV（度），缺省 70。提高 FOV → 世界里面板放大、面间隙闭合，
@@ -735,10 +739,15 @@ export class RoomScene {
     // FOV 只改变面板世界尺寸 → 面间隙角）
     const tanHalfFov = Math.tan((this.fovDeg * Math.PI / 180) / 2);
 
-    // 用户 v69：per-scene 参数驱动（touchScale / minRatio / ringRadius 来自 roomConfigs）
+    // 用户 v69：per-scene 参数驱动（touchScale / minRatio / maxRatio / ringRadius 来自 roomConfigs）
+    // 用户 v76：加 maxRatio 上限（手机竖屏 aspect 在 justTouch 分母，ratio 会爆到 1.7，
+    //   面板角高 99.7° 远超视场，上下被切）；clamp 后完整显示
     const p = this.config.polyhedron;
     const justTouchRatio = Math.PI / (N * tanHalfFov * aspect);
-    const targetRatio = Math.max(p.minRatio, justTouchRatio * p.touchScale);
+    const targetRatio = Math.min(
+      p.maxRatio,
+      Math.max(p.minRatio, justTouchRatio * p.touchScale)
+    );
 
     const ringR = p.ringRadius;
     this.panelH = targetRatio * 2 * ringR * tanHalfFov;

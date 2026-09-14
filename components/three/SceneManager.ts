@@ -62,6 +62,9 @@ export class SceneManager {
   private pointerMoveHandler: ((e: PointerEvent) => void) | null = null;
   private clickHandler: ((e: MouseEvent) => void) | null = null;
   private dblclickHandler: ((e: MouseEvent) => void) | null = null;
+  /** 用户 v76：移动端双击面板检测（触摸设备原生 dblclick 不可靠） */
+  private touchTapHandler: ((e: PointerEvent) => void) | null = null;
+  private lastTap = { time: 0, x: 0, y: 0 };
   private opts: SceneManagerOpts;
   private viewCheckInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -152,6 +155,27 @@ export class SceneManager {
       }
     };
     this.renderer.domElement.addEventListener("dblclick", this.dblclickHandler);
+    // 用户 v76：移动端双击面板 → 详细 popup。
+    //   触摸设备基本不派发原生 dblclick（OrbitControls 已设 touch-action:none，
+    //   双击不会触发页面缩放），故手动检测：两次 pointerup（pointerType=touch）
+    //   间隔 < 350ms 且位移 < 24px 判定为双击。桌面仍走原生 dblclick，互不干扰。
+    this.touchTapHandler = (e: PointerEvent) => {
+      if (!(this.activeScene instanceof RoomScene)) return;
+      if (e.pointerType !== "touch") return;
+      const now = performance.now();
+      const dt = now - this.lastTap.time;
+      const dist = Math.hypot(
+        e.clientX - this.lastTap.x,
+        e.clientY - this.lastTap.y
+      );
+      this.lastTap = { time: now, x: e.clientX, y: e.clientY };
+      if (dt < 350 && dist < 24) {
+        // 重置时间戳，防止三连击触发两次 popup
+        this.lastTap.time = 0;
+        this.activeScene.handleDoubleClick(e);
+      }
+    };
+    this.renderer.domElement.addEventListener("pointerup", this.touchTapHandler);
 
     // 监听 viewStore + detailView 变化
     this.viewCheckInterval = setInterval(() => {
@@ -308,6 +332,10 @@ export class SceneManager {
     if (this.dblclickHandler) {
       this.renderer.domElement.removeEventListener("dblclick", this.dblclickHandler);
       this.dblclickHandler = null;
+    }
+    if (this.touchTapHandler) {
+      this.renderer.domElement.removeEventListener("pointerup", this.touchTapHandler);
+      this.touchTapHandler = null;
     }
     this.activeScene?.dispose();
     this.renderer.dispose();

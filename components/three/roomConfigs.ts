@@ -45,8 +45,9 @@ export function buildCraftConfig(opts: {
     // 用户 v69：craft 多面体参数（per-scene 独立布置，7 面 51° 间距）
     //   - touchScale 0.95：panelW = 95% arc → 面与面留 5% gap，绝对不重叠
     //   - minRatio 0：无下限（不重叠优先，与 v68 'no-overlap' 行为一致）
+    //   - maxRatio 0.75（v76）：手机竖屏 ratio 会爆到 1.7 上下被切，clamp 后完整显示
     //   - ringRadius 2.0：面板环半径
-    polyhedron: { touchScale: 0.95, minRatio: 0, ringRadius: 2.0 },
+    polyhedron: { touchScale: 0.95, minRatio: 0, maxRatio: 0.75, ringRadius: 2.0 },
     // 7 面：intro + 5 features + faq ≈ 51° 间距（用户 v38/v39/v45/v50 全部同高 PANEL_Y）
     // v45：每个 panel 都有简化的 i18n shortSubtext；FAQ 没有图
     // v47：intro 第一个面板去掉 eyebrow（产品名放到多面体上方 3D 文字）
@@ -137,8 +138,15 @@ export function buildSwingConfig(opts: {
     //   - 面角宽 = 67.2° → 间距 4.8°（craft 5.2°），两侧邻面可见带 24.4°（craft 23.0°）
     //   - 世界物体（产品名/按钮/光带粗细）由 RoomScene 按 tan(47.5°)/tan(35°) ≈ 1.56 自动补偿
     //   - minRatio 0（v70：0.5 下限会在桌面钉死 ratio，必须放开）
+    //   - maxRatio 0.75（v76）：手机竖屏完整显示（角高 80.3° < 95° 视场）
     //   - ringRadius 2.0：面板环半径
-    polyhedron: { touchScale: 1.0575, minRatio: 0, ringRadius: 2.0, fov: 95 },
+    polyhedron: {
+      touchScale: 1.0575,
+      minRatio: 0,
+      maxRatio: 0.75,
+      ringRadius: 2.0,
+      fov: 95,
+    },
     // 5 面：intro + 3 features + faq ≈ 72° 间距（用户 v38/v39/v45）
     panels: [
       {
