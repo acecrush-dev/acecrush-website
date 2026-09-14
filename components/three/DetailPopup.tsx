@@ -13,8 +13,9 @@
  * 内容来源：
  *   - craft 房间 7 面：intro + 5 features + faq
  *   - swing 房间 5 面：intro + 3 features + faq
- *   - intro 第一面：含 preview 图片（craft / img/craft/measurement_result.jpg,
- *     swing /img/swing/clip_play.png）
+ *   - 用户 v82：每页配子项目 docs 截图（public/img/{craft,swing}/ 与
+ *     acecrush-craft app/docs、swing-analysis docs 的 public/images 同源），
+ *     配图高度受限 + 居中展示（见 globals.css .detail-popup-image）
  */
 
 import * as React from "react";
@@ -42,36 +43,46 @@ type PanelContent = {
 };
 
 /** 用户 v41：从 i18n 构建 craft 详细面板（intro + 5 features + faq） */
-/** 用户 v44：popup 必须有文字不能只有图 → 只有 intro 第一页保留 preview 图，
- *   features 和 faq 全部走纯文字（title + body / qaList）。 */
+/** 用户 v44：popup 必须有文字不能只有图 → 每页都有 title + body 文字。
+ *   用户 v82：参考 acecrush-craft app/docs 给每页配 docs 截图（高度受限、居中展示）。 */
 function buildCraftPanels(t: ReturnType<typeof useTranslations>): PanelContent[] {
   return [
     {
       eyebrow: t("name"),
       title: t("intro.headline"),
       body: t("intro.subtext"),
-      image: "/img/craft/measurement_result.jpg",
-      imageLabel: t("intro.previewLabel"),
+      image: "/img/craft/main_page.jpg",
+      imageLabel: t("intro.homeLabel"),
     },
     {
       title: t("features.item1Title"),
       body: t("features.item1Body"),
+      image: "/img/craft/measurement_result.jpg",
+      imageLabel: t("intro.previewLabel"),
     },
     {
       title: t("features.item2Title"),
       body: t("features.item2Body"),
+      image: "/img/craft/grip_measurement_manual.jpg",
+      imageLabel: t("features.item2Image"),
     },
     {
       title: t("features.item3Title"),
       body: t("features.item3Body"),
+      image: "/img/craft/racquet_list.jpg",
+      imageLabel: t("features.item3Image"),
     },
     {
       title: t("features.item4Title"),
       body: t("features.item4Body"),
+      image: "/img/craft/string_job.jpg",
+      imageLabel: t("features.item4Image"),
     },
     {
       title: t("features.item5Title"),
       body: t("features.item5Body"),
+      image: "/img/craft/dt_rt.jpg",
+      imageLabel: t("features.item5Image"),
     },
     {
       title: t("faq.heading"),
@@ -86,27 +97,35 @@ function buildCraftPanels(t: ReturnType<typeof useTranslations>): PanelContent[]
 }
 
 /** 用户 v41：从 i18n 构建 swing 详细面板（intro + 3 features + faq） */
-/** 用户 v44：popup 必须有文字不能只有图 → 只有 intro 第一页保留 preview 图。 */
+/** 用户 v44：popup 必须有文字不能只有图 → 每页都有 title + body 文字。
+ *   用户 v82：参考 swing-analysis docs 给每页配 docs 截图（docs 仅 2 张图，
+ *   load_video = 主窗口加载视频 + 片段条，clip_play = 片段播放 + 骨架叠加）。 */
 function buildSwingPanels(t: ReturnType<typeof useTranslations>): PanelContent[] {
   return [
     {
       eyebrow: t("name"),
       title: t("intro.headline"),
       body: t("intro.subtext"),
-      image: "/img/swing/clip_play.png",
-      imageLabel: t("intro.previewLabel"),
+      image: "/img/swing/load_video.png",
+      imageLabel: t("intro.homeLabel"),
     },
     {
       title: t("features.item1Title"),
       body: t("features.item1Body"),
+      image: "/img/swing/clip_play.png",
+      imageLabel: t("intro.previewLabel"),
     },
     {
       title: t("features.item2Title"),
       body: t("features.item2Body"),
+      image: "/img/swing/load_video.png",
+      imageLabel: t("features.item2Image"),
     },
     {
       title: t("features.item3Title"),
       body: t("features.item3Body"),
+      image: "/img/swing/clip_play.png",
+      imageLabel: t("features.item3Image"),
     },
     {
       title: t("faq.heading"),

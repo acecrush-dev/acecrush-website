@@ -71,7 +71,9 @@ export function buildCraftConfig(opts: {
       {
         title: opts.features.item2Title,
         body: opts.features.item2Short,
-        image: "/img/craft/adjustment.jpg",
+        // v82：手动测算页的 docs 截图是尺测选档（grip_measurement_manual.jpg）；
+        //   adjustment.jpg 是 AI 模式 2「调整绿框」的截图，与手动测算无关
+        image: "/img/craft/grip_measurement_manual.jpg",
         imageLabel: opts.features.item2Title,
         thumbnailOpacity: 0.85,
       },
@@ -148,19 +150,21 @@ export function buildSwingConfig(opts: {
       fov: 95,
     },
     // 5 面：intro + 3 features + faq ≈ 72° 间距（用户 v38/v39/v45）
+    // v82：面板缩略图对齐 popup 的 docs 配图（intro/出段 = load_video，
+    //   切分结果/骨架叠加 = clip_play）
     panels: [
       {
         title: opts.intro.headline,
         // v74：删掉 v47 遗留的 eyebrow "Swing Analysis"（craft 侧当时已删，swing 漏删）。
         //   产品名按 v47 设计显示在多面体上方 3D 文字（RoomScene createProductTitleMesh）
         body: opts.intro.shortSubtext,
-        image: "/img/swing/clip_play.png",
+        image: "/img/swing/load_video.png",
         imageLabel: opts.intro.headline,
       },
       {
         title: opts.features.item1Title,
         body: opts.features.item1Short,
-        image: "/img/swing/load_video.png",
+        image: "/img/swing/clip_play.png",
         imageLabel: opts.features.item1Title,
       },
       {

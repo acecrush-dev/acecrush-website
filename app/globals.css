@@ -1259,8 +1259,15 @@ html:not([data-view]) header {
   text-align: center;
 }
 .detail-popup-image {
+  display: block;
+  /* 用户 2026-09-14 v82：配图不要撑满宽度（竖屏截图会高得离谱并触发纵向滚动条），
+     改为按高度约束、等比缩放、居中展示（figure 已 text-align center，块级补 margin auto） */
   max-width: 100%;
+  max-height: min(42vh, 460px);
+  width: auto;
   height: auto;
+  margin: 0 auto;
+  object-fit: contain;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
@@ -1365,6 +1372,8 @@ html:not([data-view]) header {
     max-height: calc(100vh - 32px);
   }
   .detail-popup-title { font-size: 22px; }
+  /* v82：移动端竖屏更紧的配图高度上限 */
+  .detail-popup-image { max-height: 34vh; }
   .detail-popup-nav { width: 44px; height: 44px; font-size: 24px; }
   .detail-popup-prev { left: 8px; }
   .detail-popup-next { right: 8px; }
