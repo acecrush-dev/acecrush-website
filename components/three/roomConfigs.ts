@@ -7,6 +7,10 @@
  * craft 内容更多（5 features）→ 7 面（51° 间距）。
  * swing 内容较少（3 features）→ 5 面（72° 间距）。
  *
+ * 用户 2026-09-14 v69：多面体几何参数 per-scene 独立布置（polyhedron: touchScale /
+ * minRatio / ringRadius）。两个 scene 面数不同、形状与面夹角天然不同，
+ * 各页在下方自己的 config 里自主决定参数，共用 RoomScene.ts 不再硬编码 scene 分支。
+ *
  * 用户 v38：所有面板共享同一水平高度（y 由 RoomScene 内的 PANEL_Y 统一决定），
  * 这里不再写 per-panel y，多面体作为整圈在同一水平面；转动时面与面平移切换，
  * 不再有上下飘。
@@ -38,10 +42,11 @@ export function buildCraftConfig(opts: {
     productName: opts.productName,
     accent: "#2563EB",
     buttonLabels: opts.buttonLabels,
-    // 用户 v68：craft 7 面 → polyhedronStyle='no-overlap'
-    //   - panelW < arc_length（留 5% gap），面与面不重叠
-    //   - targetRatio = π/(N × tanHalfFov × aspect) × 0.95
-    polyhedronStyle: "no-overlap",
+    // 用户 v69：craft 多面体参数（per-scene 独立布置，7 面 51° 间距）
+    //   - touchScale 0.95：panelW = 95% arc → 面与面留 5% gap，绝对不重叠
+    //   - minRatio 0：无下限（不重叠优先，与 v68 'no-overlap' 行为一致）
+    //   - ringRadius 2.0：面板环半径
+    polyhedron: { touchScale: 0.95, minRatio: 0, ringRadius: 2.0 },
     // 7 面：intro + 5 features + faq ≈ 51° 间距（用户 v38/v39/v45/v50 全部同高 PANEL_Y）
     // v45：每个 panel 都有简化的 i18n shortSubtext；FAQ 没有图
     // v47：intro 第一个面板去掉 eyebrow（产品名放到多面体上方 3D 文字）
@@ -125,10 +130,11 @@ export function buildSwingConfig(opts: {
     productName: opts.productName,
     accent: "#DC2626",
     buttonLabels: opts.buttonLabels,
-    // 用户 v68：swing 5 面 → polyhedronStyle='overlap-ok'
-    //   - panel_angular_size > gap（72°），邻面可见（之前 ratio=0.5 时只看到 1 面）
-    //   - targetRatio = max(0.5, justTouchRatio × 1.2)
-    polyhedronStyle: "overlap-ok",
+    // 用户 v69：swing 多面体参数（per-scene 独立布置，5 面 72° 间距）
+    //   - touchScale 1.2：panelW = 120% arc → 20% overlap，邻面可见
+    //   - minRatio 0.5：下限（手机 portrait 防止 panel 过小，与 v68 行为一致）
+    //   - ringRadius 2.0：面板环半径
+    polyhedron: { touchScale: 1.2, minRatio: 0.5, ringRadius: 2.0 },
     // 5 面：intro + 3 features + faq ≈ 72° 间距（用户 v38/v39/v45）
     panels: [
       {

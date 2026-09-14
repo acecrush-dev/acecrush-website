@@ -1,6 +1,10 @@
 /**
  * 产品房间场景（plan 003 §4-7 + 用户 2026-09-11 转向 → polyhedron）。
  *
+ * 用户 2026-09-14 v69：多面体几何参数 per-scene 化（config.polyhedron: touchScale /
+ * minRatio / ringRadius），craft 与 swing 面数不同（7 vs 5），形状与面夹角天然不同，
+ * 各页在 roomConfigs.ts 独立布置参数，本文件不再硬编码任何 scene 专属数值。
+ *
  * 用户 2026-09-11 转向：
  *   - "这个几面体相当于还是包在一个球体内"
  *   - 内容分 N 块 → N 面体（polyhedron）
@@ -53,6 +57,21 @@ export type RoomPanel = {
   thumbnailOpacity?: number;
 };
 
+/**
+ * 用户 2026-09-14 v69：多面体几何参数（per-scene，craft / swing 在 roomConfigs.ts 各自独立布置）。
+ * 两个 scene 共用 RoomScene.ts，面尺寸 / 间距 / 环半径不再走硬编码分支，全部由 config 数值驱动：
+ * - touchScale：面宽系数。targetRatio = justTouchRatio × touchScale
+ *   - < 1 → panelW 小于面间距 arc，面与面留 gap 不重叠（如 craft 0.95 = 5% gap）
+ *   - > 1 → panelW 大于 arc，邻面可见 / 轻微重叠（如 swing 1.2 = 20% overlap）
+ * - minRatio：targetRatio 下限（手机 portrait / 大 N 时防止 panel 过小），0 = 无下限
+ * - ringRadius：面板环半径（面板到相机的距离）
+ */
+export type PolyhedronParams = {
+  touchScale: number;
+  minRatio: number;
+  ringRadius: number;
+};
+
 export type RoomConfig = {
   id: RoomId;
   panels: RoomPanel[];
@@ -62,11 +81,10 @@ export type RoomConfig = {
   /** 用户 v47：产品名（用于在多面体上方展示 3D 文字），i18n */
   productName: string;
   /**
-   * 用户 v68：多面体排布样式（两个 scene 共用 RoomScene.ts，需用参数区分）。
-   * - 'no-overlap'：面与面不重叠（panelW ≤ arc_length，留 5% gap）= craft 7 面
-   * - 'overlap-ok'：面与面重叠（panel_angular_size > gap，邻面可见）= swing 5 面
+   * 用户 v69：多面体几何参数 per-scene 独立布置（替代 v68 的 polyhedronStyle 二值分支）。
+   * craft / swing 面数不同（7 vs 5），形状与面夹角天然不同，尺寸参数由各页 config 自主决定。
    */
-  polyhedronStyle: "no-overlap" | "overlap-ok";
+  polyhedron: PolyhedronParams;
 };
 
 export type RoomSceneOpts = {
@@ -624,35 +642,25 @@ export class RoomScene {
    *  - 手机 portrait (aspect≈0.36): panel 是竖矩形，宽 << 高
    *  - panel 高度固定 ≈ target_ratio * screen_H_world（不让 panel 上下撑出）
    *  - panel 宽度 = panel_H * viewport_aspect（让 panel 形状跟 viewport 形状一致）
-   *  - ring 半径 ≈ panel_W * 1.15 / angleStep（保证面与面不重叠、不太开）
-   *  - 用户 v68：用 polyhedronStyle 参数区分两个 scene（craft/swing 共用此文件）
-   *    - 'no-overlap' (craft 7 面): targetRatio = justTouchRatio × 0.95（panelW < arc，5% gap）
-   *      → 面与面绝对不重叠，保留 v55 之前的紧凑不交叠观感
-   *    - 'overlap-ok' (swing 5 面): targetRatio = max(0.5, justTouchRatio × 1.2)
-   *      → panel_angular_size > gap（72°），邻面可见（之前只能看到 1 面）
+   *  - 用户 v69：几何参数全部来自 per-scene config.polyhedron（craft/swing 各自独立布置，
+   *    共用文件不再硬编码任何 scene 专属数值）：
    *    - justTouchRatio = π / (N × tanHalfFov × aspect)
    *      → panelW = arc_length 的临界 targetRatio（R cancels out）
+   *    - targetRatio = max(minRatio, justTouchRatio × touchScale)
+   *      touchScale < 1 → 面间留 gap 不重叠；touchScale > 1 → 邻面可见（重叠）
+   *    - ringR = ringRadius（面板到相机距离）
    */
   private recomputePanelShape() {
     const N = this.config.panels.length;
     const aspect = this.width / Math.max(1, this.height);
     const tanHalfFov = Math.tan((CAMERA_FOV_DEG * Math.PI / 180) / 2);
 
-    // 用户 v68：根据 polyhedronStyle 选 targetRatio
-    //   justTouchRatio = 让 panelW 恰好等于 arc_length 的临界 targetRatio
+    // 用户 v69：per-scene 参数驱动（touchScale / minRatio / ringRadius 来自 roomConfigs）
+    const p = this.config.polyhedron;
     const justTouchRatio = Math.PI / (N * tanHalfFov * aspect);
-    let targetRatio: number;
-    if (this.config.polyhedronStyle === "no-overlap") {
-      // craft：略低于临界（95% × justTouchRatio）→ 留 5% gap，面与面绝对不重叠
-      targetRatio = justTouchRatio * 0.95;
-    } else {
-      // swing：高于临界 1.2×（20% overlap margin）→ panel 角大小 > gap，邻面可见
-      //   下限 0.5：与 v54-v64 保持一致的最小 panel 尺寸（防止手机 portrait 太小）
-      targetRatio = Math.max(0.5, justTouchRatio * 1.2);
-    }
+    const targetRatio = Math.max(p.minRatio, justTouchRatio * p.touchScale);
 
-    // ring 半径固定 2.0（v62 统一值）：ringR 不影响 overlap 比例（panelW 与 arc 同比例缩放）
-    const ringR = 2.0;
+    const ringR = p.ringRadius;
     this.panelH = targetRatio * 2 * ringR * tanHalfFov;
     // panel 宽度跟 viewport 一致：宽屏 = 宽面板，手机竖屏 = 窄长方
     this.panelW = this.panelH * aspect;
