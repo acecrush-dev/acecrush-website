@@ -538,9 +538,14 @@ export class RoomScene {
     disposeTexture(old);
   }
 
-  /** 用户 v47：在多面体上方放产品名 3D 文字（独立 mesh，不随多面体旋转）
-   *  位置：正上方 + 略偏向相机 + 始终面向相机（billboard） */
+  /** 用户 v47：在多面体上方放产品名 3D 文字（独立 mesh，不随多面体旋转）。
+   *  v74 修复：旧位置 (0, PANEL_Y+1.05, -0.5) 相对相机视线仰角约 64°，超出 vfov 半角
+   *  （craft 35° / swing 47.5°）被视锥剔除，两个房间的标题其实从未显示过。
+   *  新布局见 positionProductTitle：文字放到面板环后方，y 按角度计算；
+   *  宽度 clamp 到水平视锥（手机竖屏防大幅出屏）。billboard（update 内 lookAt）不变。 */
   private productTitleMesh: THREE.Mesh | null = null;
+  /** v74：build 时几何高度（世界单位，未乘 mesh.scale），供定位计算 */
+  private productTitleH = 0;
   private createProductTitleMesh() {
     const name = this.config.productName;
     if (!name) return;
@@ -553,17 +558,51 @@ export class RoomScene {
       depthWrite: false,
     });
     // mesh 尺寸：根据 text 长度估算。aspect = text.length * 0.6 / 1
-    const aspect = Math.max(2.0, name.length * 0.6);
+    const textAspect = Math.max(2.0, name.length * 0.6);
     // v71：基准高度按 FOV 补偿（fovWorldScale，70 房间 = 1）
-    const titleH = 0.5 * this.fovWorldScale;
-    const titleW = titleH * aspect;
+    let titleH = 0.5 * this.fovWorldScale;
+    let titleW = titleH * textAspect;
+    // v74：宽度 clamp 到水平视锥内（留 10% 边距）
+    const vpAspect = this.width / Math.max(1, this.height);
+    const halfHFov = Math.atan(
+      Math.tan(((this.fovDeg / 2) * Math.PI) / 180) * vpAspect
+    );
+    const depth = this.ringRZ + 0.6;
+    const maxW = 2 * depth * Math.tan(halfHFov) * 0.9;
+    const fit = Math.min(1, maxW / titleW);
+    titleH *= fit;
+    titleW *= fit;
+    this.productTitleH = titleH;
     const geo = new THREE.PlaneGeometry(titleW, titleH);
     const mesh = new THREE.Mesh(geo, mat);
-    // 位置：多面体上方 (PANEL_Y + 1.0)，略偏 z=0.01 朝向相机
-    mesh.position.set(0, PANEL_Y + 1.05, -0.5);
     mesh.renderOrder = 5; // 比 panel 晚渲染
     this.productTitleMesh = mesh;
     this.scene.add(mesh);
+    this.positionProductTitle();
+  }
+
+  /** v74：标题定位（build 与 resize 共用）。
+   *  位置 = 面板环后方 depth = ringRZ + 0.6；y 按角度计算：
+   *  前面板顶边仰角 + 文字半角 + 余量，clamp 到 vfov 内（顶边留 8% 边距），
+   *  避免与面板重叠且保证任何 fov / 面板尺寸下都在视锥内。
+   *  必须在 mesh.scale 确定之后调用（有效高度 = 几何高 × scale.y）。 */
+  private positionProductTitle() {
+    if (!this.productTitleMesh || this.productTitleH <= 0) return;
+    const depth = this.ringRZ + 0.6;
+    const halfFovRad = ((this.fovDeg / 2) * Math.PI) / 180;
+    const effH = this.productTitleH * this.productTitleMesh.scale.y;
+    const panelTopAngle = Math.atan(this.panelH / 2 / this.ringRZ);
+    const textHalfAngle = Math.atan(effH / 2 / depth);
+    let centerAngle = panelTopAngle + textHalfAngle + 0.02;
+    const maxCenter = halfFovRad * 0.92 - textHalfAngle;
+    if (centerAngle > maxCenter) {
+      centerAngle = Math.max(maxCenter, panelTopAngle);
+    }
+    this.productTitleMesh.position.set(
+      0,
+      PANEL_Y + Math.tan(centerAngle) * depth,
+      -depth
+    );
   }
 
   /** 用户 v39：预加载所有面板缩略图，加载完成后重建该面板 CanvasTexture 把图贴上 */
@@ -661,9 +700,13 @@ export class RoomScene {
     }
     // 产品名 3D 文字（v47）跟随 panel 宽度缩放
     if (this.productTitleMesh) {
-      // title 跟 panel W 等比缩放（保持视觉协调）；v71：叠加 FOV 世界补偿
-      const titleScale = (this.panelW / PANEL_W_NATIVE) * this.fovWorldScale;
+      // title 跟 panel W 等比缩放（保持视觉协调）；
+      // v74：fovWorldScale 已烘进几何（createProductTitleMesh），这里不再重复乘，
+      //   否则 swing（fov 95）resize 后标题会双重放大 1.56 倍
+      const titleScale = this.panelW / PANEL_W_NATIVE;
       this.productTitleMesh.scale.setScalar(titleScale);
+      // v74：scale 变了 → 有效高度变 → 按角度重算 y
+      this.positionProductTitle();
     }
     // 同步 camera aspect
     if (this.camera) {
@@ -741,6 +784,12 @@ export class RoomScene {
       this.rebuildPanelTexture(safeIdx, true);
       // 重置几何检测的 active index 以避免视觉跳变
       this.activePanelIndex = safeIdx;
+    } else {
+      // 用户 v75：popup 关闭（safeIdx = null）时上面已把 prev 面板重建为 inactive，
+      //   但 activePanelIndex 仍停留在 popup 打开期间设置的值 → update() 的几何检测
+      //   认为"该面板已是 active"而跳过重建 → 高亮真空（没有任何面显示 active 底色）。
+      //   重置为 -1，强制下一帧几何检测重建当前朝向面板的 active 纹理。
+      this.activePanelIndex = -1;
     }
   }
 

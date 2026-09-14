@@ -36,7 +36,12 @@ export const HUB_MARKERS: HubMarker[] = [
 const BALL_R = 1.5;
 // 用户 2026-09-11：球缩小（约画面 32% 宽），球体上方留出 nav + 内容呼吸空间；
 // hero 仍然保持 0.34 不变。
-const BALL_SCREEN_W_HUB = 0.32;
+// 用户 2026-09-14 v72：fitCamera 残留 FOV 45 反推距离，32% 在实际 FOV 70 下缩水到
+// 约 19%（用户反馈"首页球太小"）；fitCamera 改用相机真实 fov 后 32% 恢复有效。
+// 用户 2026-09-14 v73：桌面再放大到 40% 屏宽（用户"比例还可以更大一些"）。
+//   移动端不受此值影响：手机 aspect 下公式距离超出 controls maxDistance=9，
+//   被 clamp 后实际占比恒约 42.5% 屏宽（用户"移动版要比例合适 不能过大"，保持现状）。
+const BALL_SCREEN_W_HUB = 0.4;
 
 export type GlobeSceneOpts = {
   mount: HTMLElement;
@@ -193,15 +198,21 @@ export class GlobeScene {
     });
   }
 
-  /** 全屏 hub 取景：球占画面 55% */
+  /**
+   * 全屏 hub 取景：球占画面 BALL_SCREEN_W_HUB 比例宽。
+   * 用户 2026-09-14 v72 修复：之前残留硬编码 FOV 45 反推相机距离，而 v63/v64 已把
+   * 实际相机 FOV 提到 70 → 球实际屏占比从 32% 缩水到约 19%（"首页球太小"根因）。
+   * 现改用相机真实 fov 计算；下限 = controls minDistance（2.7），超宽屏防相机贴脸。
+   * v73：桌面目标 40% 时 16:9 的公式距离约 3.0，minDistance 钳制即天然安全下限。
+   */
   fitCamera() {
     this.width = this.mount.clientWidth || window.innerWidth;
     this.height = this.mount.clientHeight || window.innerHeight;
     const aspect = this.width / this.height;
+    const tanHalf = Math.tan((this.camera.fov / 2) * (Math.PI / 180));
     const camZ = Math.max(
-      5.6,
-      (3 / BALL_SCREEN_W_HUB) /
-        (2 * Math.tan((45 / 2) * (Math.PI / 180)) * aspect)
+      this.controls.minDistance,
+      (3 / BALL_SCREEN_W_HUB) / (2 * tanHalf * aspect)
     );
     this.camera.aspect = aspect;
     this.camera.position.set(0, 0.225, camZ);
@@ -227,13 +238,23 @@ export class GlobeScene {
     const shadow = isDark
       ? "0 6px 20px rgba(255,255,255,0.35)"
       : "0 6px 20px rgba(0,0,0,0.55)";
+    // 用户 2026-09-14 v73：桌面 tooltip 放大一档（用户"tooltip也可以更大"）；
+    // 移动端保持原尺寸（用户"移动版要比例合适 不能过大"）。
+    const isMobileLayout =
+      typeof window !== "undefined" && window.innerWidth < 768;
+    const fontPx = isMobileLayout ? 13 : 16;
+    const padY = isMobileLayout ? 8 : 11;
+    const padX = isMobileLayout ? 12 : 18;
+    const radiusPx = isMobileLayout ? 10 : 12;
+    const dotPx = isMobileLayout ? 8 : 10;
+    const dotGap = isMobileLayout ? 6 : 8;
     btn.style.cssText = [
-      "padding:8px 12px",
-      "border-radius:10px",
+      `padding:${padY}px ${padX}px`,
+      `border-radius:${radiusPx}px`,
       `background:${bg}`,
       `border:1px solid ${borderColor}`,
       `box-shadow:${shadow}`,
-      "font-size:13px",
+      `font-size:${fontPx}px`,
       "line-height:1.35",
       `color:${fg}`,
       "display:inline-flex",
@@ -247,10 +268,10 @@ export class GlobeScene {
     const dot = document.createElement("span");
     dot.style.cssText = [
       "display:inline-block",
-      "width:8px",
-      "height:8px",
+      `width:${dotPx}px`,
+      `height:${dotPx}px`,
       "border-radius:50%",
-      "margin-right:6px",
+      `margin-right:${dotGap}px`,
       `background:${spec.color}`,
     ].join(";");
     const label = document.createElement("span");
@@ -286,8 +307,9 @@ export class GlobeScene {
 
   private ballPxRadius() {
     const camDist = this.camera.position.length();
+    // v72：用相机真实 fov（残留 45 会让 tooltip 锚定半径偏大约 1.7 倍）
     const visH =
-      2 * camDist * Math.tan((45 / 2) * (Math.PI / 180));
+      2 * camDist * Math.tan((this.camera.fov / 2) * (Math.PI / 180));
     return (BALL_R / visH) * this.height;
   }
 

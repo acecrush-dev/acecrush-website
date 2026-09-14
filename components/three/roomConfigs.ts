@@ -143,7 +143,8 @@ export function buildSwingConfig(opts: {
     panels: [
       {
         title: opts.intro.headline,
-        eyebrow: "Swing Analysis",
+        // v74：删掉 v47 遗留的 eyebrow "Swing Analysis"（craft 侧当时已删，swing 漏删）。
+        //   产品名按 v47 设计显示在多面体上方 3D 文字（RoomScene createProductTitleMesh）
         body: opts.intro.shortSubtext,
         image: "/img/swing/clip_play.png",
         imageLabel: opts.intro.headline,
