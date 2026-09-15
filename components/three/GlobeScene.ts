@@ -73,6 +73,8 @@ export class GlobeScene {
   private raycaster = new THREE.Raycaster();
   private ndc = new THREE.Vector2();
   private brandText: BrandTextHandle | null = null;
+  /** 用户 v86：进/出房间过渡期间为 true（controls 暂停 + tooltip 隐藏，相机由 SceneManager 接管） */
+  private transitioning = false;
 
   constructor(opts: GlobeSceneOpts) {
     this.mount = opts.mount;
@@ -319,9 +321,22 @@ export class GlobeScene {
     this.markerGroup.rotation.copy(this.sphere.rotation);
     // 星尘缓慢漂移
     this.dust.rotation.y += dt * 0.02;
-    this.controls.update();
+    // 用户 v86：过渡期间相机由 SceneManager 手动 dolly，controls 不能每帧覆写位置
+    if (!this.transitioning) this.controls.update();
     this.projectMarkers();
     this.overlay.update(this.width, this.height, this.anchors, this.ballPxRadius());
+  }
+
+  /**
+   * 用户 v86：进/出房间过渡开关。
+   * on = 暂停 OrbitControls（SceneManager 手动 dolly 相机）+ 隐藏 tooltip 引线。
+   * OrbitControls.update() 每帧从 camera.position 重算 spherical，因此过渡结束
+   * 恢复后不会跳位。
+   */
+  setTransitioning(on: boolean) {
+    this.transitioning = on;
+    this.controls.enabled = !on;
+    this.overlay.setHidden(on);
   }
 
   /** hub hover 高亮（鼠标 hover marker 时 cursor 反馈） */

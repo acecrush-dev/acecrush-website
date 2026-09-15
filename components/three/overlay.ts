@@ -38,6 +38,8 @@ export type OverlayHandle = {
     anchors: MarkerAnchor[],
     ballPxR: number
   ) => void;
+  /** 过渡期整体隐藏 tooltip（用户 v86：进房间的相机 dolly 期间不显示引线） */
+  setHidden: (on: boolean) => void;
   /** 卸载：移除 svg overlay */
   dispose: () => void;
 };
@@ -57,6 +59,7 @@ export function createTooltipOverlay(opts: OverlayOpts): OverlayHandle {
     "inset:0",
     "pointer-events:none",
     "overflow:visible",
+    "transition:opacity 220ms ease",
   ].join(";");
   mount.appendChild(overlay);
 
@@ -125,11 +128,15 @@ export function createTooltipOverlay(opts: OverlayOpts): OverlayHandle {
     }
   }
 
+  function setHidden(on: boolean) {
+    overlay.style.opacity = on ? "0" : "1";
+  }
+
   function dispose() {
     if (overlay.parentElement === mount) mount.removeChild(overlay);
   }
 
-  return { update, dispose };
+  return { update, setHidden, dispose };
 }
 
 /**

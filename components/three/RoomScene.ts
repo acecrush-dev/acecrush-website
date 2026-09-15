@@ -164,6 +164,8 @@ export class RoomScene {
   private detailActiveIndex: number | null = null;
   /** 用户 v65：detail popup 翻页时，背景相机自动转到 highlight 面板（yaw tween） */
   private yawTween: { fromTheta: number; toTheta: number; elapsed: number; duration: number } | null = null;
+  /** 用户 v86：进/出房间过渡期间为 true（controls 暂停，相机由 SceneManager 接管） */
+  private transitioning = false;
   private hovered = -1;
   private raycaster = new THREE.Raycaster();
   private ndc = new THREE.Vector2();
@@ -359,8 +361,20 @@ export class RoomScene {
     this.controls.update();
   }
 
+  /**
+   * 用户 v86：进/出房间过渡开关。
+   * on = 暂停 OrbitControls（SceneManager 手动驱动相机做进场滑入/退场隧穿）。
+   * OrbitControls.update() 每帧从 camera.position 重算 spherical，过渡结束恢复后
+   * 不会跳位。
+   */
+  setTransitioning(on: boolean) {
+    this.transitioning = on;
+    this.controls.enabled = !on;
+  }
+
   update(_dt: number) {
-    this.controls.update();
+    // 用户 v86：进/出房间过渡期间相机由 SceneManager 手动驱动，controls 暂停覆写
+    if (!this.transitioning) this.controls.update();
 
     // 用户 v47：产品名 3D 文字始终面向相机（billboard），
     //   旋转多面体时文字保持正向不变
@@ -550,6 +564,16 @@ export class RoomScene {
   private productTitleMesh: THREE.Mesh | null = null;
   /** v74：build 时几何高度（世界单位，未乘 mesh.scale），供定位计算 */
   private productTitleH = 0;
+  /**
+   * 用户 v88：标题烘焙时的 panelW 基准。resize 的 titleScale 改为相对该基准
+   * （panelW / productTitleBasePanelW），而不是绝对 PANEL_W_NATIVE。
+   * 原因：fovWorldScale（craft 1 / swing 1.56）已烘进标题几何，但 swing 的 panelW
+   * 世界尺寸同样是 craft 的 1.56 倍（同屏占比的 fov 补偿）→ 按 PANEL_W_NATIVE 缩放时
+   * swing 标题被双重放大 1.56 倍（用户反馈"两个标题 3D 字体不一样大"）。
+   * 相对自身基准后：首帧 titleScale = 1（两房间标题屏占比一致），后续窗口 resize
+   * 仍跟随各自房间面板等比缩放。
+   */
+  private productTitleBasePanelW = PANEL_W_NATIVE;
   private createProductTitleMesh() {
     const name = this.config.productName;
     if (!name) return;
@@ -577,6 +601,8 @@ export class RoomScene {
     titleH *= fit;
     titleW *= fit;
     this.productTitleH = titleH;
+    // v88：记录烘焙时的 panelW 基准（resize 的 titleScale 相对它缩放，见字段注释）
+    this.productTitleBasePanelW = this.panelW;
     const geo = new THREE.PlaneGeometry(titleW, titleH);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.renderOrder = 5; // 比 panel 晚渲染
@@ -704,10 +730,10 @@ export class RoomScene {
     }
     // 产品名 3D 文字（v47）跟随 panel 宽度缩放
     if (this.productTitleMesh) {
-      // title 跟 panel W 等比缩放（保持视觉协调）；
-      // v74：fovWorldScale 已烘进几何（createProductTitleMesh），这里不再重复乘，
-      //   否则 swing（fov 95）resize 后标题会双重放大 1.56 倍
-      const titleScale = this.panelW / PANEL_W_NATIVE;
+      // v88：titleScale 相对烘焙时的 panelW 基准（不再用绝对 PANEL_W_NATIVE）。
+      //   首帧 = 1：fovWorldScale 已烘进几何，craft / swing 标题屏占比一致；
+      //   后续 resize 跟随各自房间面板等比缩放，跨房间不引入 fov 补偿因子
+      const titleScale = this.panelW / this.productTitleBasePanelW;
       this.productTitleMesh.scale.setScalar(titleScale);
       // v74：scale 变了 → 有效高度变 → 按角度重算 y
       this.positionProductTitle();
