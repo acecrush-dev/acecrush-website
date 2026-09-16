@@ -22,7 +22,7 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="container-x py-20 lg:py-28"
+      className="container-x py-28 lg:py-44"
       aria-labelledby="how-heading"
     >
       <Reveal>

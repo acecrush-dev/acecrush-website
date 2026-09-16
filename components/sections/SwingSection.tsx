@@ -40,7 +40,8 @@ const ITEMS = [
   { titleKey: "item3Title", bodyKey: "item3Body" },
 ] as const;
 
-const SWING_DOCS = "https://acecrush-dev.github.io/swing-analysis-app/";
+// 用户 2026-09-16：加上仓库地址 ghost 链接（与原 docs 链接位置一致）。
+const SWING_GIT_URL = "https://github.com/acecrush-dev/swing-analysis";
 
 export function SwingSection() {
   const t = useTranslations("products.swing");
@@ -50,7 +51,7 @@ export function SwingSection() {
   return (
     <section
       id="swing"
-      className="container-x py-20 lg:py-28"
+      className="container-x py-28 lg:py-44"
       aria-labelledby="swing-headline"
     >
       <Reveal>
@@ -141,13 +142,13 @@ export function SwingSection() {
           <ArrowRight size={16} weight="bold" aria-hidden />
         </Link>
         <a
-          href={SWING_DOCS}
+          href={SWING_GIT_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-ghost"
-          aria-label={`${tIntro("docsCta")} (${t("name")})`}
+          aria-label={`${tIntro("gitCta")} (${t("name")})`}
         >
-          {tIntro("docsCta")}
+          {tIntro("gitCta")}
           <ArrowUpRight size={15} weight="bold" aria-hidden />
         </a>
       </div>

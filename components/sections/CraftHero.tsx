@@ -23,7 +23,7 @@ export function CraftHero() {
   return (
     <section
       id="craft"
-      className="pt-16 lg:pt-20 pb-16"
+      className="pt-28 lg:pt-40 pb-24 lg:pb-40"
       aria-labelledby="craft-headline"
     >
       <div className="container-x grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] items-start gap-12 lg:gap-16">

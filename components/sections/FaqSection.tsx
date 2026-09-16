@@ -22,7 +22,7 @@ export function FaqSection() {
   const t = useTranslations("faq");
 
   return (
-    <section id="faq" className="container-x py-20 lg:py-28" aria-labelledby="faq-heading">
+    <section id="faq" className="container-x py-28 lg:py-44" aria-labelledby="faq-heading">
       <Reveal>
         <h2
           id="faq-heading"

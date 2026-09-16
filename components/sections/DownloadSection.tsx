@@ -38,7 +38,7 @@ export function DownloadSection() {
   return (
     <section
       id="download"
-      className="container-x py-20 lg:py-28"
+      className="container-x py-28 lg:py-44"
       aria-labelledby="dl-heading"
     >
       <Reveal>

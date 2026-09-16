@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { AppNav } from "@/components/layout/AppNav";
+import { AppFooter } from "@/components/layout/AppFooter";
 import { BrandHero } from "@/components/sections/BrandHero";
 import { CraftHero } from "@/components/sections/CraftHero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
@@ -22,9 +23,12 @@ import { LocaleLangSync } from "@/components/i18n/LocaleLangSync";
  *   → SwingSection (#swing)
  *   → DownloadSection (#download，双产品分组)
  *   → FaqSection (#faq，双产品分组)
+ *   → AppFooter（2026-09-16 恢复，含 Support / Privacy / Terms / 版权）
  *
- * 用户 2026-09-05：footer 整块移除；联系入口改为 AppNav 右上角的 mailto 按钮
- * （位于语言切换器左边），导航里原来的 Contact 锚点链接一并删掉。
+ * 历史：
+ *   2026-09-05：footer 整块移除；联系入口改为 AppNav 右上角的 mailto 按钮。
+ *   2026-09-16：恢复 footer，Contact 下放 footer 并改名 Support；
+ *              AppNav 的 contact 按钮 / 移动菜单里的 mailto 一并删除。
  *
  * A13：nav 之前插 skip link（sr-only-focusable，聚焦才可见），
  * 键盘用户可越过整条导航直达 <main id="main">。
@@ -39,7 +43,7 @@ export function LandingContent() {
         {t("skipToContent")}
       </a>
       <AppNav />
-      <main id="main" className="px-4 md:px-6">
+      <main id="main">
         <BrandHero />
         <CraftHero />
         <HowItWorks />
@@ -49,6 +53,7 @@ export function LandingContent() {
         <DownloadSection />
         <FaqSection />
       </main>
+      <AppFooter />
     </>
   );
 }

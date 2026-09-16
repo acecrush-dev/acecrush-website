@@ -1,13 +1,15 @@
 import { AppNav } from "@/components/layout/AppNav";
+import { AppFooter } from "@/components/layout/AppFooter";
 
 /**
- * PrivacyContent - 双语隐私政策页 body 共享壳（plan 004 v4 v4d）。
+ * PrivacyContent - 法务页 body 共享壳（plan 004 v4d + 用户 2026-09-16 复用为 Terms）。
  *
- * 渲染 Nav + section 列表；section 内容由调用方传入（翻译后的 section 数据）。
+ * 渲染 Nav + section 列表 + Footer；section 内容由调用方传入（翻译后的 section 数据）。
  *
- * 注：本组件当前没有任何路由在用（/privacy 独立路由已下线，plan 001 §2 Out
- * 明确保留此文件与 privacy.* 文案供将来复用）。
- * 用户 2026-09-05 移除全站 footer 后，这里的 <AppFooter /> 一并删除。
+ * 历史：
+ *   原 plan 004 写时只服务隐私页；/privacy 独立路由下线后本文件与 privacy.* 文案保留备用。
+ *   2026-09-16 用户恢复 /privacy 和新增 /terms 路由，本组件复用为两份法务页的共享壳，
+ *   同时接入 AppFooter（之前 footer 整块移除期间这里没有 footer，现在恢复）。
  */
 export function PrivacyContent({
   title,
@@ -25,7 +27,7 @@ export function PrivacyContent({
   return (
     <>
       <AppNav />
-      <main className="container-x py-16 lg:py-24 max-w-[760px]">
+      <main className="container-x py-24 lg:py-40 max-w-[760px]">
         <h1 className="text-[36px] md:text-[44px] leading-[1.1] tracking-tight font-semibold">
           {title}
         </h1>
@@ -52,6 +54,7 @@ export function PrivacyContent({
           </section>
         ))}
       </main>
+      <AppFooter />
     </>
   );
 }

@@ -156,13 +156,9 @@ a { color: inherit; }
  * ============================================================ */
 
 .container-x {
-  max-width: 1400px;
+  max-width: 1536px;
   margin-inline: auto;
-  padding-inline: 1rem;
-}
-
-@media (min-width: 768px) {
-  .container-x { padding-inline: 2rem; }
+  padding-inline: clamp(4rem, 10vw, 9rem);
 }
 
 .eyebrow {

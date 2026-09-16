@@ -2,7 +2,7 @@
   "site": {
     "brandName": "AceCrush",
     "tagline": "网球科技工具",
-    "description": "AceCrush 打造全本机运行的网球工具：AceCrush Craft 负责 Android 端的握把尺寸、球拍档案与穿线数据，Swing Analysis 负责桌面端的挥拍自动切分。"
+    "description": "AceCrush 打造本地优先的网球工具：AceCrush Craft 负责 Android 端的握把尺寸、球拍档案与穿线数据，通过你自己的 Supabase 账户同步（无中心服务器）；Swing Analysis 负责桌面端的挥拍自动切分。"
   },
   "nav": {
     "navLabel": "主导航",
@@ -14,7 +14,8 @@
     "localeLabel": "语言",
     "themeLabel": "主题",
     "menuToggle": "菜单",
-    "mobileHome": "首页"
+    "mobileHome": "首页",
+    "githubLink": "GitHub 仓库"
   },
   "theme": {
     "light": "浅色",
@@ -24,14 +25,13 @@
   "brandHero": {
     "eyebrow": "两款产品，一套工具",
     "headline": "网球科技，\n全部跑在你的设备上。",
-    "subtext": "AceCrush 为球员与教练做小而专的工具。测量、视频、记录全部本机处理，你的球场数据不会被上传。",
+    "subtext": "AceCrush 为球员与教练做小而专的工具。测量在设备本地完成。记录通过你自己的 Supabase 账户同步，row-level 隔离，没有中心服务器，每个用户自己保管自己的数据。",
     "craftCardTag": "手机应用",
     "craftCardBody": "拍一张手掌照片测握把尺寸，为每支球拍建档，记录每次穿线并到期提醒，DT、RT、lbs、kg 磅数一键互转。",
     "craftCardPlatform": "Android",
     "swingCardTag": "桌面应用",
     "swingCardBody": "丢进一段比赛视频，自动把每一次挥拍切成独立片段，每段标注 ready、windup、contact、follow-through 四相位与精确时间码。",
-    "swingCardPlatform": "Windows · macOS · Linux",
-    "docsLink": "文档"
+    "swingCardPlatform": "Windows · macOS · Linux"
   },
   "products": {
     "craft": {
@@ -109,8 +109,8 @@
         "headline": "每一次挥拍，都切好并打上时间码。",
         "subtext": "丢进一段比赛视频。两阶段管线只跟一路右手腕信号，把每次挥拍切成独立片段，并标注 ready、windup、contact、follow-through 四相位与精确时间码。",
         "previewLabel": "Clip 回放预览",
-        "docsCta": "查看文档",
-        "downloadCta": "获取"
+        "downloadCta": "获取",
+        "gitCta": "GitHub"
       },
       "features": {
         "heading": "为逐帧复盘而生。",
@@ -150,7 +150,10 @@
     "heading": "常见问题"
   },
   "footer": {
-    "contactLink": "联系我们"
+    "supportLink": "支持",
+    "privacyLink": "隐私政策",
+    "termsLink": "服务条款",
+    "copyright": "© {year} AceCrush. 保留所有权利。"
   },
   "notFound": {
     "code": "404",
@@ -160,19 +163,35 @@
   },
   "privacy": {
     "title": "隐私政策",
-    "effective": "生效日期：2026 年 8 月 22 日",
-    "section1Title": "我们不收集什么",
-    "section1Body": "AceCrush Craft V1.0 在本地运行。所有握把尺寸数据、球拍档案、穿线记录均保存在您设备本地数据库（SQLite），不发送到任何服务器。应用没有账号体系，不收集姓名、邮箱、手机号等身份信息。",
-    "section2Title": "V1.1 相机权限",
-    "section2Body": "当您主动使用「AI 拍照测握把尺寸」时，应用会请求相机权限。照片仅在本机推理（MediaPipe HandLandmarker 或服务端 OpenCV+MediaPipe），处理完成后立即丢弃，不保存到相册，不上传到任何云端。",
+    "effective": "生效日期：2026 年 9 月 17 日",
+    "section1Title": "你的账户，你的数据",
+    "section1Body": "你在 AceCrush Craft 里创建的每一条记录（握把尺寸测量、球拍档案、穿线记录）都保存在你自己的 Supabase 账户里，通过 row-level security 保证只有你能读到自己的行。我们这边没有任何额外服务器去做汇总、画像或出售；Supabase 项目本身就是存储，每一个用户看到的都是自己的那一份。设备本地另存一份 SQLite 副本作为离线缓存，让 App 离线时也能用。",
+    "section2Title": "在每一台你登录的设备上同步",
+    "section2Body": "在另一台 Android 设备上登录同一个 Supabase 账户，未来 iOS 与桌面端也会支持，你的球拍档案与穿线记录就会出现在那里。同步就是新设备上读到你自己的行：没有中心 feed，没有共享时间线，也没有公开主页。在某台设备退出登录后，下次与 Supabase 通信时这台设备上的本地副本就会被清掉。",
     "section3Title": "权限清单",
-    "section3Camera": "相机（android.permission.CAMERA）：仅在 AI 测量页使用，关闭即撤销。",
+    "section3Camera": "相机（android.permission.CAMERA）：仅在 AI 测量页使用，到系统设置里可关闭。",
     "section3Notification": "通知（android.permission.POST_NOTIFICATIONS）：仅用于穿线到期提醒，可在系统设置关闭。",
-    "section4Title": "第三方 SDK",
-    "section4Body": "本应用使用开源组件：Flutter、drift、flutter_local_notifications、url_launcher、opencv_dart、MediaPipe Tasks Vision。它们均不主动收集个人信息。",
-    "section5Title": "服务端兜底（可选）",
-    "section5Body": "若您设备本地 AI 推理失败（低端机或 iOS 端暂未实现端侧 CV），App 可将单张照片发送至我们独立部署的 CV 服务（端口 8081）。该服务在收到图片后立即处理并丢弃，仅记录设备 ID、SHA256、字节数、延迟、置信度等元数据，用于质量改进，不存原图。",
+    "section4Title": "相机与 AI 测量",
+    "section4Body": "测量拍照后，App 会优先在设备本地推理（MediaPipe HandLandmarker）；如果你的设备跑不动本地推理，照片会发到我们服务端 OpenCV + MediaPipe 管线处理。一旦推荐握把档位算出来，照片立即丢弃：既不会存入你的 Supabase 账户，也不会进相册，更不会保留在服务端。",
+    "section5Title": "第三方服务",
+    "section5Body": "Supabase（supabase.com）提供身份认证与每用户数据库，由 row-level security 隔离。我们没有在 Supabase 之上再搭任何额外后端；Supabase 项目本身就是存储。本地用的开源库：Flutter、drift、flutter_local_notifications、url_launcher、opencv_dart、MediaPipe Tasks Vision。这些库全部本地运行，不会回拨服务器。",
     "section6Title": "更新与联系",
     "section6Body": "政策更新会随应用版本发布，变更会在 App 内「设置 - 隐私政策」与本页面同步。如有疑问：acecrushdev@gmail.com。"
+  },
+  "terms": {
+    "title": "服务条款",
+    "effective": "生效日期：2026 年 9 月 16 日",
+    "section1Title": "接受条款",
+    "section1Body": "安装或使用 AceCrush Craft 或 Swing Analysis 即视为您同意本条款。如不同意，请勿安装或使用本软件。",
+    "section2Title": "许可范围",
+    "section2Body": "两款应用均为免费、个人使用工具。您可在自有设备上安装、备份本地数据，并用于非商业性质的网球训练与穿线工作。不得对二进制或源代码进行转售、再许可或再分发。",
+    "section3Title": "无担保",
+    "section3Body": "本软件按「现状」提供，不作任何形式的担保。握把尺寸建议与挥拍切分均为启发式辅助，不构成教学指导。在调整器材或技术前，请务必与有资质的教练核对结果。",
+    "section4Title": "责任限制",
+    "section4Body": "AceCrush 不对因使用本软件而产生的任何间接、偶然或衍生损害承担责任，包括但不限于器材损坏、错过穿线窗口或基于应用输出所做的训练决策。",
+    "section5Title": "第三方组件",
+    "section5Body": "两款应用依赖开源库（详见各自仓库）。第三方许可证仅约束其对应组件，不延伸 AceCrush 自身的担保或责任范围。",
+    "section6Title": "更新与联系",
+    "section6Body": "本条款可能随新版本更新。重大变更会在更新日志中标注。如有疑问：acecrushdev@gmail.com。"
   }
 }

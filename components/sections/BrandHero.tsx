@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import {
   AndroidLogo,
   ArrowRight,
-  ArrowUpRight,
   Monitor,
 } from "@phosphor-icons/react/dist/ssr";
 import { Reveal } from "@/components/motion/reveal";
@@ -27,8 +26,6 @@ import { TennisBallGlobe } from "@/components/brand/TennisBallGlobe";
  * 排布刻意不对称（skill §4.3 ANTI-CENTER BIAS）：
  *   文字左对齐 max-w-3xl；产品卡 grid 左宽右窄。
  */
-const CRAFT_DOCS = "https://acecrush-dev.github.io/acecrush-craft-app/";
-const SWING_DOCS = "https://acecrush-dev.github.io/swing-analysis-app/";
 const GLOBE_HEIGHT = 760;
 
 /**
@@ -115,7 +112,7 @@ export function BrandHero() {
       </div>
 
       {/* 产品卡在 canvas 下方 */}
-      <div className="container-x pt-12 pb-16 lg:pb-20">
+      <div className="container-x pt-20 lg:pt-28 pb-24 lg:pb-40">
         {/* 两张产品卡：桌面左宽右窄，移动端单列堆叠 */}
         <div className="grid gap-5 lg:grid-cols-[1.05fr_1fr] items-stretch">
           <Reveal delay={0.22} className="h-full">
@@ -128,8 +125,6 @@ export function BrandHero() {
               PlatformIcon={AndroidLogo}
               ctaHref="/#craft"
               ctaLabel={tCraft("name")}
-              docsHref={CRAFT_DOCS}
-              docsLabel={t("docsLink")}
               tinted
             />
           </Reveal>
@@ -143,8 +138,6 @@ export function BrandHero() {
               PlatformIcon={Monitor}
               ctaHref="/#swing"
               ctaLabel={tSwing("name")}
-              docsHref={SWING_DOCS}
-              docsLabel={t("docsLink")}
             />
           </Reveal>
         </div>
@@ -162,8 +155,6 @@ function ProductCard({
   PlatformIcon,
   ctaHref,
   ctaLabel,
-  docsHref,
-  docsLabel,
   tinted = false,
 }: {
   tag: string;
@@ -174,8 +165,6 @@ function ProductCard({
   PlatformIcon: typeof AndroidLogo;
   ctaHref: string;
   ctaLabel: string;
-  docsHref: string;
-  docsLabel: string;
   tinted?: boolean;
 }) {
   return (
@@ -222,16 +211,6 @@ function ProductCard({
           {ctaLabel}
           <ArrowRight size={16} weight="bold" aria-hidden />
         </Link>
-        <a
-          href={docsHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-ghost"
-          aria-label={`${docsLabel} (${ctaLabel})`}
-        >
-          {docsLabel}
-          <ArrowUpRight size={15} weight="bold" aria-hidden />
-        </a>
       </div>
     </article>
   );

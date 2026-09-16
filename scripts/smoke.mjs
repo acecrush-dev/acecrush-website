@@ -201,10 +201,15 @@ if (missingDeps.length === 0) ok(`all required deps present`);
 else fail("deps missing", missingDeps.join(", "));
 
 console.log("\n[11/12] 联系邮箱已切到 acecrushdev@gmail.com");
-// 用户 2026-09-05 移除全站 footer，联系入口搬到 AppNav 右上角，故这里改查 AppNav。
+// 用户 2026-09-16 恢复 footer 并把 Support 入口（mailto）下放 footer，
+// AppNav 的 contact 按钮随之移除。这里同时扫两个文件以兼容任一历史位置。
 const navSrc = read("components/layout/AppNav.tsx");
-if (navSrc.includes("acecrushdev@gmail.com")) ok("AppNav contact mailto uses new address");
-else fail("AppNav contact mailto", "acecrushdev@gmail.com not found");
+const footerSrc = read("components/layout/AppFooter.tsx");
+const hasMailto =
+  navSrc.includes("acecrushdev@gmail.com") ||
+  footerSrc.includes("acecrushdev@gmail.com");
+if (hasMailto) ok("contact mailto (AppNav or AppFooter) uses new address");
+else fail("contact mailto", "acecrushdev@gmail.com not found in AppNav or AppFooter");
 
 console.log("\n[12/12] 无旧邮箱 hi@acecrush.dev 残留");
 let oldMailHits = [];

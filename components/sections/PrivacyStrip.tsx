@@ -15,7 +15,7 @@ export function PrivacyStrip() {
   const t = useTranslations("products.craft.privacyStrip");
   return (
     <section
-      className="py-20 lg:py-24"
+      className="py-24 lg:py-40"
       style={{ background: "var(--color-surface)" }}
       aria-labelledby="privacy-heading"
     >

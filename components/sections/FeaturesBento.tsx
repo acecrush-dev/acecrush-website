@@ -51,7 +51,7 @@ export function FeaturesBento() {
   return (
     <section
       id="features"
-      className="container-x py-20 lg:py-28"
+      className="container-x py-28 lg:py-44"
       aria-labelledby="features-heading"
     >
       <Reveal>

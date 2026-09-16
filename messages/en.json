@@ -2,7 +2,7 @@
   "site": {
     "brandName": "AceCrush",
     "tagline": "Tennis Tech Tools",
-    "description": "On-device tennis tools from AceCrush: AceCrush Craft for grip size, racket profiles and stringing data on Android, and Swing Analysis for automatic swing segmentation on the desktop."
+    "description": "Local-first tennis tools from AceCrush: AceCrush Craft for grip size, racket profiles and stringing data on Android, syncing through your own Supabase account with no central AceCrush server, plus Swing Analysis for automatic swing segmentation on the desktop."
   },
   "nav": {
     "navLabel": "Main navigation",
@@ -14,7 +14,8 @@
     "localeLabel": "Language",
     "themeLabel": "Theme",
     "menuToggle": "Menu",
-    "mobileHome": "Home"
+    "mobileHome": "Home",
+    "githubLink": "GitHub repository"
   },
   "theme": {
     "light": "Light",
@@ -24,14 +25,13 @@
   "brandHero": {
     "eyebrow": "Two products, one toolkit",
     "headline": "Tennis tech that\nruns on your device.",
-    "subtext": "AceCrush builds focused tools for players and coaches. Measurement, video and records are all processed locally, so nothing about your game is uploaded.",
+    "subtext": "AceCrush builds focused tools for players and coaches. Measurement runs on-device. Your records sync through your own Supabase account with row-level scoping, with no central AceCrush server: every user keeps their own data.",
     "craftCardTag": "Mobile app",
     "craftCardBody": "Measure your grip size from a palm photo, keep a profile for every racket, log each restring with expiry reminders, and convert tension across DT, RT, lbs and kg.",
     "craftCardPlatform": "Android",
     "swingCardTag": "Desktop app",
     "swingCardBody": "Drop in a match video and get every swing cut into its own clip, each labelled with ready, windup, contact and follow-through phases plus exact timecodes.",
-    "swingCardPlatform": "Windows · macOS · Linux",
-    "docsLink": "Docs"
+    "swingCardPlatform": "Windows · macOS · Linux"
   },
   "products": {
     "craft": {
@@ -109,8 +109,8 @@
         "headline": "Every swing, cut and timecoded.",
         "subtext": "Feed in a match video. The two-pass pipeline tracks a single right-wrist signal, cuts each swing into its own clip, and labels ready, windup, contact and follow-through with exact timecodes.",
         "previewLabel": "Clip playback preview",
-        "docsCta": "Read the docs",
-        "downloadCta": "Get it"
+        "downloadCta": "Get it",
+        "gitCta": "GitHub"
       },
       "features": {
         "heading": "Built for frame-level review.",
@@ -150,7 +150,10 @@
     "heading": "FAQ"
   },
   "footer": {
-    "contactLink": "Contact us"
+    "supportLink": "Support",
+    "privacyLink": "Privacy policy",
+    "termsLink": "Terms of service",
+    "copyright": "© {year} AceCrush. All rights reserved."
   },
   "notFound": {
     "code": "404",
@@ -160,19 +163,35 @@
   },
   "privacy": {
     "title": "Privacy policy",
-    "effective": "Effective: August 22, 2026",
-    "section1Title": "What we do not collect",
-    "section1Body": "AceCrush Craft V1.0 runs locally. All grip size data, racket archives, and restring logs are stored in your device's local database (SQLite) and are not sent to any server. The app has no account system and does not collect your name, email, phone number, or other identity information.",
-    "section2Title": "V1.1 camera permission",
-    "section2Body": "When you actively use AI grip size measurement, the app will request camera access. The photo is processed only on-device (MediaPipe HandLandmarker or server-side OpenCV plus MediaPipe), then immediately discarded. It is not saved to your photo library and not uploaded to any cloud.",
-    "section3Title": "Permission list",
-    "section3Camera": "Camera (android.permission.CAMERA): used only on the AI measurement screen. Revoke by toggling it off.",
+    "effective": "Effective: September 17, 2026",
+    "section1Title": "Your account, your data",
+    "section1Body": "Every record you create in AceCrush Craft (grip size measurements, racket profiles, restring logs) is saved under your own Supabase account, with row-level security so only you can read your own rows. There is no separate AceCrush-side server that aggregates, profiles, or sells your data: the Supabase project IS the only place these rows live, and each user only sees their own. A local SQLite copy on your device acts as a read-through cache so the app stays usable offline.",
+    "section2Title": "Sync across every device you sign in to",
+    "section2Body": "Sign in with the same Supabase account on another Android device, and later on iOS and desktop, and your racket archives and restring logs show up there too. Sync is just your row being read on the new device: no central feed, no shared timeline, no public profile. Signing out on a device clears its local copy the next time the app talks to Supabase.",
+    "section3Title": "Permissions",
+    "section3Camera": "Camera (android.permission.CAMERA): used only on the AI measurement screen. Revoke in system settings to disable.",
     "section3Notification": "Notifications (android.permission.POST_NOTIFICATIONS): used only for restring expiry reminders. Disable in system settings.",
-    "section4Title": "Third-party SDKs",
-    "section4Body": "This app uses open source components: Flutter, drift, flutter_local_notifications, url_launcher, opencv_dart, and MediaPipe Tasks Vision. None of them actively collect personal information.",
-    "section5Title": "Server fallback (optional)",
-    "section5Body": "If on-device AI inference fails (low-end hardware or iOS-side on-device CV not yet shipped), the app may send a single photo to our independently deployed CV service (port 8081). The service processes the image and discards it immediately. Only metadata such as device ID, SHA256, byte size, latency, and confidence is logged for quality improvement. The original image is not retained.",
+    "section4Title": "Camera and AI measurement",
+    "section4Body": "When you take a measurement photo, the app processes it on-device (MediaPipe HandLandmarker). If your hardware cannot keep up, the photo is sent once to our server-side OpenCV plus MediaPipe pipeline. Either way, the photo is discarded immediately after the recommended grip size is computed. It is not saved to your Supabase account, not added to your photo library, and not retained on the server after processing.",
+    "section5Title": "Third-party services",
+    "section5Body": "Supabase (supabase.com) provides the authentication and the per-user database behind row-level security. We do not run any extra backend on top: the Supabase project IS the storage. Open source libraries used locally: Flutter, drift, flutter_local_notifications, url_launcher, opencv_dart, MediaPipe Tasks Vision. None of these phone home.",
     "section6Title": "Updates and contact",
     "section6Body": "Policy updates ship with new app releases and are reflected both in the in-app Settings - Privacy policy screen and on this page. Questions: acecrushdev@gmail.com."
+  },
+  "terms": {
+    "title": "Terms of service",
+    "effective": "Effective: September 16, 2026",
+    "section1Title": "Acceptance",
+    "section1Body": "By installing or using AceCrush Craft or Swing Analysis you agree to these terms. If you do not agree, do not install or use the software.",
+    "section2Title": "License",
+    "section2Body": "Both applications are provided as free, personal-use tools. You may install them on devices you own, back up your local data, and use them for non-commercial tennis training and stringing work. You may not resell, sublicense, or redistribute the binaries or source.",
+    "section3Title": "No warranty",
+    "section3Body": "The software is provided as is, without warranty of any kind. Grip size recommendations and swing segmentation are heuristic aids, not coaching. Always cross-check with a qualified coach before changing equipment or technique based on the output.",
+    "section4Title": "Limitation of liability",
+    "section4Body": "AceCrush is not liable for any indirect, incidental, or consequential damages arising from the use of the software, including but not limited to equipment damage, missed restring windows, or training decisions made on the basis of app output.",
+    "section5Title": "Third-party components",
+    "section5Body": "Both apps rely on open source libraries listed in their respective repositories. Their licenses apply to their components only and do not extend the warranty or liability of AceCrush.",
+    "section6Title": "Updates and contact",
+    "section6Body": "These terms may be updated with new releases. Material changes will be highlighted in the release notes. Questions: acecrushdev@gmail.com."
   }
 }

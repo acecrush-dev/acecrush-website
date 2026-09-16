@@ -3,27 +3,33 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowUpRight, List } from "@phosphor-icons/react/dist/ssr";
+import { List } from "@phosphor-icons/react/dist/ssr";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { GithubMark } from "@/components/brand/GithubMark";
 
-/** 用户 2026-09-05：联系入口从 footer 搬到导航右上角，footer 整块移除。 */
-const CONTACT_MAILTO = "mailto:acecrushdev@gmail.com";
+// 用户 2026-09-16：nav 加本站 GitHub repo 入口。
+const GITHUB_URL = "https://github.com/acecrush-dev/acecrush-website";
 
 /**
- * AppNav（plan 001 §4-13 + 用户 2026-09-07 调整）。
+ * AppNav（plan 001 §4-13 + 用户 2026-09-07 / 2026-09-16 调整）。
  *
  * 双产品改版：链接 Craft(#craft) / Swing Analysis(#swing) / Download / FAQ。
  *
+ * 历史：
+ *   2026-09-05：联系入口从 footer 搬到导航右上角，footer 整块移除。
+ *   2026-09-16：恢复 footer，并把 Contact 下放 footer 改名为 Support；
+ *              桌面右栏与移动菜单的 contact mailto 一并删除。
+ *
  * 移动端布局（< lg）：
- *   - 左：brand + locale + theme 三个紧凑按钮（下拉 / 压缩式）
- *   - 右：汉堡菜单 summary（产品链接 + Contact）
+ *   - 左：brand
+ *   - 右：汉堡菜单 summary（产品链接）
  *
  * 桌面端布局（≥ lg）：
  *   - 左：brand
  *   - 中：产品链接 + FAQ
- *   - 右：contact mailto + LocaleSwitcher + ThemeSwitcher
+ *   - 右：LocaleSwitcher + ThemeSwitcher
  *
  * a11y 修复：
  *   - nav aria-label 原先错用 "Features"，改用 nav.navLabel
@@ -32,7 +38,6 @@ const CONTACT_MAILTO = "mailto:acecrushdev@gmail.com";
 export function AppNav() {
   const t = useTranslations("nav");
   const tSite = useTranslations("site");
-  const tFooter = useTranslations("footer");
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -72,7 +77,7 @@ export function AppNav() {
     >
       <div
         className="container-x flex items-center justify-between gap-2"
-        style={{ height: 64 }}
+        style={{ height: 80 }}
       >
         {/* 左：品牌 */}
         <div className="flex items-center gap-2">
@@ -102,14 +107,24 @@ export function AppNav() {
           </Link>
         </div>
 
-        {/* 桌面右：contact + locale + theme */}
+        {/* 桌面右：GitHub（最左） + locale + theme。
+            GitHub 链接 2026-09-16 加；同日用户调整到语言选择左边。 */}
         <div className="hidden lg:flex items-center gap-2">
           <a
-            href={CONTACT_MAILTO}
-            className="btn-ghost text-[13px] py-2 px-4 gap-1.5"
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("githubLink")}
+            title={t("githubLink")}
+            className="inline-flex items-center justify-center rounded-full transition-colors"
+            style={{
+              width: 32,
+              height: 32,
+              border: "1px solid var(--color-border)",
+              color: "var(--color-fg-muted)",
+            }}
           >
-            {tFooter("contactLink")}
-            <ArrowUpRight size={14} weight="bold" aria-hidden />
+            <GithubMark size={16} />
           </a>
           <LocaleSwitcher />
           <ThemeSwitcher />
@@ -165,11 +180,15 @@ export function AppNav() {
               {t("faq")}
             </Link>
             <a
-              href={CONTACT_MAILTO}
-              className="block text-[14px] py-1"
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between gap-2 pt-2 mt-1 text-[14px]"
+              style={{ borderTop: "1px solid var(--color-divider)" }}
               onClick={closeMenu}
             >
-              {tFooter("contactLink")}
+              <span>{t("githubLink")}</span>
+              <GithubMark size={14} />
             </a>
           </div>
         </details>
