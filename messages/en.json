@@ -25,7 +25,7 @@
   "brandHero": {
     "eyebrow": "Two products, one toolkit",
     "headline": "Tennis tech that\nruns on your device.",
-    "subtext": "AceCrush builds focused tools for players and coaches. Measurement runs on-device. Your records sync through your own Supabase account with row-level scoping, with no central AceCrush server: every user keeps their own data.",
+    "subtext": "AceCrush makes small, focused tools for tennis enthusiasts and players. Your measurements stay on your phone. Your records sync through your own Supabase account, so they follow you across devices.",
     "craftCardTag": "Mobile app",
     "craftCardBody": "Measure your grip size from a palm photo, keep a profile for every racket, log each restring with expiry reminders, and convert tension across DT, RT, lbs and kg.",
     "craftCardPlatform": "Android",
@@ -77,8 +77,8 @@
         "item5Body": "Convert DT ⇄ RT ⇄ lbs ⇄ kg in one place, then tap once to write the result straight into a restring record."
       },
       "privacyStrip": {
-        "heading": "Your photos stay on your phone.",
-        "body": "AI measurement runs entirely on-device. Once your photo is processed, we neither store nor upload it."
+        "heading": "Your photos sync with your account.",
+        "body": "AI measurement runs on-device for the inference. Both the photo and the result are saved to your Supabase account, the photo in a private Storage bucket, so they follow you across devices. Delete a photo on any signed-in device and it is gone everywhere."
       },
       "download": {
         "productHeading": "AceCrush Craft",
@@ -165,16 +165,16 @@
     "title": "Privacy policy",
     "effective": "Effective: September 17, 2026",
     "section1Title": "Your account, your data",
-    "section1Body": "Every record you create in AceCrush Craft (grip size measurements, racket profiles, restring logs) is saved under your own Supabase account, with row-level security so only you can read your own rows. There is no separate AceCrush-side server that aggregates, profiles, or sells your data: the Supabase project IS the only place these rows live, and each user only sees their own. A local SQLite copy on your device acts as a read-through cache so the app stays usable offline.",
+    "section1Body": "Your records in AceCrush Craft (grip size measurements, racket profiles, restring logs, and the photos you take for measurement) live in your own Supabase account. Only you can see them, and AceCrush does not run any extra backend on top of it: the Supabase project IS where your data is stored. Your device keeps a local copy too, so the app keeps working offline.",
     "section2Title": "Sync across every device you sign in to",
-    "section2Body": "Sign in with the same Supabase account on another Android device, and later on iOS and desktop, and your racket archives and restring logs show up there too. Sync is just your row being read on the new device: no central feed, no shared timeline, no public profile. Signing out on a device clears its local copy the next time the app talks to Supabase.",
+    "section2Body": "Sign in with the same Supabase account on another device (Android today, iOS and desktop later) and your records show up there too. Sign out on a device and its local copy gets cleared the next time it syncs.",
     "section3Title": "Permissions",
     "section3Camera": "Camera (android.permission.CAMERA): used only on the AI measurement screen. Revoke in system settings to disable.",
     "section3Notification": "Notifications (android.permission.POST_NOTIFICATIONS): used only for restring expiry reminders. Disable in system settings.",
     "section4Title": "Camera and AI measurement",
-    "section4Body": "When you take a measurement photo, the app processes it on-device (MediaPipe HandLandmarker). If your hardware cannot keep up, the photo is sent once to our server-side OpenCV plus MediaPipe pipeline. Either way, the photo is discarded immediately after the recommended grip size is computed. It is not saved to your Supabase account, not added to your photo library, and not retained on the server after processing.",
+    "section4Body": "When you take a measurement photo, the app processes it on-device with MediaPipe HandLandmarker. If your hardware cannot keep up, the photo is sent once to our server-side OpenCV plus MediaPipe pipeline. Either way, the result and the photo itself are then saved to your Supabase Storage bucket, scoped per user. We do not retain the photo on the server after it lands in your bucket.",
     "section5Title": "Third-party services",
-    "section5Body": "Supabase (supabase.com) provides the authentication and the per-user database behind row-level security. We do not run any extra backend on top: the Supabase project IS the storage. Open source libraries used locally: Flutter, drift, flutter_local_notifications, url_launcher, opencv_dart, MediaPipe Tasks Vision. None of these phone home.",
+    "section5Body": "Your login and your data are handled by Supabase (supabase.com). We do not run any other backend on top of it. The app also uses these open source libraries locally: Flutter, drift, flutter_local_notifications, url_launcher, opencv_dart, MediaPipe Tasks Vision. None of them send data anywhere.",
     "section6Title": "Updates and contact",
     "section6Body": "Policy updates ship with new app releases and are reflected both in the in-app Settings - Privacy policy screen and on this page. Questions: acecrushdev@gmail.com."
   },

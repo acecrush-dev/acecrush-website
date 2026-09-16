@@ -25,7 +25,7 @@
   "brandHero": {
     "eyebrow": "两款产品，一套工具",
     "headline": "网球科技，\n全部跑在你的设备上。",
-    "subtext": "AceCrush 为球员与教练做小而专的工具。测量在设备本地完成。记录通过你自己的 Supabase 账户同步，row-level 隔离，没有中心服务器，每个用户自己保管自己的数据。",
+    "subtext": "AceCrush 为网球爱好者与玩家做小而专的工具。测量在手机上完成，记录存进你自己的 Supabase 账户，支持多设备同步。",
     "craftCardTag": "手机应用",
     "craftCardBody": "拍一张手掌照片测握把尺寸，为每支球拍建档，记录每次穿线并到期提醒，DT、RT、lbs、kg 磅数一键互转。",
     "craftCardPlatform": "Android",
@@ -77,8 +77,8 @@
         "item5Body": "DT ⇄ RT ⇄ lbs ⇄ kg 一处互转，算完一键写入穿线记录。"
       },
       "privacyStrip": {
-        "heading": "你的照片，只在你手机里。",
-        "body": "AI 测量完全在设备本地推理。拍完照片后，我们既不存，也不传。"
+        "heading": "你的照片，跟着账户同步。",
+        "body": "AI 测量在设备本地完成推理。照片和测量结果都存进你自己的 Supabase 账户，照片放在私有 Storage bucket 里，跨设备都能看到。任意一台设备删掉一张照片，其他设备上也会一起删。"
       },
       "download": {
         "productHeading": "AceCrush Craft",
@@ -165,16 +165,16 @@
     "title": "隐私政策",
     "effective": "生效日期：2026 年 9 月 17 日",
     "section1Title": "你的账户，你的数据",
-    "section1Body": "你在 AceCrush Craft 里创建的每一条记录（握把尺寸测量、球拍档案、穿线记录）都保存在你自己的 Supabase 账户里，通过 row-level security 保证只有你能读到自己的行。我们这边没有任何额外服务器去做汇总、画像或出售；Supabase 项目本身就是存储，每一个用户看到的都是自己的那一份。设备本地另存一份 SQLite 副本作为离线缓存，让 App 离线时也能用。",
+    "section1Body": "你在 AceCrush Craft 里的记录（握把尺寸、球拍档案、穿线记录，以及测量时拍的照片）都存在你自己的 Supabase 账户里，只有你能看到。我们这边没另外搭后端，Supabase 项目就是存储。设备本地另存一份，离线也能用。",
     "section2Title": "在每一台你登录的设备上同步",
-    "section2Body": "在另一台 Android 设备上登录同一个 Supabase 账户，未来 iOS 与桌面端也会支持，你的球拍档案与穿线记录就会出现在那里。同步就是新设备上读到你自己的行：没有中心 feed，没有共享时间线，也没有公开主页。在某台设备退出登录后，下次与 Supabase 通信时这台设备上的本地副本就会被清掉。",
+    "section2Body": "在另一台设备登录同一个 Supabase 账户（现在支持 Android，未来 iOS 与桌面），你的记录就同步过去了。在某台设备退出登录后，下次同步时这台设备的本地副本就会被清掉。",
     "section3Title": "权限清单",
     "section3Camera": "相机（android.permission.CAMERA）：仅在 AI 测量页使用，到系统设置里可关闭。",
     "section3Notification": "通知（android.permission.POST_NOTIFICATIONS）：仅用于穿线到期提醒，可在系统设置关闭。",
     "section4Title": "相机与 AI 测量",
-    "section4Body": "测量拍照后，App 会优先在设备本地推理（MediaPipe HandLandmarker）；如果你的设备跑不动本地推理，照片会发到我们服务端 OpenCV + MediaPipe 管线处理。一旦推荐握把档位算出来，照片立即丢弃：既不会存入你的 Supabase 账户，也不会进相册，更不会保留在服务端。",
+    "section4Body": "测量拍照后，App 会优先在设备本地推理（MediaPipe HandLandmarker）；如果你的设备跑不动本地推理，照片会发到我们服务端 OpenCV + MediaPipe 管线处理。无论哪条路，结果和照片本身都会一起存进你的 Supabase Storage bucket，按用户隔离。照片进了你的 bucket 之后，我们服务端就不再保留。",
     "section5Title": "第三方服务",
-    "section5Body": "Supabase（supabase.com）提供身份认证与每用户数据库，由 row-level security 隔离。我们没有在 Supabase 之上再搭任何额外后端；Supabase 项目本身就是存储。本地用的开源库：Flutter、drift、flutter_local_notifications、url_launcher、opencv_dart、MediaPipe Tasks Vision。这些库全部本地运行，不会回拨服务器。",
+    "section5Body": "登录和数据存储由 Supabase（supabase.com）负责；我们没有在它上面再搭后端。本地用的开源库：Flutter、drift、flutter_local_notifications、url_launcher、opencv_dart、MediaPipe Tasks Vision，这些都在本地跑，不会回拨服务器。",
     "section6Title": "更新与联系",
     "section6Body": "政策更新会随应用版本发布，变更会在 App 内「设置 - 隐私政策」与本页面同步。如有疑问：acecrushdev@gmail.com。"
   },
