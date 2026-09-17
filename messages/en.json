@@ -29,9 +29,11 @@
     "craftCardTag": "Mobile app",
     "craftCardBody": "Measure your grip size from a palm photo, keep a profile for every racket, log each restring with expiry reminders, and convert tension across DT, RT, lbs and kg.",
     "craftCardPlatform": "Android",
+    "craftCardDocsLabel": "Docs",
     "swingCardTag": "Desktop app",
     "swingCardBody": "Drop in a match video and get every swing cut into its own clip, each labelled with ready, windup, contact and follow-through phases plus exact timecodes.",
-    "swingCardPlatform": "Windows · macOS · Linux"
+    "swingCardPlatform": "Windows · macOS · Linux",
+    "swingCardDocsLabel": "Docs"
   },
   "products": {
     "craft": {
@@ -64,17 +66,19 @@
       },
       "features": {
         "heading": "What it does for you.",
-        "subheading": "Five tools. One download. Works fully offline.",
-        "item1Title": "AI grip size measurement",
-        "item1Body": "On-device MediaPipe inference maps your palm to Yonex, Wilson and Head-Prince-Babolat sizing. The photo is discarded right after processing and never uploaded.",
-        "item2Title": "Manual calc + grip wrap offset",
-        "item2Body": "Enter palm length and ring finger length to get a recommended size and a wrap-driven size shift.",
-        "item3Title": "Racket profiles",
-        "item3Body": "Log multiple rackets with specs and notes. Stored locally in SQLite, backup whenever you want.",
-        "item4Title": "Restring log + expiry alerts",
-        "item4Body": "Default restring cycles per material (polyester, multifilament, natural gut). Local notifications when a job is due.",
-        "item5Title": "Tension conversion",
-        "item5Body": "Convert DT ⇄ RT ⇄ lbs ⇄ kg in one place, then tap once to write the result straight into a restring record."
+        "subheading": "Six tools. One download. Works fully offline.",
+        "item1Title": "Grip size measurement",
+        "item1Body": "Two ways, one result. AI mode runs on-device MediaPipe inference from a top-down palm photo on an A4 reference and maps to Yonex, Wilson and Head-Prince-Babolat sizing. Manual mode skips the camera and computes from palm length and ring finger length, including a wrap-driven size shift. Switch at any time, both flows share the same recommended-size output.",
+        "item2Title": "Racket profiles",
+        "item2Body": "Log multiple rackets with specs and notes. Stored locally in SQLite, backup whenever you want.",
+        "item3Title": "Restring log + expiry alerts",
+        "item3Body": "Default restring cycles per material (polyester, multifilament, natural gut). Local notifications when a job is due.",
+        "item4Title": "Tension conversion",
+        "item4Body": "Convert DT ⇄ RT ⇄ lbs ⇄ kg in one place, then tap once to write the result straight into a restring record.",
+        "item5Title": "Tactical board",
+        "item5Body": "Sketch serves, returns and patterns on a tennis court canvas. Save tactic boards alongside a match so the next time you face the same opponent you can replay what worked.",
+        "item6Title": "Private data sync",
+        "item6Body": "All records sync through your own Supabase project: grip measurements, racket profiles, restring logs, tactic boards and photos. Only you can see them. The local SQLite stays the source of truth on the device so the app keeps working offline."
       },
       "privacyStrip": {
         "heading": "Your photos sync with your account.",
@@ -98,7 +102,7 @@
         "q3": "What if my photo is taken at an angle?",
         "a3": "Try to shoot straight down. If the angle is off, the confidence drops to medium or low and the result may drift by one or two grip sizes. Recompute with a flatter photo in that case.",
         "q4": "Can I skip the camera and measure manually?",
-        "a4": "Yes. The manual entry lets you type palm length and ring finger length without invoking the camera. The two flows coexist and you can switch at any time."
+        "a4": "Yes. The manual entry inside Grip size measurement lets you type palm length and ring finger length without invoking the camera. AI and manual flows coexist and you can switch at any time."
       }
     },
     "swing": {

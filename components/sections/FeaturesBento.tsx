@@ -3,7 +3,8 @@
 import {
   BellRinging,
   Calculator,
-  Camera,
+  ChalkboardTeacher,
+  CloudArrowDown,
   Ruler,
   TennisBall,
 } from "@phosphor-icons/react/dist/ssr";
@@ -26,13 +27,20 @@ import { FeatureCard, type FeatureCardTone } from "@/components/sections/Feature
  *   - 所有卡片等宽：移除原 item5 的 `lg:col-span-2`（那正是「第五个拉太长」的原因）
  *   - 3 列 × 2 行 = 6 格，5 张卡后最后一格**留空**（grid 自然空位，
  *     不渲染任何占位元素），不再用 CTA 之类的东西填。
+ *
+ * 用户 2026-09-18 追加调整：
+ *   - item1 + item2（原 AI 测 + 手工测）合并为单卡「Grip size measurement」，
+ *     文案内同时描述 AI 测与手工测两条路径，内容二合一
+ *   - 末尾新增两块：「Tactical board 战术板」、「Private data sync 私人数据同步」
+ *   - 6 项满铺 3 × 2 grid，无需再留空
  */
-const ICONS = [Camera, Ruler, TennisBall, BellRinging, Calculator] as const;
+const ICONS = [Ruler, TennisBall, BellRinging, Calculator, ChalkboardTeacher, CloudArrowDown] as const;
 
 const TONES: readonly FeatureCardTone[] = [
   "accent",
-  "default",
   "tinted",
+  "default",
+  "default",
   "default",
   "default",
 ];
@@ -43,6 +51,7 @@ const ITEMS = [
   { titleKey: "item3Title", bodyKey: "item3Body" },
   { titleKey: "item4Title", bodyKey: "item4Body" },
   { titleKey: "item5Title", bodyKey: "item5Body" },
+  { titleKey: "item6Title", bodyKey: "item6Body" },
 ] as const;
 
 export function FeaturesBento() {
@@ -82,8 +91,6 @@ export function FeaturesBento() {
             tone={TONES[i]}
           />
         ))}
-        {/* 第 6 格刻意留空（用户要求：占位就是 space，不放任何内容）。
-            CSS grid 会自动空出这一格，不需要渲染占位元素。 */}
       </div>
     </section>
   );

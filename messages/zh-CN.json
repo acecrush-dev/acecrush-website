@@ -29,9 +29,11 @@
     "craftCardTag": "手机应用",
     "craftCardBody": "拍一张手掌照片测握把尺寸，为每支球拍建档，记录每次穿线并到期提醒，DT、RT、lbs、kg 磅数一键互转。",
     "craftCardPlatform": "Android",
+    "craftCardDocsLabel": "文档",
     "swingCardTag": "桌面应用",
     "swingCardBody": "丢进一段比赛视频，自动把每一次挥拍切成独立片段，每段标注 ready、windup、contact、follow-through 四相位与精确时间码。",
-    "swingCardPlatform": "Windows · macOS · Linux"
+    "swingCardPlatform": "Windows · macOS · Linux",
+    "swingCardDocsLabel": "文档"
   },
   "products": {
     "craft": {
@@ -64,17 +66,19 @@
       },
       "features": {
         "heading": "它能帮你做什么。",
-        "subheading": "五个工具，一次下载，全部离线可用。",
-        "item1Title": "AI 拍照测握把尺寸",
-        "item1Body": "端侧 MediaPipe 推理，把掌型换算成 Yonex、Wilson、Head-Prince-Babolat 三套制式档位。照片处理完即丢弃，不上传任何服务器。",
-        "item2Title": "手动测算 + 手胶补偿",
-        "item2Body": "支持掌长与无名指长输入，自动给出推荐档位与手胶跨档提示。",
-        "item3Title": "球拍档案",
-        "item3Body": "记录多支球拍的规格与备注，数据存本地 SQLite，随时备份。",
-        "item4Title": "穿线记录 + 到期提醒",
-        "item4Body": "按聚酯、复丝、肠线等材质给出默认换线周期，到期本地通知。",
-        "item5Title": "磅数换算",
-        "item5Body": "DT ⇄ RT ⇄ lbs ⇄ kg 一处互转，算完一键写入穿线记录。"
+        "subheading": "六个工具，一次下载，全部离线可用。",
+        "item1Title": "握把尺寸测量",
+        "item1Body": "两条路径，同一个推荐档位。AI 测：基于 A4 参照，从俯拍手掌照片本地 MediaPipe 推理，换算成 Yonex、Wilson、Head-Prince-Babolat 三套制式。手工测：不调用相机，输入掌长与无名指长直接计算，含手胶跨档提示。两条路随时切换，结果写入同一档位记录。",
+        "item2Title": "球拍档案",
+        "item2Body": "记录多支球拍的规格与备注，数据存本地 SQLite，随时备份。",
+        "item3Title": "穿线记录 + 到期提醒",
+        "item3Body": "按聚酯、复丝、肠线等材质给出默认换线周期，到期本地通知。",
+        "item4Title": "磅数换算",
+        "item4Body": "DT ⇄ RT ⇄ lbs ⇄ kg 一处互转，算完一键写入穿线记录。",
+        "item5Title": "战术板",
+        "item5Body": "在网球场画布上画发球、接发与跑位套路，把战术板附在比赛记录里。下次面对同一个对手，直接调出当时奏效的套路。",
+        "item6Title": "私人数据同步",
+        "item6Body": "所有记录都走你自己的 Supabase 项目同步：握把测量、球拍档案、穿线记录、战术板、照片，只有你能看。设备本地 SQLite 仍是离线可用的事实来源。"
       },
       "privacyStrip": {
         "heading": "你的照片，跟着账户同步。",
@@ -97,8 +101,8 @@
         "a2": "强烈建议。A4 是已知尺寸的参照物，用于把像素换算成毫米。其他尺寸的纸张或物体都能用，只要你在拍照时知道它的真实尺寸。",
         "q3": "拍照角度偏了怎么办？",
         "a3": "尽量垂直俯拍。如果角度偏差过大，置信度会降到「中」或「低」，此时结果可能与真实掌长偏差 1-2 个尺码，建议重新拍一张。",
-        "q4": "可以只用手动测算，不用 AI 拍照吗？",
-        "a4": "可以。在「手动测算」入口直接输入掌长与无名指长，不调用相机、不读取照片。两种方式可随时切换，不冲突。"
+        "q4": "可以只用手工测，不用 AI 拍照吗？",
+        "a4": "可以。在「握把尺寸测量」入口选手工测，直接输入掌长与无名指长，不调用相机、不读取照片。AI 测和手工测随时切换，不冲突。"
       }
     },
     "swing": {

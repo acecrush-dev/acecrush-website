@@ -125,6 +125,8 @@ export function BrandHero() {
               PlatformIcon={AndroidLogo}
               ctaHref="/#craft"
               ctaLabel={tCraft("name")}
+              docsHref="https://craft-docs.acecrush.dev/"
+              docsLabel={t("craftCardDocsLabel")}
               tinted
             />
           </Reveal>
@@ -138,6 +140,8 @@ export function BrandHero() {
               PlatformIcon={Monitor}
               ctaHref="/#swing"
               ctaLabel={tSwing("name")}
+              docsHref="https://swing-analysis-docs.acecrush.dev/"
+              docsLabel={t("swingCardDocsLabel")}
             />
           </Reveal>
         </div>
@@ -155,6 +159,8 @@ function ProductCard({
   PlatformIcon,
   ctaHref,
   ctaLabel,
+  docsHref,
+  docsLabel,
   tinted = false,
 }: {
   tag: string;
@@ -165,6 +171,8 @@ function ProductCard({
   PlatformIcon: typeof AndroidLogo;
   ctaHref: string;
   ctaLabel: string;
+  docsHref: string;
+  docsLabel: string;
   tinted?: boolean;
 }) {
   return (
@@ -211,6 +219,15 @@ function ProductCard({
           {ctaLabel}
           <ArrowRight size={16} weight="bold" aria-hidden />
         </Link>
+        <a
+          href={docsHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-ghost"
+        >
+          {docsLabel}
+          <ArrowRight size={16} weight="bold" aria-hidden />
+        </a>
       </div>
     </article>
   );
