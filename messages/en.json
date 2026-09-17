@@ -91,7 +91,9 @@
         "androidCta": "Download APK",
         "androidNote": "Android blocks unknown sources on first install. Open Settings, Apps, Special app access, Install unknown apps, allow this source, then tap the APK again.",
         "iosLabel": "iOS",
-        "iosBody": "No iOS build yet. The TestFlight invite link will be posted here when it is ready."
+        "iosBody": "iOS is in TestFlight beta. The build is feature-complete against the Android release and syncs through your Supabase account, but it is rough around the edges, expect the occasional crash, missing polish, and breaking changes between builds.",
+        "iosCta": "Join TestFlight",
+        "iosNote": "Tap to open TestFlight on your iPhone and accept the invite. You'll need the Apple ID signed into your device to install the build."
       },
       "faq": {
         "heading": "AceCrush Craft Related",
@@ -171,7 +173,7 @@
     "section1Title": "Your account, your data",
     "section1Body": "Your records in AceCrush Craft (grip size measurements, racket profiles, restring logs, and the photos you take for measurement) live in your own Supabase account. Only you can see them, and AceCrush does not run any extra backend on top of it: the Supabase project IS where your data is stored. Your device keeps a local copy too, so the app keeps working offline.",
     "section2Title": "Sync across every device you sign in to",
-    "section2Body": "Sign in with the same Supabase account on another device (Android today, iOS and desktop later) and your records show up there too. Sign out on a device and its local copy gets cleared the next time it syncs.",
+    "section2Body": "Sign in with the same Supabase account on another device (Android today, iOS in TestFlight beta, desktop later) and your records show up there too. Sign out on a device and its local copy gets cleared the next time it syncs.",
     "section3Title": "Permissions",
     "section3Camera": "Camera (android.permission.CAMERA): used only on the AI measurement screen. Revoke in system settings to disable.",
     "section3Notification": "Notifications (android.permission.POST_NOTIFICATIONS): used only for restring expiry reminders. Disable in system settings.",

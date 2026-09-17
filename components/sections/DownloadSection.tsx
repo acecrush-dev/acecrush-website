@@ -13,7 +13,7 @@ import { Reveal } from "@/components/motion/reveal";
 /**
  * Download - 双产品分组（plan 001 §4-10）。
  *
- * 组 A · AceCrush Craft：Android APK 主下载 + iOS 占位。
+ * 组 A · AceCrush Craft：Android APK 主下载 + iOS TestFlight 公开邀请。
  * 组 B · Swing Analysis：桌面端主下载（`/releases/latest` → GitHub 302 到当前最新版本页）。
  *   仅桌面端，使用 `md:grid-cols-2` 让卡片独占左列与 Craft Android 块同宽，右列留白。
  *   安装文档入口已上移到 SwingSection / BrandHero（hero 与产品区各一处），本区不再重复。
@@ -22,10 +22,15 @@ import { Reveal } from "@/components/motion/reveal";
  *   站上原先的 `acecrushcraft-app` 是改名前旧 slug，仅靠 GitHub 301 苟活。
  *   asset 名 `acecrush-craft.apk` 不变，`/releases/latest/download/` 永远指向最新版。
  *   `NEXT_PUBLIC_APK_DOWNLOAD_URL` env 覆盖保留（staging 用）。
+ *
+ * iOS TestFlight 链接（2026-09-18）：公开邀请 `join/FwWpybP4`，
+ *   任何 Apple ID 都能直接加入，无需邮件申请；如链接被 Apple 重置，
+ *   在此替换并同步 messages 两个 iosNote 副本即可。
  */
 const APK_FALLBACK_URL =
   "https://github.com/acecrush-dev/acecrush-craft-app/releases/latest/download/acecrush-craft.apk";
 const APK_FILE_SIZE = "50 MB";
+const IOS_TESTFLIGHT_URL = "https://testflight.apple.com/join/FwWpybP4";
 const SWING_RELEASES_URL =
   "https://github.com/acecrush-dev/swing-analysis-app/releases/latest";
 
@@ -96,11 +101,11 @@ export function DownloadSection() {
             </div>
           </Reveal>
 
-          {/* iOS 占位 */}
+          {/* iOS · TestFlight 公开邀请（任何 Apple ID 直接加入） */}
           <Reveal delay={0.1} className="h-full">
             <div
               className="card-elevated p-8 h-full flex flex-col gap-5"
-              style={{ background: "var(--color-surface)" }}
+              style={{ background: "var(--color-bg-elevated)" }}
             >
               <div className="flex items-center gap-3">
                 <AppleLogo size={32} weight="regular" aria-hidden />
@@ -109,6 +114,20 @@ export function DownloadSection() {
               <p className="text-[14px] leading-relaxed" style={{ color: "var(--color-fg-muted)" }}>
                 {tCraft("iosBody")}
               </p>
+              <div className="mt-auto flex flex-col gap-2">
+                <a
+                  href={IOS_TESTFLIGHT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary self-start justify-center"
+                >
+                  <ArrowUpRight size={18} weight="bold" aria-hidden />
+                  {tCraft("iosCta")}
+                </a>
+                <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
+                  {tCraft("iosNote")}
+                </p>
+              </div>
             </div>
           </Reveal>
         </div>

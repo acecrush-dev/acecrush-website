@@ -91,7 +91,9 @@
         "androidCta": "获取APK",
         "androidNote": "首次安装 Android 会拦截「未知来源」。进入 设置 → 应用 → 特殊应用权限 → 安装未知应用，允许当前来源后重新点开 APK 即可。",
         "iosLabel": "iOS",
-        "iosBody": "iOS 版本暂未发布。TestFlight 邀请准备好后会在这里更新。"
+        "iosBody": "iOS 在 TestFlight 内测中。功能对齐 Android 当前版本，走你自己的 Supabase 账户同步，但还在早期，偶发崩溃、细节粗糙、不同版本之间可能不兼容，请做好准备。",
+        "iosCta": "加入 TestFlight",
+        "iosNote": "点击会在 iPhone 上打开 TestFlight 并接受邀请，用当前 iPhone 登录的 Apple ID 安装即可。"
       },
       "faq": {
         "heading": "AceCrush Craft 相关",
@@ -171,7 +173,7 @@
     "section1Title": "你的账户，你的数据",
     "section1Body": "你在 AceCrush Craft 里的记录（握把尺寸、球拍档案、穿线记录，以及测量时拍的照片）都存在你自己的 Supabase 账户里，只有你能看到。我们这边没另外搭后端，Supabase 项目就是存储。设备本地另存一份，离线也能用。",
     "section2Title": "在每一台你登录的设备上同步",
-    "section2Body": "在另一台设备登录同一个 Supabase 账户（现在支持 Android，未来 iOS 与桌面），你的记录就同步过去了。在某台设备退出登录后，下次同步时这台设备的本地副本就会被清掉。",
+    "section2Body": "在另一台设备登录同一个 Supabase 账户（现已支持 Android，iOS 在 TestFlight 内测中，桌面稍后开放），你的记录就同步过去了。在某台设备退出登录后，下次同步时这台设备的本地副本就会被清掉。",
     "section3Title": "权限清单",
     "section3Camera": "相机（android.permission.CAMERA）：仅在 AI 测量页使用，到系统设置里可关闭。",
     "section3Notification": "通知（android.permission.POST_NOTIFICATIONS）：仅用于穿线到期提醒，可在系统设置关闭。",
