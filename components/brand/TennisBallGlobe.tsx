@@ -227,6 +227,11 @@ export function TennisBallGlobe({
     let rotY = 0;
     let autoRotate = !reduce;
     renderer.domElement.style.cursor = "grab";
+    // 用户 2026-09-18：touch-action:pan-y 让浏览器保留纵向滚动交给页面，
+    // 横向 / 斜向 / pinch 仍由 OrbitControls 处理。否则 canvas 在移动端会
+    // 吞掉全部 touch，3D 区域下方内容无法垂直滚动（touch 拖拽全被
+    // OrbitControls 抢走做旋转）。
+    renderer.domElement.style.touchAction = "pan-y";
 
     // 渲染循环
     let raf = 0;

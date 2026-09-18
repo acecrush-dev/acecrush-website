@@ -55,15 +55,19 @@ export function BrandHero() {
   return (
     <section aria-labelledby="brand-headline">
       {/* 3D 中心：full page width。
-          高度响应式：桌面 ~760px，平板 ~760px，手机 ~720px（2026-09-11 加高）。
-          用户反馈移动端文字 + 3D 球挤在一起，所以把窄屏的 minHeight 从 480 提到 720，
-          让球在画面里明显下沉，与上半部的 hero 文字错开。
-          文字 absolute overlay 在 canvas 上半部（左对齐），
-          pointer-events-none 让 OrbitControls / marker hover 仍能命中 canvas。 */}
-      <div
-        className="relative w-full"
-        style={{ height: "min(110vw, 760px)", minHeight: 720 }}
-      >
+          高度响应式（2026-09-18 第三轮调整）：
+            桌面（≥ lg）：h-[min(110vw,760px)]（旧桌面值，够容纳 hero 文字 + 球体）
+            平板 / 手机（< lg）：h-[75vh] min-h-[480px]（约屏幕 3/4，
+              动态跟随视口；旧值 75vw/420px 在大屏手机上太矮、hero 文字超出
+              3D 区域底部）
+          用户两轮反馈：
+            1. 110vw/720 太矮（首版）→ 提到 110vw/760
+            2. 760 在窄屏仍太大、OrbitControls 拦截 touch 拖拽 → 改 75vw/420
+            3. 75vw/420 太矮、文字超出 → 改 75vh 动态跟随视口，文字始终在
+               3D 区域内
+          配合 TennisBallGlobe 给 canvas 加 touch-action:pan-y 进一步确保
+          纵向 touch 滚动不被打断。 */}
+      <div className="relative w-full h-[75vh] min-h-[480px] lg:h-[min(110vw,760px)] lg:min-h-0">
         <TennisBallGlobe
           ariaLabel={`${tCraft("name")} + ${tSwing("name")} ecosystem`}
           height="100%"
@@ -123,7 +127,7 @@ export function BrandHero() {
               body={t("craftCardBody")}
               platform={t("craftCardPlatform")}
               PlatformIcon={AndroidLogo}
-              ctaHref="/#craft"
+              ctaHref="/craft/"
               ctaLabel={tCraft("name")}
               docsHref="https://craft-docs.acecrush.dev/"
               docsLabel={t("craftCardDocsLabel")}
@@ -138,7 +142,7 @@ export function BrandHero() {
               body={t("swingCardBody")}
               platform={t("swingCardPlatform")}
               PlatformIcon={Monitor}
-              ctaHref="/#swing"
+              ctaHref="/swing-analysis/"
               ctaLabel={tSwing("name")}
               docsHref="https://swing-analysis-docs.acecrush.dev/"
               docsLabel={t("swingCardDocsLabel")}

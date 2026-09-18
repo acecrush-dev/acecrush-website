@@ -19,6 +19,10 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
  *
  * 参考 latuvo 间距：bar 上下 padding `36px 0 48px`、横向 gap `20px`、链接间距 `24px`。
  *
+ * 2026-09-18：与 AppNav 同步把内层容器在移动端的 paddingInline 改成
+ *   clamp(1rem, 4vw, 1.5rem)，避免 `.container-x` 的 4rem 起手把 footer 内容
+ *   挤到中段；桌面维持 container-x 的 4rem~9rem 内边距。不动 globals.css。
+ *
  * locale 切换仍由客户端 store 控制，链接不带 locale 前缀；
  * 版权年份取客户端当前年（整段标 client 避免 SSR/CSR 不一致）。
  */
@@ -40,8 +44,12 @@ export function AppFooter() {
       }}
     >
       <div
-        className="container-x flex flex-wrap items-center justify-between gap-x-8 gap-y-5"
-        style={{ paddingTop: 28, paddingBottom: 40 }}
+        className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5 lg:container-x"
+        style={{
+          paddingTop: 28,
+          paddingBottom: 40,
+          paddingInline: "clamp(1rem, 4vw, 1.5rem)",
+        }}
       >
         <Link
           href="/"

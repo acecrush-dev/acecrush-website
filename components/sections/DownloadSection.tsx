@@ -26,6 +26,10 @@ import { Reveal } from "@/components/motion/reveal";
  * iOS TestFlight 链接（2026-09-18）：公开邀请 `join/FwWpybP4`，
  *   任何 Apple ID 都能直接加入，无需邮件申请；如链接被 Apple 重置，
  *   在此替换并同步 messages 两个 iosNote 副本即可。
+ *
+ * 2026-09-18：双产品拆为独立路由（/craft/、/swing-analysis/）。
+ *   CraftDownloadBlock + SwingDownloadBlock 改为命名导出供各产品页直接使用；
+ *   DownloadSection 保留旧/特殊场景调用（如未来要重新合并），新代码请直接用块组件。
  */
 const APK_FALLBACK_URL =
   "https://github.com/acecrush-dev/acecrush-craft-app/releases/latest/download/acecrush-craft.apk";
@@ -34,11 +38,122 @@ const IOS_TESTFLIGHT_URL = "https://testflight.apple.com/join/FwWpybP4";
 const SWING_RELEASES_URL =
   "https://github.com/acecrush-dev/swing-analysis-app/releases/latest";
 
+/** Craft download block: 2 列（Android + iOS TestFlight）。用于 /craft/ 页。 */
+export function CraftDownloadBlock() {
+  const tCraft = useTranslations("products.craft.download");
+  const apkUrl = process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL ?? APK_FALLBACK_URL;
+
+  return (
+    <div
+      className="mt-6 grid gap-6 md:grid-cols-2"
+      aria-labelledby="dl-craft-heading"
+    >
+      {/* Android */}
+      <Reveal className="h-full">
+        <div
+          className="card-elevated p-8 h-full flex flex-col gap-5"
+          style={{ background: "var(--color-bg-elevated)" }}
+        >
+          <div className="flex items-center gap-3">
+            <AndroidLogo size={32} weight="regular" aria-hidden />
+            <h4 className="text-[20px] font-semibold">{tCraft("androidLabel")}</h4>
+          </div>
+          <p className="text-[14px] leading-relaxed" style={{ color: "var(--color-fg-muted)" }}>
+            {tCraft("androidBody", { fileSize: APK_FILE_SIZE })}
+          </p>
+          <div className="mt-auto flex flex-col gap-2">
+            <a href={apkUrl} className="btn-primary self-start justify-center" download>
+              <DownloadSimple size={18} weight="bold" aria-hidden />
+              {tCraft("androidCta")}
+            </a>
+            <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
+              {tCraft("androidNote")}
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* iOS · TestFlight 公开邀请（任何 Apple ID 直接加入） */}
+      <Reveal delay={0.1} className="h-full">
+        <div
+          className="card-elevated p-8 h-full flex flex-col gap-5"
+          style={{ background: "var(--color-bg-elevated)" }}
+        >
+          <div className="flex items-center gap-3">
+            <AppleLogo size={32} weight="regular" aria-hidden />
+            <h4 className="text-[20px] font-semibold">{tCraft("iosLabel")}</h4>
+          </div>
+          <p className="text-[14px] leading-relaxed" style={{ color: "var(--color-fg-muted)" }}>
+            {tCraft("iosBody")}
+          </p>
+          <div className="mt-auto flex flex-col gap-2">
+            <a
+              href={IOS_TESTFLIGHT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary self-start justify-center"
+            >
+              <ArrowUpRight size={18} weight="bold" aria-hidden />
+              {tCraft("iosCta")}
+            </a>
+            <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
+              {tCraft("iosNote")}
+            </p>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  );
+}
+
+/** Swing download block: 单卡桌面端。用于 /swing-analysis/ 页。 */
+export function SwingDownloadBlock() {
+  const tSwing = useTranslations("products.swing.download");
+
+  return (
+    <div className="mt-6 grid gap-6 md:grid-cols-2" aria-labelledby="dl-swing-heading">
+      <Reveal delay={0.1} className="h-full">
+        <div
+          className="card-elevated p-8 h-full flex flex-col gap-5"
+          style={{ background: "var(--color-bg-elevated)" }}
+        >
+          <div className="flex items-center gap-3">
+            <Monitor size={32} weight="regular" aria-hidden />
+            <h4 className="text-[20px] font-semibold">{tSwing("desktopLabel")}</h4>
+          </div>
+          <p
+            className="text-[14px] leading-relaxed"
+            style={{ color: "var(--color-fg-muted)" }}
+          >
+            {tSwing("desktopBody")}
+          </p>
+          <div className="flex flex-col gap-2">
+            <a
+              href={SWING_RELEASES_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary self-start justify-center"
+            >
+              <DownloadSimple size={18} weight="bold" aria-hidden />
+              {tSwing("releasesCta")}
+            </a>
+            <p
+              className="text-[12px] leading-relaxed"
+              style={{ color: "var(--color-fg-subtle)" }}
+            >
+              {tSwing("releasesNote")}
+            </p>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  );
+}
+
 export function DownloadSection() {
   const t = useTranslations("download");
   const tCraft = useTranslations("products.craft.download");
   const tSwing = useTranslations("products.swing.download");
-  const apkUrl = process.env.NEXT_PUBLIC_APK_DOWNLOAD_URL ?? APK_FALLBACK_URL;
 
   return (
     <section
@@ -74,63 +189,7 @@ export function DownloadSection() {
             {tCraft("productHeading")}
           </h3>
         </Reveal>
-
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          {/* Android */}
-          <Reveal className="h-full">
-            <div
-              className="card-elevated p-8 h-full flex flex-col gap-5"
-              style={{ background: "var(--color-bg-elevated)" }}
-            >
-              <div className="flex items-center gap-3">
-                <AndroidLogo size={32} weight="regular" aria-hidden />
-                <h4 className="text-[20px] font-semibold">{tCraft("androidLabel")}</h4>
-              </div>
-              <p className="text-[14px] leading-relaxed" style={{ color: "var(--color-fg-muted)" }}>
-                {tCraft("androidBody", { fileSize: APK_FILE_SIZE })}
-              </p>
-              <div className="mt-auto flex flex-col gap-2">
-                <a href={apkUrl} className="btn-primary self-start justify-center" download>
-                  <DownloadSimple size={18} weight="bold" aria-hidden />
-                  {tCraft("androidCta")}
-                </a>
-                <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
-                  {tCraft("androidNote")}
-                </p>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* iOS · TestFlight 公开邀请（任何 Apple ID 直接加入） */}
-          <Reveal delay={0.1} className="h-full">
-            <div
-              className="card-elevated p-8 h-full flex flex-col gap-5"
-              style={{ background: "var(--color-bg-elevated)" }}
-            >
-              <div className="flex items-center gap-3">
-                <AppleLogo size={32} weight="regular" aria-hidden />
-                <h4 className="text-[20px] font-semibold">{tCraft("iosLabel")}</h4>
-              </div>
-              <p className="text-[14px] leading-relaxed" style={{ color: "var(--color-fg-muted)" }}>
-                {tCraft("iosBody")}
-              </p>
-              <div className="mt-auto flex flex-col gap-2">
-                <a
-                  href={IOS_TESTFLIGHT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary self-start justify-center"
-                >
-                  <ArrowUpRight size={18} weight="bold" aria-hidden />
-                  {tCraft("iosCta")}
-                </a>
-                <p className="text-[12px] leading-relaxed" style={{ color: "var(--color-fg-subtle)" }}>
-                  {tCraft("iosNote")}
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
+        <CraftDownloadBlock />
       </div>
 
       {/* 组 B · Swing Analysis：桌面端主下载单卡（无移动端） */}
@@ -144,43 +203,7 @@ export function DownloadSection() {
             {tSwing("productHeading")}
           </h3>
         </Reveal>
-
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <Reveal delay={0.1} className="h-full">
-            <div
-              className="card-elevated p-8 h-full flex flex-col gap-5"
-              style={{ background: "var(--color-bg-elevated)" }}
-            >
-              <div className="flex items-center gap-3">
-                <Monitor size={32} weight="regular" aria-hidden />
-                <h4 className="text-[20px] font-semibold">{tSwing("desktopLabel")}</h4>
-              </div>
-              <p
-                className="text-[14px] leading-relaxed"
-                style={{ color: "var(--color-fg-muted)" }}
-              >
-                {tSwing("desktopBody")}
-              </p>
-              <div className="flex flex-col gap-2">
-                <a
-                  href={SWING_RELEASES_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary self-start justify-center"
-                >
-                  <DownloadSimple size={18} weight="bold" aria-hidden />
-                  {tSwing("releasesCta")}
-                </a>
-                <p
-                  className="text-[12px] leading-relaxed"
-                  style={{ color: "var(--color-fg-subtle)" }}
-                >
-                  {tSwing("releasesNote")}
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
+        <SwingDownloadBlock />
       </div>
     </section>
   );

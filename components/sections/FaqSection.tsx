@@ -10,6 +10,10 @@ import { Reveal } from "@/components/motion/reveal";
  *   共享 h2 = `faq.heading`；每组 h3 = 该产品的 faq.heading；
  *   组内手风琴抽成模块级 <FaqList>，两组复用，避免复制粘贴两份 JSX。
  *   原生 <details>/<summary> 天然可访问（键盘 Enter/Space 展开），不引入 JS。
+ *
+ * 2026-09-18：双产品拆为独立路由后，FaqList 改为命名导出，
+ *   各产品页（/craft/、/swing-analysis/）单产品使用；FaqSection 仅保留
+ *   旧/特殊场景调用（如未来要重新合并），新代码请直接用 FaqList。
  */
 const Q_KEYS = [
   { qKey: "q1", aKey: "a1" },
@@ -18,37 +22,21 @@ const Q_KEYS = [
   { qKey: "q4", aKey: "a4" },
 ] as const;
 
-export function FaqSection() {
-  const t = useTranslations("faq");
+export type FaqProductNamespace = "products.craft.faq" | "products.swing.faq";
 
-  return (
-    <section id="faq" className="container-x py-28 lg:py-44" aria-labelledby="faq-heading">
-      <Reveal>
-        <h2
-          id="faq-heading"
-          className="text-[32px] md:text-[40px] leading-[1.1] tracking-tight font-semibold"
-        >
-          {t("heading")}
-        </h2>
-      </Reveal>
-
-      <FaqList namespace="products.craft.faq" headingId="faq-craft-heading" />
-      <FaqList namespace="products.swing.faq" headingId="faq-swing-heading" />
-    </section>
-  );
-}
-
-function FaqList({
+export function FaqList({
   namespace,
   headingId,
+  className,
 }: {
-  namespace: "products.craft.faq" | "products.swing.faq";
+  namespace: FaqProductNamespace;
   headingId: string;
+  className?: string;
 }) {
   const t = useTranslations(namespace);
 
   return (
-    <div className="mt-12" aria-labelledby={headingId}>
+    <div className={className ?? "mt-12"} aria-labelledby={headingId}>
       <Reveal>
         <h3
           id={headingId}
@@ -93,5 +81,25 @@ function FaqList({
         </div>
       </Reveal>
     </div>
+  );
+}
+
+export function FaqSection() {
+  const t = useTranslations("faq");
+
+  return (
+    <section id="faq" className="container-x py-28 lg:py-44" aria-labelledby="faq-heading">
+      <Reveal>
+        <h2
+          id="faq-heading"
+          className="text-[32px] md:text-[40px] leading-[1.1] tracking-tight font-semibold"
+        >
+          {t("heading")}
+        </h2>
+      </Reveal>
+
+      <FaqList namespace="products.craft.faq" headingId="faq-craft-heading" />
+      <FaqList namespace="products.swing.faq" headingId="faq-swing-heading" />
+    </section>
   );
 }
