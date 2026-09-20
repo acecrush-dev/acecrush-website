@@ -23,9 +23,9 @@ import { Reveal } from "@/components/motion/reveal";
  *   asset 名 `acecrush-craft.apk` 不变，`/releases/latest/download/` 永远指向最新版。
  *   `NEXT_PUBLIC_APK_DOWNLOAD_URL` env 覆盖保留（staging 用）。
  *
- * iOS TestFlight 链接（2026-09-18）：公开邀请 `join/FwWpybP4`，
- *   任何 Apple ID 都能直接加入，无需邮件申请；如链接被 Apple 重置，
- *   在此替换并同步 messages 两个 iosNote 副本即可。
+ * iOS TestFlight 链接：公开邀请，任何 Apple ID 都能直接加入，无需邮件申请。
+ *   历史 `join/FwWpybP4`（2026-09-18），现 `join/PF2Qqgtc`（2026-09-20）。
+ *   如链接被 Apple 重置，在此替换并同步 messages 两个 iosNote 副本即可。
  *
  * 2026-09-18：双产品拆为独立路由（/craft/、/swing-analysis/）。
  *   CraftDownloadBlock + SwingDownloadBlock 改为命名导出供各产品页直接使用；
@@ -34,7 +34,7 @@ import { Reveal } from "@/components/motion/reveal";
 const APK_FALLBACK_URL =
   "https://github.com/acecrush-dev/acecrush-craft-app/releases/latest/download/acecrush-craft.apk";
 const APK_FILE_SIZE = "50 MB";
-const IOS_TESTFLIGHT_URL = "https://testflight.apple.com/join/FwWpybP4";
+const IOS_TESTFLIGHT_URL = "https://testflight.apple.com/join/PF2Qqgtc";
 const SWING_RELEASES_URL =
   "https://github.com/acecrush-dev/swing-analysis-app/releases/latest";
 
