@@ -80,6 +80,38 @@ export function SwingSection() {
         </p>
       </Reveal>
 
+      {/* 用户 2026-09-21：产品页一开始给出三件套，下载（页内 #download 锚到
+          下方 SwingDownloadBlock）+ docs（外链到 swing-analysis-docs 子站）
+          + GitHub（外链到仓库）。布局与 CraftHero 同族：
+          [Download primary | Docs ghost | GitHub ghost]。 */}
+      <Reveal delay={0.24}>
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <Link href="#download" className="btn-primary">
+            {tIntro("downloadCta")}
+            <ArrowRight size={16} weight="bold" aria-hidden />
+          </Link>
+          <a
+            href="https://swing-analysis-docs.acecrush.dev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost"
+          >
+            {tIntro("docsCta")}
+            <ArrowUpRight size={16} weight="bold" aria-hidden />
+          </a>
+          <a
+            href={SWING_GIT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost"
+            aria-label={`${tIntro("gitCta")} (${t("name")})`}
+          >
+            {tIntro("gitCta")}
+            <ArrowUpRight size={15} weight="bold" aria-hidden />
+          </a>
+        </div>
+      </Reveal>
+
       {/* 用户 2026-09-11：插入桌面端真实截图（clip_play.png），给产品区视觉证据 */}
       <Reveal delay={0.22}>
         <figure className="mt-10">
@@ -134,23 +166,6 @@ export function SwingSection() {
             tone={TONES[i]}
           />
         ))}
-      </div>
-
-      <div className="mt-10 flex flex-wrap items-center gap-3">
-        <Link href="/#download" className="btn-primary">
-          {tIntro("downloadCta")}
-          <ArrowRight size={16} weight="bold" aria-hidden />
-        </Link>
-        <a
-          href={SWING_GIT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-ghost"
-          aria-label={`${tIntro("gitCta")} (${t("name")})`}
-        >
-          {tIntro("gitCta")}
-          <ArrowUpRight size={15} weight="bold" aria-hidden />
-        </a>
       </div>
     </section>
   );

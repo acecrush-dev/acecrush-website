@@ -43,8 +43,9 @@
         "eyebrow": "",
         "headline": "Perfect Photo,\nPerfect Grip",
         "subtext": "On-device AI measures hand size via an A4 reference, recommends your optimal grip, and tracks your next string job.",
-        "primaryCta": "Download APK",
+        "primaryCta": "Get the app",
         "secondaryCta": "How measurement works",
+        "docsCta": "Docs",
         "previewLabel": "Measurement result preview",
         "previewResult": "Measurement",
         "previewPalmLength": "Palm length",
@@ -91,7 +92,7 @@
         "androidCta": "Download APK",
         "androidNote": "Android blocks unknown sources on first install. Open Settings, Apps, Special app access, Install unknown apps, allow this source, then tap the APK again.",
         "iosLabel": "iOS",
-        "iosBody": "iOS is in TestFlight beta. The build is feature-complete against the Android release and syncs through your Supabase account, but it is rough around the edges, expect the occasional crash, missing polish, and breaking changes between builds.",
+        "iosBody": "iOS is in TestFlight beta. The build targets iOS 15 and up, feature-complete against the Android release, but it is rough around the edges, expect the occasional crash, missing polish, and breaking changes between builds.",
         "iosCta": "Join TestFlight",
         "iosNote": "Tap to open TestFlight on your iPhone and accept the invite. You'll need the Apple ID signed into your device to install the build."
       },
@@ -115,8 +116,9 @@
         "headline": "Every swing, cut and timecoded.",
         "subtext": "Feed in a match video. The two-pass pipeline tracks a single right-wrist signal, cuts each swing into its own clip, and labels ready, windup, contact and follow-through with exact timecodes.",
         "previewLabel": "Clip playback preview",
-        "downloadCta": "Get it",
-        "gitCta": "GitHub"
+        "downloadCta": "Download",
+        "gitCta": "GitHub",
+        "docsCta": "Docs"
       },
       "features": {
         "heading": "Built for frame-level review.",

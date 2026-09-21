@@ -65,13 +65,22 @@ export function CraftHero() {
           </Reveal>
           <Reveal delay={0.24}>
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link href="/#download" className="btn-primary">
+              <Link href="#download" className="btn-primary">
                 {t("primaryCta")}
                 <ArrowRight size={16} weight="bold" aria-hidden />
               </Link>
-              <Link href="/#how-it-works" className="btn-ghost">
+              <Link href="#how-it-works" className="btn-ghost">
                 {t("secondaryCta")}
               </Link>
+              <a
+                href="https://craft-docs.acecrush.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost"
+              >
+                {t("docsCta")}
+                <ArrowRight size={16} weight="bold" aria-hidden />
+              </a>
             </div>
           </Reveal>
         </div>

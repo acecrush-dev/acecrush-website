@@ -43,8 +43,9 @@
         "eyebrow": "",
         "headline": "一拍即合，\n完美把握",
         "subtext": "依托 A4 参照，本地 AI 精准估算手掌大小，匹配最优握把档位，穿线到期智能提醒。",
-        "primaryCta": "下载 APK",
+        "primaryCta": "下载应用",
         "secondaryCta": "了解测量原理",
+        "docsCta": "文档",
         "previewLabel": "测量结果预览",
         "previewResult": "测量结果",
         "previewPalmLength": "掌长",
@@ -91,7 +92,7 @@
         "androidCta": "获取APK",
         "androidNote": "首次安装 Android 会拦截「未知来源」。进入 设置 → 应用 → 特殊应用权限 → 安装未知应用，允许当前来源后重新点开 APK 即可。",
         "iosLabel": "iOS",
-        "iosBody": "iOS 在 TestFlight 内测中。功能对齐 Android 当前版本，走你自己的 Supabase 账户同步，但还在早期，偶发崩溃、细节粗糙、不同版本之间可能不兼容，请做好准备。",
+        "iosBody": "iOS 在 TestFlight 内测中。最低支持 iOS 15，功能对齐 Android 当前版本，但还在早期，偶发崩溃、细节粗糙、不同版本之间可能不兼容，请做好准备。",
         "iosCta": "加入 TestFlight",
         "iosNote": "点击会在 iPhone 上打开 TestFlight 并接受邀请，用当前 iPhone 登录的 Apple ID 安装即可。"
       },
@@ -115,8 +116,9 @@
         "headline": "每一次挥拍，都切好并打上时间码。",
         "subtext": "丢进一段比赛视频。两阶段管线只跟一路右手腕信号，把每次挥拍切成独立片段，并标注 ready、windup、contact、follow-through 四相位与精确时间码。",
         "previewLabel": "Clip 回放预览",
-        "downloadCta": "获取",
-        "gitCta": "GitHub"
+        "downloadCta": "下载",
+        "gitCta": "GitHub",
+        "docsCta": "文档"
       },
       "features": {
         "heading": "为逐帧复盘而生。",
