@@ -71,11 +71,11 @@
         "item1Title": "Grip size measurement",
         "item1Body": "Two ways, one result. AI mode runs on-device MediaPipe inference from a top-down palm photo on an A4 reference and maps to Yonex, Wilson and Head-Prince-Babolat sizing. Manual mode skips the camera and computes from palm length and ring finger length, including a wrap-driven size shift. Switch at any time, both flows share the same recommended-size output.",
         "item2Title": "Racket profiles",
-        "item2Body": "Log multiple rackets with specs and notes. Stored locally in SQLite, backup whenever you want.",
+        "item2Body": "Log multiple rackets with specs and parameters, all in one place.",
         "item3Title": "Restring log + expiry alerts",
-        "item3Body": "Default restring cycles per material (polyester, multifilament, natural gut). Local notifications when a job is due.",
+        "item3Body": "Record string type, stringing date and tension for each restring, set an expiry reminder, and get notified before and on the due date.",
         "item4Title": "Tension conversion",
-        "item4Body": "Convert DT ⇄ RT ⇄ lbs ⇄ kg in one place, then tap once to write the result straight into a restring record.",
+        "item4Body": "Switch between DT and RT tension readings at a glance, so the number on the stringing machine matches what your racket spec sheet asks for.",
         "item5Title": "Tactical board",
         "item5Body": "Sketch serves, returns and patterns on a tennis court canvas. Save tactic boards alongside a match so the next time you face the same opponent you can replay what worked.",
         "item6Title": "Private data sync",
@@ -83,7 +83,7 @@
       },
       "privacyStrip": {
         "heading": "Your photos sync with your account.",
-        "body": "AI measurement runs on-device for the inference. Both the photo and the result are saved to your Supabase account, the photo in a private Storage bucket, so they follow you across devices. Delete a photo on any signed-in device and it is gone everywhere."
+        "body": "AI measurement runs on-device for the inference. Both the photo and the result are saved to your Supabase account, the photo in a private Storage bucket, so they follow you across devices once you explicitly push sync from one device and pull sync on the others. Local deletes do not propagate on their own."
       },
       "download": {
         "productHeading": "AceCrush Craft",
@@ -98,14 +98,14 @@
       },
       "faq": {
         "heading": "AceCrush Craft Related",
-        "q1": "How accurate is the AI measurement?",
-        "a1": "We return a recommended size plus or minus one adjacent size with a confidence hint. Geometric error between your palm plane and the A4 sheet is a known physical limit. We do not claim millimeter precision and we do not fabricate percentage numbers.",
-        "q2": "Do I have to use A4 paper?",
-        "a2": "We strongly recommend it. A4 is a reference of known size used to convert pixels into millimeters. Other sheet sizes or objects work too, as long as you know their real dimensions when taking the photo.",
-        "q3": "What if my photo is taken at an angle?",
-        "a3": "Try to shoot straight down. If the angle is off, the confidence drops to medium or low and the result may drift by one or two grip sizes. Recompute with a flatter photo in that case.",
-        "q4": "Can I skip the camera and measure manually?",
-        "a4": "Yes. The manual entry inside Grip size measurement lets you type palm length and ring finger length without invoking the camera. AI and manual flows coexist and you can switch at any time."
+        "q1": "How do I get the most out of AI measurement, and is it accurate?",
+        "a1": "Lay the A4 sheet flat on the table, place your palm on it, and line the four edges of the sheet tightly against the green frame on screen, with no gap and no overhang. Fingers and heel must stay fully inside the frame. Shoot straight down. When those conditions hold, the recommended size is reliable within one adjacent size, with a confidence hint shown on the result card. We do not claim millimeter precision and we do not fabricate percentages.",
+        "q2": "Do I have to use A4 paper, and what about the green frame?",
+        "a2": "A4 is the recommended reference because its 210 by 297 mm dimensions are baked into the pixel-to-millimetre conversion. Other sheets or known-size objects work too if you tell the app their real dimensions. The green frame exists for one reason: pixel calibration depends on the A4 edges being aligned to it, so gaps or overhangs skew every downstream measurement.",
+        "q3": "What if my photo is taken at an angle, or my hand is off the sheet?",
+        "a3": "Confidence drops to medium or low and the result can drift by one or two grip sizes. Re-take the photo from straight above, palm flat on the A4, with the sheet edges tight against the green frame. The manual path inside Grip size measurement stays available regardless: type palm length and ring finger length and skip the camera entirely.",
+        "q4": "How does data sync work across devices?",
+        "a4": "Sync is explicit, not automatic. On the device where you made changes, open Settings and tap Push sync to upload. On every other signed-in device, open Settings and tap Pull sync to download. Local deletes do not propagate on their own. The full step-by-step walkthrough, including conflict rules when two devices edited the same record offline, lives in the cloud sync guide."
       }
     },
     "swing": {
@@ -139,14 +139,14 @@
       },
       "faq": {
         "heading": "Swing Analysis Related",
-        "q1": "Does my video get uploaded anywhere?",
-        "a1": "No. Everything runs on your own machine. The local service binds to 127.0.0.1 only, and your video never leaves the computer.",
-        "q2": "How does it decide where a swing starts?",
-        "a2": "The v2.1 pipeline uses a single signal, your right wrist, tracked by MediaPipe pose. Pass 1 emits candidate segments while streaming, then an offline pass refines the boundaries and labels the four phases.",
-        "q3": "Do I need a GPU?",
-        "a3": "No, it runs on CPU. The RTMDet and RTMPose overlays are the heaviest step and are entirely optional, so you can switch them off for a much faster first pass.",
-        "q4": "Can I use it without the desktop GUI?",
-        "a4": "Yes. The CLI drives the exact same pipeline, and the local REST plus WebSocket service on port 8321 is open to any front end you want to build."
+        "q1": "Does my video get uploaded, and which models actually run on it?",
+        "a1": "Nothing leaves your machine. The local service binds to 127.0.0.1 only, so the video never reaches a server. Two model families matter here: the wrist tracker that drives swing segmentation (MediaPipe pose, by default, with a MoveNet fallback) and the optional overlay models that paint the skeleton and person box (RTMDet plus RTMPose). The first family is always on, because segmentation depends on it. The overlay family is opt-in and re-renders the clip after segmentation, never influencing where the cuts land.",
+        "q2": "Do different model choices change the segmentation result?",
+        "a2": "Yes, but only the segmentation models can. Switching the wrist tracker from MediaPipe pose to MoveNet can shift swing boundaries by a few frames and occasionally split or merge adjacent swings, so the choice matters for fast, jerky matches. Switching the overlay models only changes how each already-cut clip is painted, never where the cuts are.",
+        "q3": "Are the clip cuts and the overlay effects one step or two?",
+        "a3": "They are two separate steps. Pass 1 cuts every swing into its own clip using the wrist tracker only, with no overlay drawn. The optional polish pass runs afterwards on the saved clips, re-detecting the person and re-drawing the skeleton and box. Either pass can be skipped, and skipping the polish pass leaves you with cuts but no overlays. Clips are saved to disk between the two passes, so you can also re-run just the polish pass later.",
+        "q4": "Do I need a GPU, and can I drive the pipeline without the desktop GUI?",
+        "a4": "No GPU is required, the whole pipeline runs on CPU. The overlay models are the heaviest step and the main reason a GPU helps when you have one, so turn them off for the fastest first pass on weaker machines. The CLI drives the exact same pipeline, and the local REST plus WebSocket service on port 8321 is open to any front end you want to build on top."
       }
     }
   },
