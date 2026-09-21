@@ -105,7 +105,8 @@
         "q3": "What if my photo is taken at an angle, or my hand is off the sheet?",
         "a3": "Confidence drops to medium or low and the result can drift by one or two grip sizes. Re-take the photo from straight above, palm flat on the A4, with the sheet edges tight against the green frame. The manual path inside Grip size measurement stays available regardless: type palm length and ring finger length and skip the camera entirely.",
         "q4": "How does data sync work across devices?",
-        "a4": "Sync is explicit, not automatic. On the device where you made changes, open Settings and tap Push sync to upload. On every other signed-in device, open Settings and tap Pull sync to download. Local deletes do not propagate on their own. The full step-by-step walkthrough, including conflict rules when two devices edited the same record offline, lives in the cloud sync guide."
+        "a4": "Sync is explicit, not automatic. On the device where you made changes, open Settings and tap Push sync to upload. On every other signed-in device, open Settings and tap Pull sync to download. Local deletes do not propagate on their own. The full step-by-step walkthrough, including conflict rules when two devices edited the same record offline, lives in",
+        "a4LinkLabel": "the cloud sync guide"
       }
     },
     "swing": {

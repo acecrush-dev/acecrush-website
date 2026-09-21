@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import { AppNav } from "@/components/layout/AppNav";
 import { AppFooter } from "@/components/layout/AppFooter";
 import { CraftHero } from "@/components/sections/CraftHero";
@@ -22,9 +23,19 @@ import { Reveal } from "@/components/motion/reveal";
  *  只保留 Craft 相关 sections；URL 锚点不再被依赖，每个 section 不再带 id 锚。
  *
  * A13：skip link + LocaleLangSync 与其他页面一致。
+ *
+ * 2026-09-21：FAQ a4 答案末尾的"云同步指南"必须渲染成可点击链接
+ *   （target=_blank，外部子站）。FaqList 接受 answerNodes prop，
+ *   此处塞入 a4 的 JSX，用 useTranslations 读 a4LinkLabel 作为锚文字
+ *   （locale 感知），拼接 <a target=_blank>。
+ *   不用 t.rich + {link} 占位符（next-intl 4.x 在静态导出 SSR 下行为异常）。
  */
+const CLOUD_SYNC_HREF =
+  "https://craft-docs.acecrush.dev/zh/guide/06-cloud-sync.html";
+
 export function CraftPageContent() {
   const t = useTranslations("nav");
+  const tFaq = useTranslations("products.craft.faq");
   return (
     <>
       <LocaleLangSync />
@@ -69,6 +80,29 @@ export function CraftPageContent() {
             namespace="products.craft.faq"
             headingId="faq-craft-list-heading"
             className="mt-12"
+            answerNodes={{
+              a4: (
+                <>
+                  {tFaq("a4")}{" "}
+                  <a
+                    href={CLOUD_SYNC_HREF}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline inline-flex items-baseline gap-0.5"
+                    style={{ color: "var(--color-fg)" }}
+                  >
+                    <span>{tFaq("a4LinkLabel")}</span>
+                    <ArrowUpRight
+                      size={13}
+                      weight="bold"
+                      aria-hidden
+                      className="inline-block"
+                    />
+                  </a>
+                  {"。"}
+                </>
+              ),
+            }}
           />
         </section>
       </main>
