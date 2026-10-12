@@ -18,9 +18,10 @@ import { Reveal } from "@/components/motion/reveal";
  *   仅桌面端，使用 `md:grid-cols-2` 让卡片独占左列与 Craft Android 块同宽，右列留白。
  *   安装文档入口已上移到 SwingSection / BrandHero（hero 与产品区各一处），本区不再重复。
  *
- * APK 链接（plan 001 §3）：repo 现名 `acecrush-craft-app`（带横线）；
- *   站上原先的 `acecrushcraft-app` 是改名前旧 slug，仅靠 GitHub 301 苟活。
- *   asset 名 `acecrush-craft.apk` 不变，`/releases/latest/download/` 永远指向最新版。
+ * APK 链接：改走 **蒲公英（pgyer）** 分发，落地页 `https://www.pgyer.com/acecrushcraft`。
+ *   该地址是 HTML 落地页而非 apk 直链，故按钮不再加 `download` 属性（否则浏览器会
+ *   把页面 HTML 存成文件而不是跳转到下载流程）。
+ *   历史链路：GitHub Releases `/releases/latest/download/acecrush-craft.apk`（已下线）。
  *   `NEXT_PUBLIC_APK_DOWNLOAD_URL` env 覆盖保留（staging 用）。
  *
  * iOS TestFlight 链接：公开邀请，任何 Apple ID 都能直接加入，无需邮件申请。
@@ -31,8 +32,7 @@ import { Reveal } from "@/components/motion/reveal";
  *   CraftDownloadBlock + SwingDownloadBlock 改为命名导出供各产品页直接使用；
  *   DownloadSection 保留旧/特殊场景调用（如未来要重新合并），新代码请直接用块组件。
  */
-const APK_FALLBACK_URL =
-  "https://github.com/acecrush-dev/acecrush-craft-app/releases/latest/download/acecrush-craft.apk";
+const APK_FALLBACK_URL = "https://www.pgyer.com/acecrushcraft";
 const APK_FILE_SIZE = "50 MB";
 const IOS_TESTFLIGHT_URL = "https://testflight.apple.com/join/PF2Qqgtc";
 const SWING_RELEASES_URL =
@@ -62,7 +62,7 @@ export function CraftDownloadBlock() {
             {tCraft("androidBody", { fileSize: APK_FILE_SIZE })}
           </p>
           <div className="mt-auto flex flex-col gap-2">
-            <a href={apkUrl} className="btn-primary self-start justify-center" download>
+            <a href={apkUrl} className="btn-primary self-start justify-center">
               <DownloadSimple size={18} weight="bold" aria-hidden />
               {tCraft("androidCta")}
             </a>
